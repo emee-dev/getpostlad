@@ -19,13 +19,19 @@ class RequestWidget extends WidgetType {
   }
 
   toDOM() {
+    const wrapper = document.createElement("div");
+    wrapper.style.position = "relative";
+    wrapper.style.marginBottom = "4px";
+
     const button = document.createElement("button");
     button.textContent = "Send request";
     button.className = "cm-request-button";
     button.onclick = () => {
       console.log("Function content:", this.functionContent);
     };
-    return button;
+
+    wrapper.appendChild(button);
+    return wrapper;
   }
 }
 
@@ -63,21 +69,30 @@ function createDecorations(view: EditorView) {
   const tree = syntaxTree(view.state);
   tree.iterate({
     enter: (node) => {
-      if (node.type.name === "FunctionDeclaration" || node.type.name === "VariableDefinition") {
-        const functionText = view.state.doc.sliceString(node.from, node.to);
-        for (const method of httpMethods) {
-          if (functionText.includes(method)) {
-            decorations.push({
-              from: node.from,
-              to: node.from,
-              value: Decoration.widget({
-                widget: new RequestWidget(functionText),
-                side: -1
-              })
-            });
-            break;
-          }
+      const nodeText = view.state.doc.sliceString(node.from, node.to);
+      
+      // Check if the node contains any HTTP method
+      const hasHttpMethod = httpMethods.some(method => nodeText.includes(method));
+      
+      if (hasHttpMethod && (
+        node.type.name === "FunctionDeclaration" || 
+        (node.type.name === "VariableDefinition" && nodeText.includes("=>"))
+      )) {
+        // Find the line start position
+        let lineStart = node.from;
+        while (lineStart > 0 && view.state.doc.sliceString(lineStart - 1, lineStart) !== "\n") {
+          lineStart--;
         }
+        
+        decorations.push({
+          from: lineStart,
+          to: lineStart,
+          value: Decoration.widget({
+            widget: new RequestWidget(nodeText),
+            side: -1,
+            block: true
+          })
+        });
       }
     }
   });

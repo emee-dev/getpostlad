@@ -66,7 +66,8 @@ export function CodeEditor({ content, language, onChange }: CodeEditorProps) {
             border: "none",
             borderRadius: "3px",
             cursor: "pointer",
-            marginLeft: "8px",
+            display: "inline-block",
+            marginBottom: "4px"
           },
           ".cm-request-button:hover": {
             background: "#45a049",
