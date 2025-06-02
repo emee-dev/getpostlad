@@ -11,8 +11,11 @@ import { Range } from "@codemirror/state";
 
 // Widget for the "Send request" button
 class RequestWidget extends WidgetType {
-  constructor() {
+  private functionContent: string;
+
+  constructor(functionContent: string) {
     super();
+    this.functionContent = functionContent;
   }
 
   toDOM() {
@@ -20,7 +23,7 @@ class RequestWidget extends WidgetType {
     button.textContent = "Send request";
     button.className = "cm-request-button";
     button.onclick = () => {
-      console.log("Send request clicked");
+      console.log("Function content:", this.functionContent);
     };
     return button;
   }
@@ -60,7 +63,7 @@ function createDecorations(view: EditorView) {
   const tree = syntaxTree(view.state);
   tree.iterate({
     enter: (node) => {
-      if (node.type.name === "FunctionDeclaration") {
+      if (node.type.name === "FunctionDeclaration" || node.type.name === "VariableDefinition") {
         const functionText = view.state.doc.sliceString(node.from, node.to);
         for (const method of httpMethods) {
           if (functionText.includes(method)) {
@@ -68,8 +71,8 @@ function createDecorations(view: EditorView) {
               from: node.from,
               to: node.from,
               value: Decoration.widget({
-                widget: new RequestWidget(),
-                side: 1
+                widget: new RequestWidget(functionText),
+                side: -1
               })
             });
             break;
