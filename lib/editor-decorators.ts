@@ -9,19 +9,20 @@ import {
 import { syntaxTree } from "@codemirror/language";
 import { Range } from "@codemirror/state";
 
-// Predefined variables that can be inserted
 const variables = [
-  "S3_BUCKET",
-  "BASE_URL",
+  "TOKEN",
+  "USER_ID",
+  "EMAIL",
+  "PASSWORD",
+  "NAME",
+  "ROLE",
+  "PAGE",
+  "LIMIT",
+  "CATEGORY",
   "API_KEY",
-  "DATABASE_URL",
-  "JWT_SECRET",
-  "STRIPE_KEY",
-  "AWS_ACCESS_KEY",
-  "AWS_SECRET_KEY"
+  "BASE_URL",
 ];
 
-// Widget for variable picker
 class VariablePickerWidget extends WidgetType {
   constructor(private readonly view: EditorView, private readonly pos: number) {
     super();
@@ -48,112 +49,112 @@ class VariablePickerWidget extends WidgetType {
   }
 }
 
-// Widget for the "Send request" button
 class RequestWidget extends WidgetType {
-  private functionContent: string;
-
-  constructor(functionContent: string) {
+  constructor(
+    private readonly view: EditorView,
+    private readonly functionContent: string,
+    private readonly onResponse: (data: any) => void
+  ) {
     super();
-    this.functionContent = functionContent;
+  }
+
+  async executeRequest() {
+    try {
+      const fn = new Function(this.functionContent + "\nreturn " + 
+        (this.functionContent.includes("function") ? 
+          this.functionContent.match(/function\s+(\w+)/)?.[1] : 
+          this.functionContent.match(/const\s+(\w+)/)?.[1]
+        ) + "();");
+      
+      const config = fn();
+      const url = new URL(config.url);
+      
+      if (config.query) {
+        Object.entries(config.query).forEach(([key, value]) => {
+          url.searchParams.append(key, String(value).replace(/[{}]/g, "").trim());
+        });
+      }
+
+      const response = await fetch(url.toString(), {
+        method: this.functionContent.includes("POST") ? "POST" : "GET",
+        headers: config.headers,
+        body: config.body ? JSON.stringify(config.body) : undefined
+      });
+
+      const data = await response.json();
+      this.onResponse(data);
+    } catch (error) {
+      this.onResponse({ error: error.message });
+    }
   }
 
   toDOM() {
     const wrapper = document.createElement("div");
-    wrapper.style.position = "relative";
-    wrapper.style.marginBottom = "4px";
+    wrapper.className = "cm-request-wrapper";
 
     const button = document.createElement("button");
-    button.textContent = "Send request";
+    button.textContent = "Send Request";
     button.className = "cm-request-button";
-    button.onclick = () => {
-      console.log("Function content:", this.functionContent);
-    };
+    button.onclick = () => this.executeRequest();
 
+    const method = this.functionContent.includes("POST") ? "POST" : "GET";
+    const methodBadge = document.createElement("span");
+    methodBadge.textContent = method;
+    methodBadge.className = `cm-method-badge ${method.toLowerCase()}`;
+
+    wrapper.appendChild(methodBadge);
     wrapper.appendChild(button);
     return wrapper;
   }
 }
 
-// Regular expression for matching {{variable}} pattern
 const variableRegex = /{{([^}]+)}}/g;
-
-// HTTP method names to match
-const httpMethods = ["GET", "POST", "PUT", "DELETE", "PATCH"];
 
 function createDecorations(view: EditorView) {
   const decorations: Range<Decoration>[] = [];
   const content = view.state.doc.toString();
   
-  // Add variable decorations
   let match;
   while ((match = variableRegex.exec(content)) !== null) {
     const from = match.index;
     const to = from + match[0].length;
-    const varName = match[1].trim();
     
     decorations.push({
       from,
       to,
       value: Decoration.mark({
-        class: "cm-variable-highlight",
-        attributes: {
-          "data-variable": varName,
-          onclick: `console.log('${varName}')`
-        }
+        class: "cm-variable-highlight"
       })
     });
   }
 
-  // Add HTTP method decorations
   const tree = syntaxTree(view.state);
   tree.iterate({
     enter: (node) => {
       const nodeText = view.state.doc.sliceString(node.from, node.to);
       
-      // Check if the node contains any HTTP method
-      const hasHttpMethod = httpMethods.some(method => nodeText.includes(method));
-      
-      if (hasHttpMethod && (
-        node.type.name === "FunctionDeclaration" || 
-        node.type.name === "VariableDefinition" && nodeText.includes("=>")
-      )) {
-        // Find the line start position
+      if (
+        (node.type.name === "FunctionDeclaration" || node.type.name === "VariableDefinition") &&
+        (nodeText.includes("POST") || nodeText.includes("GET"))
+      ) {
         let lineStart = node.from;
         while (lineStart > 0 && view.state.doc.sliceString(lineStart - 1, lineStart) !== "\n") {
           lineStart--;
         }
-
-        // Find the previous line's end
-        let prevLineEnd = lineStart - 1;
-        while (prevLineEnd > 0 && view.state.doc.sliceString(prevLineEnd - 1, prevLineEnd) !== "\n") {
-          prevLineEnd--;
-        }
         
         decorations.push({
-          from: Math.max(0, prevLineEnd),
-          to: Math.max(0, prevLineEnd),
+          from: Math.max(0, lineStart),
+          to: Math.max(0, lineStart),
           value: Decoration.widget({
-            widget: new RequestWidget(nodeText),
+            widget: new RequestWidget(view, nodeText, (data) => {
+              // Handle response
+              console.log("Response:", data);
+            }),
             block: true,
             side: -1
           })
         });
       }
-    }
-  });
-
-  // Add variable picker on double click
-  view.dom.addEventListener('dblclick', (e) => {
-    const pos = view.posAtDOM(e.target as Node);
-    if (pos !== null) {
-      decorations.push({
-        from: pos,
-        to: pos,
-        value: Decoration.widget({
-          widget: new VariablePickerWidget(view, pos)
-        })
-      });
-      view.update([]);
     }
   });
 
@@ -175,10 +176,6 @@ export const editorDecorators = ViewPlugin.fromClass(
     }
   },
   {
-    decorations: (v) => v.decorations,
-    provide: (plugin) =>
-      EditorView.atomicRanges.of((view) => {
-        return view.plugin(plugin)?.decorations || Decoration.none;
-      })
+    decorations: (v) => v.decorations
   }
 );

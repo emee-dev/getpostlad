@@ -3,7 +3,7 @@
 import { ResizablePanelGroup, ResizablePanel } from "@/components/ui/resizable";
 import { FileExplorer } from "@/components/file-explorer";
 import { CodeEditor } from "@/components/code-editor";
-import { Preview } from "@/components/preview";
+import { ResponsePanel } from "@/components/response-panel";
 import { Navbar } from "@/components/navbar";
 import { useState } from "react";
 
@@ -17,69 +17,93 @@ export type FileNode = {
 export default function Home() {
   const [files, setFiles] = useState<FileNode[]>([
     {
-      name: "src",
+      name: "requests",
       type: "directory",
       children: [
         {
-          name: "components",
+          name: "auth",
           type: "directory",
           children: [
             {
-              name: "Button.js",
+              name: "login.js",
               type: "file",
-              content: `export function Button({ children, onClick }) {
-  return (
-    <button 
-      className="px-4 py-2 bg-blue-500 text-white rounded"
-      onClick={onClick}
-    >
-      {children}
-    </button>
-  );
-}`
+              content: `const POST = () => ({
+  url: "https://api.example.com/auth/login",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: {
+    email: "{{ EMAIL }}",
+    password: "{{ PASSWORD }}"
+  }
+})`
             }
           ]
         },
         {
-          name: "utils",
+          name: "users",
           type: "directory",
           children: [
             {
-              name: "helpers.js",
+              name: "get-user.js",
               type: "file",
-              content: `export function formatDate(date) {
-  return new Date(date).toLocaleDateString();
-}
-
-export function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+              content: `function GET() {
+  return {
+    url: "https://api.example.com/users/{{ USER_ID }}",
+    headers: {
+      "Authorization": "Bearer {{ TOKEN }}",
+      "Accept": "application/json"
+    }
+  }
 }`
+            },
+            {
+              name: "create-user.js",
+              type: "file",
+              content: `const POST = () => ({
+  url: "https://api.example.com/users",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer {{ TOKEN }}"
+  },
+  body: {
+    name: "{{ NAME }}",
+    email: "{{ EMAIL }}",
+    role: "{{ ROLE }}"
+  }
+})`
             }
           ]
         },
         {
-          name: "app.js",
-          type: "file",
-          content: `import { Button } from './components/Button';
-import { formatDate } from './utils/helpers';
-
-function App() {
-  return (
-    <div>
-      <h1>Welcome to My App</h1>
-      <p>Today is {formatDate(new Date())}</p>
-      <Button onClick={() => alert('Hello!')}>
-        Click me
-      </Button>
-    </div>
-  );
+          name: "products",
+          type: "directory",
+          children: [
+            {
+              name: "list-products.js",
+              type: "file",
+              content: `function GET() {
+  return {
+    url: "https://api.example.com/products",
+    headers: {
+      "Accept": "application/json"
+    },
+    query: {
+      page: "{{ PAGE }}",
+      limit: "{{ LIMIT }}",
+      category: "{{ CATEGORY }}"
+    }
+  }
 }`
+            }
+          ]
         }
       ]
     }
   ]);
 
   const [selectedFile, setSelectedFile] = useState<FileNode | null>(null);
+  const [response, setResponse] = useState<any>(null);
 
   const handleFileSelect = (file: FileNode) => {
     if (file.type === "file") {
@@ -112,6 +136,10 @@ function App() {
     setSelectedFile({ ...selectedFile, content });
   };
 
+  const handleResponse = (data: any) => {
+    setResponse(data);
+  };
+
   return (
     <div className="h-screen flex flex-col bg-background">
       <Navbar />
@@ -123,14 +151,18 @@ function App() {
             onFileSelect={handleFileSelect}
           />
         </ResizablePanel>
-        <ResizablePanel defaultSize={85} minSize={30}>
+        <ResizablePanel defaultSize={45} minSize={30}>
           {selectedFile?.type === "file" && (
             <CodeEditor
               content={selectedFile.content || ""}
               language="javascript"
               onChange={handleFileContentChange}
+              onResponse={handleResponse}
             />
           )}
+        </ResizablePanel>
+        <ResizablePanel defaultSize={40} minSize={30}>
+          <ResponsePanel response={response} />
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

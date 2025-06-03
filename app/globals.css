@@ -37,13 +37,9 @@
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
     --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -64,11 +60,6 @@
     --border: 0 0% 14.9%;
     --input: 0 0% 14.9%;
     --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
   }
 }
 
@@ -79,4 +70,77 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.cm-variable-highlight {
+  background: #3f51b520;
+  border-radius: 3px;
+  padding: 0 2px;
+  cursor: pointer;
+}
+
+.cm-variable-highlight:hover {
+  background: #3f51b540;
+}
+
+.cm-request-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.cm-request-button {
+  font-size: 12px;
+  padding: 4px 8px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.cm-request-button:hover {
+  background: #45a049;
+}
+
+.cm-method-badge {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+.cm-method-badge.get {
+  background: #61affe;
+  color: white;
+}
+
+.cm-method-badge.post {
+  background: #49cc90;
+  color: white;
+}
+
+.cm-variable-picker {
+  position: absolute;
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 0;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.cm-variable-item {
+  padding: 4px 8px;
+  cursor: pointer;
+  color: var(--foreground);
+  font-size: 13px;
+  font-family: monospace;
+}
+
+.cm-variable-item:hover {
+  background-color: var(--accent);
 }
