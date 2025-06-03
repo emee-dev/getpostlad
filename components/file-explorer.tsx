@@ -16,7 +16,7 @@ function FileTreeNode({
   node, 
   level = 0,
   selectedFile,
-  onFileSelect 
+  onFileSelect  
 }: { 
   node: FileNode;
   level?: number;
