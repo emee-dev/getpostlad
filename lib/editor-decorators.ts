@@ -22,7 +22,7 @@ const availableVariables = [
   "USERNAME",
 ];
 
-const addTooltip = StateEffect.define<{ pos: number; tooltip: Tooltip }>()
+const addTooltip = StateEffect.define<{ pos: number; tooltip: Tooltip }>();
 
 // Widget for the "Send request" button
 class RequestWidget extends WidgetType {
@@ -92,13 +92,13 @@ const httpMethods = ["GET", "POST", "PUT", "DELETE", "PATCH"];
 
 const tooltipField = StateField.define<DecorationSet>({
   create() {
-    return Decoration.none
+    return Decoration.none;
   },
   update(tooltips, tr) {
-    return tooltips.map(tr.changes)
+    return tooltips.map(tr.changes);
   },
   provide: f => EditorView.decorations.from(f)
-})
+});
 
 function createDecorations(view: EditorView) {
   const decorations: Range<Decoration>[] = [];
@@ -135,28 +135,34 @@ function createDecorations(view: EditorView) {
       
       if (hasHttpMethod && (
         node.type.name === "FunctionDeclaration" || 
-        (node.type.name === "VariableDefinition" && nodeText.includes("=>"))
+        node.type.name === "VariableDefinition" && nodeText.includes("=>")
       )) {
         // Find the line start position
         let lineStart = node.from;
         while (lineStart > 0 && view.state.doc.sliceString(lineStart - 1, lineStart) !== "\n") {
           lineStart--;
         }
+
+        // Find the previous line's end
+        let prevLineEnd = lineStart - 1;
+        while (prevLineEnd > 0 && view.state.doc.sliceString(prevLineEnd - 1, prevLineEnd) !== "\n") {
+          prevLineEnd--;
+        }
         
         decorations.push({
-          from: lineStart,
-          to: lineStart,
+          from: Math.max(0, prevLineEnd),
+          to: Math.max(0, prevLineEnd),
           value: Decoration.widget({
             widget: new RequestWidget(nodeText),
-            side: -1,
-            block: true
+            block: true,
+            side: -1
           })
         });
       }
     }
   });
 
-  return Decoration.set(decorations);
+  return Decoration.set(decorations, true);
 }
 
 // Keymap for triggering intellisense
