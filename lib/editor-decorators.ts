@@ -5,24 +5,48 @@ import {
   ViewPlugin,
   ViewUpdate,
   WidgetType,
-  keymap,
-  showTooltip,
-  Tooltip,
 } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
-import { Range, StateField, StateEffect } from "@codemirror/state";
+import { Range } from "@codemirror/state";
 
-// Sample variables for demonstration - you can replace with your own source
-const availableVariables = [
-  "USER_ID",
+// Predefined variables that can be inserted
+const variables = [
+  "S3_BUCKET",
+  "BASE_URL",
   "API_KEY",
-  "TOKEN",
-  "EMAIL",
-  "PASSWORD",
-  "USERNAME",
+  "DATABASE_URL",
+  "JWT_SECRET",
+  "STRIPE_KEY",
+  "AWS_ACCESS_KEY",
+  "AWS_SECRET_KEY"
 ];
 
-const addTooltip = StateEffect.define<{ pos: number; tooltip: Tooltip }>();
+// Widget for variable picker
+class VariablePickerWidget extends WidgetType {
+  constructor(private readonly view: EditorView, private readonly pos: number) {
+    super();
+  }
+
+  toDOM() {
+    const wrapper = document.createElement("div");
+    wrapper.className = "cm-variable-picker";
+
+    variables.forEach(variable => {
+      const item = document.createElement("div");
+      item.className = "cm-variable-item";
+      item.textContent = variable;
+      item.onclick = () => {
+        const insertion = `{{ ${variable} }}`;
+        this.view.dispatch({
+          changes: { from: this.pos, insert: insertion }
+        });
+      };
+      wrapper.appendChild(item);
+    });
+
+    return wrapper;
+  }
+}
 
 // Widget for the "Send request" button
 class RequestWidget extends WidgetType {
@@ -50,55 +74,11 @@ class RequestWidget extends WidgetType {
   }
 }
 
-// Tooltip for variable suggestions
-class VariableSuggestionTooltip {
-  constructor(private readonly view: EditorView, private readonly pos: number) {}
-
-  create() {
-    const dom = document.createElement("div");
-    dom.className = "cm-suggestion-tooltip";
-    
-    availableVariables.forEach(variable => {
-      const item = document.createElement("div");
-      item.className = "cm-suggestion-item";
-      item.textContent = variable;
-      item.onclick = () => {
-        const insertion = `{{ ${variable} }}`;
-        this.view.dispatch({
-          changes: { from: this.pos, insert: insertion }
-        });
-        // Hide tooltip after selection
-        this.view.dispatch({
-          effects: StateEffect.appendConfig.of([])
-        });
-      };
-      dom.appendChild(item);
-    });
-
-    return {
-      dom,
-      destroy: () => {
-        // Cleanup if needed
-      }
-    };
-  }
-}
-
 // Regular expression for matching {{variable}} pattern
 const variableRegex = /{{([^}]+)}}/g;
 
 // HTTP method names to match
 const httpMethods = ["GET", "POST", "PUT", "DELETE", "PATCH"];
-
-const tooltipField = StateField.define<DecorationSet>({
-  create() {
-    return Decoration.none;
-  },
-  update(tooltips, tr) {
-    return tooltips.map(tr.changes);
-  },
-  provide: f => EditorView.decorations.from(f)
-});
 
 function createDecorations(view: EditorView) {
   const decorations: Range<Decoration>[] = [];
@@ -162,50 +142,43 @@ function createDecorations(view: EditorView) {
     }
   });
 
+  // Add variable picker on double click
+  view.dom.addEventListener('dblclick', (e) => {
+    const pos = view.posAtDOM(e.target as Node);
+    if (pos !== null) {
+      decorations.push({
+        from: pos,
+        to: pos,
+        value: Decoration.widget({
+          widget: new VariablePickerWidget(view, pos)
+        })
+      });
+      view.update([]);
+    }
+  });
+
   return Decoration.set(decorations, true);
 }
 
-// Keymap for triggering intellisense
-const intellisenseKeymap = keymap.of([{
-  key: "Ctrl-Space",
-  run: (view: EditorView) => {
-    const pos = view.state.selection.main.head;
-    view.dispatch({
-      effects: addTooltip.of({
-        pos,
-        tooltip: {
-          pos,
-          create: () => new VariableSuggestionTooltip(view, pos).create()
-        }
-      })
-    });
-    return true;
-  }
-}]);
+export const editorDecorators = ViewPlugin.fromClass(
+  class {
+    decorations: DecorationSet;
 
-export const editorDecorators = [
-  ViewPlugin.fromClass(
-    class {
-      decorations: DecorationSet;
-
-      constructor(view: EditorView) {
-        this.decorations = createDecorations(view);
-      }
-
-      update(update: ViewUpdate) {
-        if (update.docChanged || update.viewportChanged) {
-          this.decorations = createDecorations(update.view);
-        }
-      }
-    },
-    {
-      decorations: (v) => v.decorations,
-      provide: (plugin) =>
-        EditorView.atomicRanges.of((view) => {
-          return view.plugin(plugin)?.decorations || Decoration.none;
-        })
+    constructor(view: EditorView) {
+      this.decorations = createDecorations(view);
     }
-  ),
-  tooltipField,
-  intellisenseKeymap
-];
+
+    update(update: ViewUpdate) {
+      if (update.docChanged || update.viewportChanged) {
+        this.decorations = createDecorations(update.view);
+      }
+    }
+  },
+  {
+    decorations: (v) => v.decorations,
+    provide: (plugin) =>
+      EditorView.atomicRanges.of((view) => {
+        return view.plugin(plugin)?.decorations || Decoration.none;
+      })
+  }
+);

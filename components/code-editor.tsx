@@ -72,24 +72,26 @@ export function CodeEditor({ content, language, onChange }: CodeEditorProps) {
           ".cm-request-button:hover": {
             background: "#45a049",
           },
-          ".cm-suggestion-tooltip": {
+          ".cm-variable-picker": {
+            position: "absolute",
             backgroundColor: "#252526",
             border: "1px solid #454545",
             borderRadius: "4px",
             padding: "4px 0",
             maxHeight: "200px",
             overflowY: "auto",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+            zIndex: "100",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
           },
-          ".cm-suggestion-item": {
+          ".cm-variable-item": {
             padding: "4px 8px",
             cursor: "pointer",
             color: "#d4d4d4",
             fontSize: "13px",
-            fontFamily: "monospace",
+            fontFamily: "monospace"
           },
-          ".cm-suggestion-item:hover": {
-            backgroundColor: "#2a2d2e",
+          ".cm-variable-item:hover": {
+            backgroundColor: "#2a2d2e"
           }
         })
       ],
