@@ -1,7 +1,7 @@
-"use client";
-
 import { EditorView, basicSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
+import { html } from "@codemirror/lang-html";
+import { css } from "@codemirror/lang-css";
 import { vscodeDark } from "@uiw/codemirror-themes-all";
 import { editorDecorators } from "@/lib/editor-decorators";
 import { useEffect, useRef } from "react";
@@ -9,12 +9,26 @@ import { ScrollArea } from "./ui/scroll-area";
 
 interface CodeEditorProps {
   content: string;
+  language: string;
   onChange: (value: string) => void;
 }
 
-export function CodeEditor({ content, onChange }: CodeEditorProps) {
+export function CodeEditor({ content, language, onChange }: CodeEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const editorViewRef = useRef<EditorView>();
+
+  const getLanguageExtension = (lang: string) => {
+    switch (lang) {
+      case "javascript":
+        return javascript();
+      case "html":
+        return html();
+      case "css":
+        return css();
+      default:
+        return javascript();
+    }
+  };
 
   useEffect(() => {
     if (!editorRef.current) return;
@@ -23,7 +37,7 @@ export function CodeEditor({ content, onChange }: CodeEditorProps) {
       doc: content,
       extensions: [
         basicSetup,
-        javascript(),
+        getLanguageExtension(language),
         vscodeDark,
         editorDecorators,
         EditorView.updateListener.of((update) => {
@@ -89,7 +103,7 @@ export function CodeEditor({ content, onChange }: CodeEditorProps) {
     return () => {
       view.destroy();
     };
-  }, []);
+  }, [language]);
 
   useEffect(() => {
     if (editorViewRef.current && content !== editorViewRef.current.state.doc.toString()) {
@@ -106,7 +120,7 @@ export function CodeEditor({ content, onChange }: CodeEditorProps) {
   return (
     <div className="h-full">
       <div className="flex h-10 items-center border-b px-4">
-        <span className="text-sm font-medium">JavaScript</span>
+        <span className="text-sm font-medium">{language.toUpperCase()}</span>
       </div>
       <ScrollArea className="h-[calc(100%-2.5rem)]">
         <div ref={editorRef} className="h-full" />
