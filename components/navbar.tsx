@@ -7,11 +7,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState } from "react";
+import { CreateWorkspaceDialog } from "./create-workspace-dialog";
 
 export function Navbar() {
   const [selectedWorkspace, setSelectedWorkspace] = useState<string | null>(null);
@@ -45,6 +47,8 @@ export function Navbar() {
                   No workspaces available
                 </DropdownMenuItem>
               )}
+              <DropdownMenuSeparator />
+              <CreateWorkspaceDialog />
             </DropdownMenuContent>
           </DropdownMenu>
 
