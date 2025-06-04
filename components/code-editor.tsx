@@ -1,9 +1,9 @@
 import { EditorView, basicSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
-import { vscodeDark } from "@uiw/codemirror-themes-all";
 import { createEditorDecorators } from "@/lib/editor-decorators";
 import { useEffect, useRef } from "react";
 import { ScrollArea } from "./ui/scroll-area";
+import { catppuccin } from "@catppuccin/codemirror";
 
 interface CodeEditorProps {
   content: string;
@@ -24,7 +24,7 @@ export function CodeEditor({ content, language, onChange, onResponse }: CodeEdit
       extensions: [
         basicSetup,
         javascript(),
-        vscodeDark,
+        catppuccin.mocha,
         createEditorDecorators(onResponse),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
