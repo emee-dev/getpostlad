@@ -13,6 +13,9 @@ export function Navbar() {
           <Button variant="outline" size="sm" className="h-7">
             main
           </Button>
+          <Button variant="outline" size="sm" className="h-7">
+            main
+          </Button>
         </div>
       </div>
       <div className="ml-auto flex items-center gap-2">
