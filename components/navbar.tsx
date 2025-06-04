@@ -14,13 +14,18 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState } from "react";
 import { CreateWorkspaceDialog } from "./create-workspace-dialog";
+import { ManageEnvironmentDialog } from "./manage-environment-dialog";
 
 export function Navbar() {
   const [selectedWorkspace, setSelectedWorkspace] = useState<string | null>(null);
+  const [selectedEnvironment, setSelectedEnvironment] = useState<string | null>(null);
+  
   const workspaces = useQuery(api.workspaces.list, { userId: "user123" }); // Replace with actual user ID
   const environments = useQuery(api.environments.listByWorkspace, 
     selectedWorkspace ? { workspaceId: selectedWorkspace } : "skip"
   );
+
+  const currentEnvironment = environments?.find(env => env._id === selectedEnvironment);
 
   return (
     <nav className="flex h-14 items-center border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -55,18 +60,32 @@ export function Navbar() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-7">
-                Environments
+                {currentEnvironment?.name || "Environments"}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
+            <DropdownMenuContent align="start" className="w-[200px]">
               {environments?.map((env) => (
-                <DropdownMenuItem key={env._id}>
+                <DropdownMenuItem
+                  key={env._id}
+                  onClick={() => setSelectedEnvironment(env._id)}
+                >
                   {env.name}
+                  <DropdownMenuSeparator className="my-2" />
+                  <ManageEnvironmentDialog
+                    workspaceId={selectedWorkspace!}
+                    environment={env}
+                  />
                 </DropdownMenuItem>
               ))}
-              {!environments?.length && (
+              {selectedWorkspace && (
+                <>
+                  {environments?.length ? <DropdownMenuSeparator /> : null}
+                  <ManageEnvironmentDialog workspaceId={selectedWorkspace} />
+                </>
+              )}
+              {!selectedWorkspace && (
                 <DropdownMenuItem disabled>
-                  No environments available
+                  Select a workspace first
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>
