@@ -3,7 +3,7 @@ import { javascript } from "@codemirror/lang-javascript";
 import { createEditorDecorators } from "@/lib/editor-decorators";
 import { useEffect, useRef } from "react";
 import { ScrollArea } from "./ui/scroll-area";
-import { catppuccin } from "@catppuccin/codemirror";
+import { catppuccinLatte } from "@catppuccin/codemirror";
 
 interface CodeEditorProps {
   content: string;
@@ -24,7 +24,7 @@ export function CodeEditor({ content, language, onChange, onResponse }: CodeEdit
       extensions: [
         basicSetup,
         javascript(),
-        catppuccin.mocha,
+        catppuccinLatte,
         createEditorDecorators(onResponse),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
