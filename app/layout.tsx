@@ -1,6 +1,6 @@
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
-import ConvexClientProvider from "@/provider"
+import { ConvexClientProvider } from "@/provider"
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
