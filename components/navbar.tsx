@@ -11,10 +11,10 @@ export function Navbar() {
         <h1 className="text-xl font-semibold">CodeEditor</h1>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="h-7">
-            main
+            Workspaces
           </Button>
           <Button variant="outline" size="sm" className="h-7">
-            main
+            Environments
           </Button>
         </div>
       </div>
