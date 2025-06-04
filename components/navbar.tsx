@@ -40,6 +40,11 @@ export function Navbar() {
                   {workspace.name}
                 </DropdownMenuItem>
               ))}
+              {!workspaces?.length && (
+                <DropdownMenuItem disabled>
+                  No workspaces available
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
 
