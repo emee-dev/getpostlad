@@ -25,6 +25,7 @@ export function Navbar() {
     selectedWorkspace ? { workspaceId: selectedWorkspace } : "skip"
   );
 
+  const currentWorkspace = workspaces?.find(w => w._id === selectedWorkspace);
   const currentEnvironment = environments?.find(env => env._id === selectedEnvironment);
 
   return (
@@ -35,7 +36,7 @@ export function Navbar() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-7">
-                {workspaces?.find(w => w._id === selectedWorkspace)?.name || "Select Workspace"}
+                {currentWorkspace?.name || "Select Workspace"}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
@@ -47,11 +48,6 @@ export function Navbar() {
                   {workspace.name}
                 </DropdownMenuItem>
               ))}
-              {!workspaces?.length && (
-                <DropdownMenuItem disabled>
-                  No workspaces available
-                </DropdownMenuItem>
-              )}
               <DropdownMenuSeparator />
               <CreateWorkspaceDialog />
             </DropdownMenuContent>
@@ -60,21 +56,16 @@ export function Navbar() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-7">
-                {currentEnvironment?.name || "Environments"}
+                {currentEnvironment?.name || "Select Environment"}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-[200px]">
+            <DropdownMenuContent align="start">
               {environments?.map((env) => (
                 <DropdownMenuItem
                   key={env._id}
                   onClick={() => setSelectedEnvironment(env._id)}
                 >
                   {env.name}
-                  <DropdownMenuSeparator className="my-2" />
-                  <ManageEnvironmentDialog
-                    workspaceId={selectedWorkspace!}
-                    environment={env}
-                  />
                 </DropdownMenuItem>
               ))}
               {selectedWorkspace && (
@@ -90,6 +81,13 @@ export function Navbar() {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {selectedEnvironment && (
+            <ManageEnvironmentDialog
+              workspaceId={selectedWorkspace!}
+              environment={currentEnvironment}
+            />
+          )}
         </div>
       </div>
       <div className="ml-auto flex items-center gap-2">
