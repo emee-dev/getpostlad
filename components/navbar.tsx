@@ -1,6 +1,4 @@
-"use client";
-
-import { Github } from "lucide-react";
+import { Github, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "./theme-toggle";
 import {
@@ -15,6 +13,7 @@ import { api } from "@/convex/_generated/api";
 import { useState } from "react";
 import { CreateWorkspaceDialog } from "./create-workspace-dialog";
 import { ManageEnvironmentDialog } from "./manage-environment-dialog";
+import { ImportCollectionDialog } from "./import-collection-dialog";
 
 export function Navbar() {
   const [selectedWorkspace, setSelectedWorkspace] = useState<string | null>(null);
@@ -31,10 +30,7 @@ export function Navbar() {
   return (
     <nav className="flex h-14 items-center border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex items-center gap-4">
-        {/* <h1 className="text-xl font-semibold">CodeEditor</h1> */}
-        <Button variant="outline" size="sm" className="h-7">
-            Import collection
-        </Button>
+        <ImportCollectionDialog />
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
