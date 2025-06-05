@@ -1,5 +1,3 @@
-"use client";
-
 import { ResizablePanelGroup, ResizablePanel } from "@/components/ui/resizable";
 import { FileExplorer } from "@/components/file-explorer";
 import { CodeEditor } from "@/components/code-editor";
@@ -103,7 +101,7 @@ export default function Home() {
   ]);
 
   const [selectedFile, setSelectedFile] = useState<FileNode | null>(null);
-  const [response, setResponse] = useState<any>(null);
+  const [response, setResponse] = useState<{ data?: any; error?: string; isLoading?: boolean } | null>(null);
 
   const handleFileSelect = (file: FileNode) => {
     if (file.type === "file") {
@@ -162,9 +160,8 @@ export default function Home() {
           )}
         </ResizablePanel>
         <ResizablePanel defaultSize={40} minSize={30}>
-          <ResponsePanel response={response} />
+          <ResponsePanel response={response?.data} isLoading={response?.isLoading} />
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
   );
-}

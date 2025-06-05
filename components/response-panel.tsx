@@ -5,12 +5,14 @@ import { EditorView, basicSetup } from "codemirror";
 import { javascript } from "@codemirror/lang-javascript";
 import { useEffect, useRef } from "react";
 import { catppuccinLatte } from "@catppuccin/codemirror";
+import { Loader2 } from "lucide-react";
 
 interface ResponsePanelProps {
   response: any;
+  isLoading?: boolean;
 }
 
-export function ResponsePanel({ response }: ResponsePanelProps) {
+export function ResponsePanel({ response, isLoading = false }: ResponsePanelProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const editorViewRef = useRef<EditorView>();
 
@@ -71,6 +73,17 @@ export function ResponsePanel({ response }: ResponsePanelProps) {
     "access-control-allow-origin": "*",
     "content-length": "1234"
   };
+
+  if (isLoading) {
+    return (
+      <div className="h-full bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Loading response...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full bg-background">

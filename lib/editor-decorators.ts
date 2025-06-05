@@ -112,6 +112,8 @@ function createDecorations(view: EditorView, onResponse: (data: any) => void) {
 
         const executeRequest = async () => {
           try {
+            onResponse({ isLoading: true });
+            
             const fn = new Function(nodeText + "\nreturn " + 
               (nodeText.includes("function") ? 
                 nodeText.match(/function\s+(\w+)/)?.[1] : 
@@ -127,6 +129,9 @@ function createDecorations(view: EditorView, onResponse: (data: any) => void) {
               });
             }
 
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
             const response = await fetch(url.toString(), {
               method,
               headers: config.headers,
@@ -134,9 +139,9 @@ function createDecorations(view: EditorView, onResponse: (data: any) => void) {
             });
 
             const data = await response.json();
-            onResponse(data);
+            onResponse({ data, isLoading: false });
           } catch (error) {
-            onResponse({ error: error.message });
+            onResponse({ error: error.message, isLoading: false });
           }
         };
 
