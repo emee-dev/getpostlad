@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { ResizablePanelGroup, ResizablePanel } from "@/components/ui/resizable";
 import { FileExplorer } from "@/components/file-explorer";
@@ -108,6 +108,7 @@ export default function Home() {
   const handleFileSelect = (file: FileNode) => {
     if (file.type === "file") {
       setSelectedFile(file);
+      setResponse(null); // Clear previous response when selecting a new file
     }
   };
 
@@ -132,8 +133,9 @@ export default function Home() {
       });
     };
 
+    const updatedFile = { ...selectedFile, content };
     setFiles(updateFileContent(files));
-    setSelectedFile({ ...selectedFile, content });
+    setSelectedFile(updatedFile);
   };
 
   const handleResponse = (data: any) => {

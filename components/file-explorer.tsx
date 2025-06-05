@@ -33,12 +33,15 @@ function FileTreeNode({
     }
   };
 
+  const isSelected = selectedFile?.name === node.name && 
+                    selectedFile?.content === node.content;
+
   return (
     <div>
       <button
         className={cn(
           "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-muted",
-          node.type === "file" && node.name === selectedFile?.name && "bg-muted"
+          isSelected && "bg-muted"
         )}
         style={{ paddingLeft: `${(level + 1) * 12}px` }}
         onClick={handleClick}
