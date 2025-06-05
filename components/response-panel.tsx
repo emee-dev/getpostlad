@@ -105,3 +105,4 @@ export function ResponsePanel({ response }: ResponsePanelProps) {
       </ScrollArea>
     </div>
   );
+}
