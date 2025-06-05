@@ -1,4 +1,4 @@
-import { Github, Upload } from "lucide-react";
+import { User, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "./theme-toggle";
 import {
@@ -14,6 +14,7 @@ import { useState } from "react";
 import { CreateWorkspaceDialog } from "./create-workspace-dialog";
 import { ManageEnvironmentDialog } from "./manage-environment-dialog";
 import { ImportCollectionDialog } from "./import-collection-dialog";
+import { AuthDialog } from "./auth/auth-dialog";
 
 export function Navbar() {
   const [selectedWorkspace, setSelectedWorkspace] = useState<string | null>(null);
@@ -91,9 +92,7 @@ export function Navbar() {
       </div>
       <div className="ml-auto flex items-center gap-2">
         <ModeToggle />
-        <Button variant="outline" size="icon" className="h-7 w-7">
-          <Github className="h-4 w-4" />
-        </Button>
+        <AuthDialog />
       </div>
     </nav>
   );
