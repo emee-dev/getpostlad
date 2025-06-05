@@ -1,5 +1,3 @@
-"use client";
-
 import { ScrollArea } from "./ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -20,7 +18,20 @@ export function ResponsePanel({ response }: ResponsePanelProps) {
     if (!editorRef.current) return;
 
     const view = new EditorView({
-      doc: response ? JSON.stringify(response, null, 2) : "",
+      doc: response ? JSON.stringify(response, null, 2) : JSON.stringify({
+        status: "success",
+        data: {
+          id: "123456",
+          name: "John Doe",
+          email: "john@example.com",
+          created_at: "2024-03-21T10:30:00Z",
+          settings: {
+            notifications: true,
+            theme: "light",
+            language: "en"
+          }
+        }
+      }, null, 2),
       extensions: [
         basicSetup,
         javascript(),
@@ -74,7 +85,7 @@ export function ResponsePanel({ response }: ResponsePanelProps) {
               <TabsTrigger value="headers">Headers</TabsTrigger>
             </TabsList>
             <TabsContent value="body">
-              {response ? (
+              {response || true ? (
                 <div ref={editorRef} className="h-[500px] border rounded-md" />
               ) : (
                 <div className="text-muted-foreground text-sm">
