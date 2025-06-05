@@ -1,3 +1,5 @@
+"use client"
+
 import { ResizablePanelGroup, ResizablePanel } from "@/components/ui/resizable";
 import { FileExplorer } from "@/components/file-explorer";
 import { CodeEditor } from "@/components/code-editor";
