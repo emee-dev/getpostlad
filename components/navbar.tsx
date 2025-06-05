@@ -33,7 +33,7 @@ export function Navbar() {
       <div className="flex items-center gap-4">
         {/* <h1 className="text-xl font-semibold">CodeEditor</h1> */}
         <Button variant="outline" size="sm" className="h-7">
-            Import
+            Import collection
         </Button>
         <div className="flex items-center gap-2">
           <DropdownMenu>
