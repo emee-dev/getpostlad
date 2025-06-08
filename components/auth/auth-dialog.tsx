@@ -34,7 +34,11 @@ export function AuthDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon" className="h-7 w-7">
+        <Button
+          size="icon"
+          variant="ghost"
+          className="hover:bg-muted-foreground/20 size-7 hover:dark:bg-muted-foreground/15"
+        >
           <User className="h-4 w-4" />
         </Button>
       </DialogTrigger>
