@@ -1,10 +1,15 @@
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
-import { ConvexClientProvider } from "@/provider"
+import { ConvexClientProvider } from "@/provider";
+import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Fira_Code, Inter } from "next/font/google";
 
 const inter = Inter({ subsets: ["latin"] });
+const fira_code = Fira_Code({
+  subsets: ["latin"],
+  variable: "--font-mono",
+});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -17,8 +22,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={`${inter.className} ${fira_code.variable} ${GeistSans.variable}  bg-background antialiased`}
+      >
         <ConvexClientProvider>
           <ThemeProvider
             attribute="class"
