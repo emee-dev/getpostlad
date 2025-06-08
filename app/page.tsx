@@ -1,172 +1,175 @@
 "use client";
 
-import { ResizablePanelGroup, ResizablePanel } from "@/components/ui/resizable";
-import { FileExplorer } from "@/components/file-explorer";
-import { CodeEditor } from "@/components/code-editor";
-import { ResponsePanel } from "@/components/response-panel";
+import { CodeEditor } from "@/components/editor";
 import { Navbar } from "@/components/navbar";
-import { useState } from "react";
+import { ResponsePanel } from "@/components/response-panel";
+import { AppSidebar } from "@/components/Sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { useFileTreeStore } from "@/hooks/use-file-store";
+import { cn } from "@/lib/utils";
+import { EditorView } from "@codemirror/view";
+import { useTheme } from "next-themes";
+import Image from "next/image";
+import Link from "next/link";
+import { MutableRefObject, Suspense, useEffect, useRef, useState } from "react";
 
-export type FileNode = {
-  name: string;
-  type: "file" | "directory";
-  content?: string;
-  children?: FileNode[];
+export type Header = {
+  key: string;
+  value: string;
 };
 
-export default function Home() {
-  const [files, setFiles] = useState<FileNode[]>([
-    {
-      name: "requests",
-      type: "directory",
-      children: [
-        {
-          name: "auth",
-          type: "directory",
-          children: [
-            {
-              name: "login.js",
-              type: "file",
-              content: `const POST = () => ({
-  url: "https://api.example.com/auth/login",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: {
-    email: "{{ EMAIL }}",
-    password: "{{ PASSWORD }}"
-  }
-})`
-            }
-          ]
-        },
-        {
-          name: "users",
-          type: "directory",
-          children: [
-            {
-              name: "get-user.js",
-              type: "file",
-              content: `function GET() {
+export type ResponseData = {
+  headers: Header[];
+  text_response: string;
+  status: number;
+  elapsed_time: number;
+  content_size: number;
+};
+
+const template = `const GET = () => {
   return {
-    url: "https://api.example.com/users/{{ USER_ID }}",
+    name: "Optional request {{BASE_URL}}",
+    url: "https://httpbin.org/delay/5",
     headers: {
-      "Authorization": "Bearer {{ TOKEN }}",
-      "Accept": "application/json"
-    }
-  }
-}`
-            },
-            {
-              name: "create-user.js",
-              type: "file",
-              content: `const POST = () => ({
-  url: "https://api.example.com/users",
-  headers: {
-    "Content-Type": "application/json",
-    "Authorization": "Bearer {{ TOKEN }}"
-  },
-  body: {
-    name: "{{ NAME }}",
-    email: "{{ EMAIL }}",
-    role: "{{ ROLE }}"
-  }
-})`
-            }
-          ]
-        },
-        {
-          name: "products",
-          type: "directory",
-          children: [
-            {
-              name: "list-products.js",
-              type: "file",
-              content: `function GET() {
-  return {
-    url: "https://api.example.com/products",
-    headers: {
-      "Accept": "application/json"
+      'Content-type': 'application/json; charset=UTF-8',
     },
-    query: {
-      page: "{{ PAGE }}",
-      limit: "{{ LIMIT }}",
-      category: "{{ CATEGORY }}"
-    }
-  }
-}`
-            }
-          ]
-        }
-      ]
-    }
-  ]);
+  };
+};
 
-  const [selectedFile, setSelectedFile] = useState<FileNode | null>(null);
-  const [response, setResponse] = useState<{ data?: any; error?: string; isLoading?: boolean } | null>(null);
+const POST = () => {
+  return {
+    name: "Get posts",
+    url: "https://jsonplaceholder.typicode.com/posts",
+    json: {
+      title: 'foo',
+      body: 'bar',
+      userId: 1,
+    },
+  };
+};
+`;
 
-  const handleFileSelect = (file: FileNode) => {
-    if (file.type === "file") {
-      setSelectedFile(file);
-      setResponse(null); // Clear previous response when selecting a new file
-    }
+export default function Home() {
+  const { theme } = useTheme();
+  const { selectedFile, updateFile } = useFileTreeStore();
+
+  const [code, setCode] = useState(template);
+  const [isPending, setIsPending] = useState(false);
+  const [isResultPanelVisible, setIsResultPanelVisible] = useState(true);
+  const editor = useRef<EditorView | null>(null);
+
+  const onSend = (src: string) => {
+    console.log(src);
   };
 
-  const handleFileContentChange = (content: string) => {
-    if (!selectedFile) return;
+  const data = null;
 
-    const updateFileContent = (nodes: FileNode[]): FileNode[] => {
-      return nodes.map(node => {
-        if (node.type === "directory" && node.children) {
-          return {
-            ...node,
-            children: updateFileContent(node.children)
-          };
-        }
-        if (node.type === "file" && node.name === selectedFile.name) {
-          return {
-            ...node,
-            content
-          };
-        }
-        return node;
-      });
-    };
+  // Set the content of selected file to code editor
+  useEffect(() => {
+    if (selectedFile && selectedFile.type === "file") {
+      setCode(selectedFile.content as string);
+    }
+  }, [selectedFile]);
 
-    const updatedFile = { ...selectedFile, content };
-    setFiles(updateFileContent(files));
-    setSelectedFile(updatedFile);
-  };
-
-  const handleResponse = (data: any) => {
-    setResponse(data);
-  };
+  // Update the content of selected file in the file tree
+  useEffect(() => {
+    if (selectedFile && selectedFile.type === "file") {
+      updateFile(selectedFile.path as string, code);
+    }
+  }, [code]);
 
   return (
-    <div className="h-screen flex flex-col bg-background">
-      <Navbar />
-      <ResizablePanelGroup direction="horizontal" className="flex-1">
-        <ResizablePanel defaultSize={15} minSize={10} maxSize={20}>
-          <FileExplorer
-            files={files}
-            selectedFile={selectedFile}
-            onFileSelect={handleFileSelect}
-          />
-        </ResizablePanel>
-        <ResizablePanel defaultSize={45} minSize={30}>
-          {selectedFile?.type === "file" && (
-            <CodeEditor
-              content={selectedFile.content || ""}
-              language="javascript"
-              onChange={handleFileContentChange}
-              onResponse={handleResponse}
+    <>
+      <SidebarProvider defaultOpen={false} className="">
+        <AppSidebar />
+
+        <SidebarInset className="grid overflow-hidden grid-rows-[40px_1fr_36px] gap-y-1 w-screen h-screen dark:bg-muted">
+          <Navbar className="h-10" />
+
+          <section className="relative px-2 overflow-hidden">
+            <HTTP_Layout
+              data={data}
+              code={code}
+              theme={theme}
+              editor={editor}
+              onSend={onSend}
+              setCode={setCode}
+              isPending={isPending}
+              isResultPanelVisible={isResultPanelVisible}
             />
-          )}
-        </ResizablePanel>
-        <ResizablePanel defaultSize={40} minSize={30}>
-          <ResponsePanel response={response?.data} isLoading={response?.isLoading} />
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    </div>
+          </section>
+
+          <footer className="flex items-center justify-center px-2 py-2 text-xs text-gray-500 border-t">
+            <div className="relative w-24 h-full">
+              <Link
+                href="https://bolt.new/"
+                className="absolute -top-5 bg-black dark:bg-transparent p-2 rounded"
+              >
+                <Image
+                  src="https://basic-nightingale-232.convex.cloud/api/storage/5d042f0c-9b4f-4646-ba36-920ffd90d37e"
+                  alt="bolt logo"
+                  width={75}
+                  height={75}
+                />
+              </Link>
+            </div>
+          </footer>
+        </SidebarInset>
+      </SidebarProvider>
+    </>
   );
 }
+
+const HTTP_Layout = ({
+  data,
+  code,
+  theme,
+  onSend,
+  editor,
+  setCode,
+  isPending,
+  isResultPanelVisible,
+}: {
+  isResultPanelVisible: boolean;
+  data: ResponseData | null;
+  code: string;
+  theme: string | undefined;
+  isPending: boolean;
+  editor: MutableRefObject<EditorView | null>;
+  onSend: (source: string) => void;
+  setCode: (val: string) => void;
+}) => {
+  return (
+    <div className="flex h-full">
+      <div
+        className={cn(" scrollbar-hide overflow-auto px-1.5", {
+          "w-1/2 flex-1 ": isResultPanelVisible,
+          "flex-1 ": !isResultPanelVisible,
+        })}
+        onClick={() => editor.current?.focus()}
+      >
+        <Suspense fallback={<div>Loading...</div>}>
+          <CodeEditor
+            language="javascript"
+            value={code}
+            onDecoratorClick={(src) => onSend(src)}
+            onChange={(val) => setCode(val)}
+            theme={(theme as any) || "system"}
+          />
+        </Suspense>
+      </div>
+
+      <div
+        className={cn(
+          " h-auto border  rounded-md px-1.5 border-black/10 dark:border-muted-foreground/20",
+          {
+            "w-1/2 flex-1 ": isResultPanelVisible,
+            hidden: !isResultPanelVisible,
+          }
+        )}
+      >
+        <ResponsePanel data={data} theme={theme} isPending={isPending} />
+      </div>
+    </div>
+  );
+};
