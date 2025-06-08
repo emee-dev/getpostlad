@@ -1,3 +1,5 @@
+import { syntaxTree } from "@codemirror/language";
+import { Range } from "@codemirror/state";
 import {
   Decoration,
   DecorationSet,
@@ -6,193 +8,129 @@ import {
   ViewUpdate,
   WidgetType,
 } from "@codemirror/view";
-import { syntaxTree } from "@codemirror/language";
-import { Range } from "@codemirror/state";
 
-const variables = [
-  "TOKEN",
-  "USER_ID",
-  "EMAIL",
-  "PASSWORD",
-  "NAME",
-  "ROLE",
-  "PAGE",
-  "LIMIT",
-  "CATEGORY",
-  "API_KEY",
-  "BASE_URL",
-];
+export type DecoratorFn = (source: string) => void;
 
-class VariablePickerWidget extends WidgetType {
-  constructor(private readonly view: EditorView, private readonly pos: number) {
-    super();
-  }
+class HttpDecoratorWidget extends WidgetType {
+  private clickHandler: (e: MouseEvent) => void;
 
-  toDOM() {
-    const wrapper = document.createElement("div");
-    wrapper.className = "cm-variable-picker";
-
-    variables.forEach(variable => {
-      const item = document.createElement("div");
-      item.className = "cm-variable-item";
-      item.textContent = variable;
-      item.onclick = () => {
-        const insertion = `{{ ${variable} }}`;
-        this.view.dispatch({
-          changes: { from: this.pos, insert: insertion }
-        });
-        wrapper.remove();
-      };
-      wrapper.appendChild(item);
-    });
-
-    return wrapper;
-  }
-}
-
-class RequestWidget extends WidgetType {
   constructor(
-    private readonly method: string,
-    private readonly onExecute: () => void
+    private onClick: (name: string) => void,
+    private source: string
   ) {
     super();
+
+    this.clickHandler = (e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.onClick(this.source);
+    };
   }
 
   toDOM() {
-    const wrapper = document.createElement("div");
-    wrapper.className = "cm-request-wrapper";
+    const dom = document.createElement("div");
+    dom.className = "cm-http-decorator";
+    dom.textContent = `Send Request`;
 
-    const methodBadge = document.createElement("span");
-    methodBadge.textContent = this.method;
-    methodBadge.className = `cm-method-badge ${this.method.toLowerCase()}`;
+    Object.assign(dom.style, {
+      fontSize: "12px",
+      paddingBottom: "0.5px",
+      borderRadius: "4px",
+      cursor: "pointer",
+      width: "fit-content",
+      color: "var(--http-decorator-color)",
+    });
 
-    const button = document.createElement("button");
-    button.textContent = "Send Request";
-    button.className = "cm-request-button";
-    button.onclick = this.onExecute;
+    dom.addEventListener("click", this.clickHandler);
 
-    wrapper.appendChild(methodBadge);
-    wrapper.appendChild(button);
-    return wrapper;
+    return dom;
+  }
+
+  destroy(dom: HTMLElement): void {
+    dom.removeEventListener("click", this.clickHandler);
+  }
+
+  ignoreEvent() {
+    return false;
   }
 }
 
-const variableRegex = /{{([^}]+)}}/g;
+function findMethods(
+  view: EditorView,
+  onClick: (name: string) => void
+): DecorationSet {
+  let widgets: Range<Decoration>[] = [];
+  const knownMethods = [
+    "GET",
+    "POST",
+    "PUT",
+    "DELETE",
+    "PATCH",
+    "HEAD",
+    "OPTIONS",
+    "CONNECT",
+    "TRACE",
+  ] as const;
 
-function createDecorations(view: EditorView, onResponse: (data: any) => void) {
-  const decorations: Range<Decoration>[] = [];
-  const content = view.state.doc.toString();
-  
-  // Variable highlighting
-  let match;
-  while ((match = variableRegex.exec(content)) !== null) {
-    decorations.push(Decoration.mark({
-      class: "cm-variable-highlight"
-    }).range(match.index, match.index + match[0].length));
-  }
+  // Tracks decorators to avoid duplicates
+  const seen = new Set<number>();
 
-  // Function decorations
-  const tree = syntaxTree(view.state);
-  let lastLine = -1;
+  // Match functions with variable names starting with a http method.
+  const methodPattern = new RegExp(
+    `(?:function|const)\\s+(${knownMethods.join("|")})\\b`
+  );
 
-  tree.iterate({
-    enter: (node) => {
-      const nodeText = view.state.doc.sliceString(node.from, node.to);
-      const line = view.state.doc.lineAt(node.from);
-      
-      if (line.number === lastLine) return;
+  for (let { from, to } of view.visibleRanges) {
+    syntaxTree(view.state).iterate({
+      from,
+      to,
+      enter(node) {
+        if (
+          node.name === "FunctionDeclaration" ||
+          node.name === "VariableDeclaration"
+        ) {
+          if (seen.has(node.from)) return; // Skip if already processed
+          seen.add(node.from);
 
-      if (
-        (node.type.name === "FunctionDeclaration" || 
-         node.type.name === "VariableDefinition") &&
-        (nodeText.includes("POST") || nodeText.includes("GET"))
-      ) {
-        lastLine = line.number;
-        const method = nodeText.includes("POST") ? "POST" : "GET";
+          const text = view.state.doc.sliceString(node.from, node.to);
+          const match = methodPattern.exec(text);
 
-        const executeRequest = async () => {
-          try {
-            onResponse({ isLoading: true });
-            
-            const fn = new Function(nodeText + "\nreturn " + 
-              (nodeText.includes("function") ? 
-                nodeText.match(/function\s+(\w+)/)?.[1] : 
-                nodeText.match(/const\s+(\w+)/)?.[1]
-              ) + "();");
-            
-            const config = fn();
-            const url = new URL(config.url);
-            
-            if (config.query) {
-              Object.entries(config.query).forEach(([key, value]) => {
-                url.searchParams.append(key, String(value).replace(/[{}]/g, "").trim());
-              });
-            }
-
-            // Simulate network delay
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            const response = await fetch(url.toString(), {
-              method,
-              headers: config.headers,
-              body: config.body ? JSON.stringify(config.body) : undefined
+          if (match) {
+            const deco = Decoration.widget({
+              widget: new HttpDecoratorWidget(onClick, text),
+              side: -1,
             });
-
-            const data = await response.json();
-            onResponse({ data, isLoading: false });
-          } catch (error) {
-            onResponse({ error: error.message, isLoading: false });
+            widgets.push(deco.range(node.from));
           }
-        };
+        }
+      },
+    });
+  }
 
-        decorations.push(Decoration.line({
-          attributes: { class: "http-function-line" }
-        }).range(line.from));
-
-        decorations.push(Decoration.widget({
-          widget: new RequestWidget(method, executeRequest),
-          side: -1
-        }).range(line.from));
-      }
-    }
-  });
-
-  return Decoration.set(decorations, true);
+  return Decoration.set(widgets);
 }
 
-export function createEditorDecorators(onResponse: (data: any) => void) {
+export const createEditorDecorators = (onClick: DecoratorFn) => {
   return ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
 
       constructor(view: EditorView) {
-        this.decorations = createDecorations(view, onResponse);
+        this.decorations = findMethods(view, onClick);
       }
 
       update(update: ViewUpdate) {
-        if (update.docChanged || update.viewportChanged) {
-          this.decorations = createDecorations(update.view, onResponse);
+        if (
+          update.docChanged ||
+          update.viewportChanged ||
+          syntaxTree(update.startState) != syntaxTree(update.state)
+        ) {
+          this.decorations = findMethods(update.view, onClick);
         }
       }
     },
     {
       decorations: (v) => v.decorations,
-
-      eventHandlers: {
-        dblclick(e: MouseEvent, view: EditorView) {
-          const pos = view.posAtDOM(e.target as Node);
-          if (pos !== null) {
-            view.dispatch({
-              effects: ViewPlugin.define(() => ({
-                update: () => {},
-                destroy: () => {}
-              })).add(view.state.create({
-                widget: new VariablePickerWidget(view, pos)
-              }))
-            });
-          }
-        }
-      }
     }
   );
-}
+};
