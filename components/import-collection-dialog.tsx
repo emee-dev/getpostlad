@@ -18,11 +18,10 @@ import { useState } from "react";
 import { Upload } from "lucide-react";
 
 const COLLECTION_TEMPLATES = [
-  { id: "spotify", name: "Spotify API" },
-  { id: "tavus", name: "Tavus API" },
-  { id: "stripe", name: "Stripe API" },
-  { id: "github", name: "GitHub API" },
-  { id: "twitter", name: "Twitter API" },
+  { id: "spotify", name: "Spotify Collection" },
+  { id: "tavus", name: "Tavus Collection" },
+  { id: "github", name: "Paystack Collection" },
+  { id: "twitter", name: "Flutterwave Collection" },
 ];
 
 export function ImportCollectionDialog() {
@@ -50,19 +49,26 @@ export function ImportCollectionDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="h-7">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 hover:bg-muted-foreground/20 hover:dark:bg-muted-foreground/15"
+        >
           <Upload className="mr-2 h-4 w-4" />
-          Import Collection
+          Import
         </Button>
       </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
+      <DialogContent className="font-geist">
+        <DialogHeader className="sr-only">
           <DialogTitle>Import Collection</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-4">
+        <div className="space-y-8 py-4">
           <div className="space-y-2">
             <Label>Choose a template</Label>
-            <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
+            <Select
+              value={selectedTemplate}
+              onValueChange={setSelectedTemplate}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select a template" />
               </SelectTrigger>
@@ -76,7 +82,7 @@ export function ImportCollectionDialog() {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Or upload your own collection</Label>
+            <Label>Or upload postman collection</Label>
             <div className="flex items-center gap-2">
               <input
                 type="file"
@@ -89,7 +95,7 @@ export function ImportCollectionDialog() {
                 <Button variant="outline" asChild>
                   <span>
                     <Upload className="mr-2 h-4 w-4" />
-                    Choose File
+                    Choose File (.json)
                   </span>
                 </Button>
               </label>
