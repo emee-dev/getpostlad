@@ -1,99 +1,41 @@
-import { User, Upload } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ModeToggle } from "./theme-toggle";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useState } from "react";
-import { CreateWorkspaceDialog } from "./create-workspace-dialog";
-import { ManageEnvironmentDialog } from "./manage-environment-dialog";
-import { ImportCollectionDialog } from "./import-collection-dialog";
-import { AuthDialog } from "./auth/auth-dialog";
+"use client";
 
-export function Navbar() {
-  const [selectedWorkspace, setSelectedWorkspace] = useState<string | null>(null);
-  const [selectedEnvironment, setSelectedEnvironment] = useState<string | null>(null);
-  
-  const workspaces = useQuery(api.workspaces.list, { userId: "user123" }); // Replace with actual user ID
-  const environments = useQuery(api.environments.listByWorkspace, 
-    selectedWorkspace ? { workspaceId: selectedWorkspace } : "skip"
-  );
+import { CreateWorkspaceDialog } from "@/components/create-workspace-dialog";
+import { Separator } from "@/components/ui/separator";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
+import { AuthDialog } from "@/components/auth/auth-dialog";
+import { ImportCollectionDialog } from "@/components/import-collection-dialog";
+import { ModeToggle } from "@/components/theme-toggle";
 
-  const currentWorkspace = workspaces?.find(w => w._id === selectedWorkspace);
-  const currentEnvironment = environments?.find(env => env._id === selectedEnvironment);
-
+export const Navbar = (props: { className?: string }) => {
   return (
-    <nav className="flex h-14 items-center border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex items-center gap-4">
-        <ImportCollectionDialog />
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-7">
-                {currentWorkspace?.name || "Select Workspace"}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              {workspaces?.map((workspace) => (
-                <DropdownMenuItem
-                  key={workspace._id}
-                  onClick={() => setSelectedWorkspace(workspace._id)}
-                >
-                  {workspace.name}
-                </DropdownMenuItem>
-              ))}
-              <DropdownMenuSeparator />
-              <CreateWorkspaceDialog />
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-7">
-                {currentEnvironment?.name || "Select Environment"}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              {environments?.map((env) => (
-                <DropdownMenuItem
-                  key={env._id}
-                  onClick={() => setSelectedEnvironment(env._id)}
-                >
-                  {env.name}
-                </DropdownMenuItem>
-              ))}
-              {selectedWorkspace && (
-                <>
-                  {environments?.length ? <DropdownMenuSeparator /> : null}
-                  <ManageEnvironmentDialog workspaceId={selectedWorkspace} />
-                </>
-              )}
-              {!selectedWorkspace && (
-                <DropdownMenuItem disabled>
-                  Select a workspace first
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {selectedEnvironment && (
-            <ManageEnvironmentDialog
-              workspaceId={selectedWorkspace!}
-              environment={currentEnvironment}
-            />
-          )}
+    <header
+      className={cn(
+        "z-10 flex items-center pb-1 border-b  shrink-0",
+        props.className
+      )}
+    >
+      <div className="fixed flex items-center w-full pt-[2px] pl-1 text-muted-foreground dark:text-muted-foreground/90 ">
+        <div className="flex items-center">
+          <SidebarTrigger className=" hover:bg-muted-foreground/20 hover:dark:bg-muted-foreground/15" />
+          <Separator
+            orientation="vertical"
+            className="h-4 bg-muted-foreground"
+          />
+        </div>
+        <div className="flex items-center pl-2 ml-1 gap-x-1">
+          <ImportCollectionDialog />
+          <CreateWorkspaceDialog />
         </div>
       </div>
-      <div className="ml-auto flex items-center gap-2">
-        <ModeToggle />
-        <AuthDialog />
+
+      <div className="fixed right-0 flex items-center h-10 gap-x-4 text-muted-foreground dark:text-muted-foreground/90">
+        <div className="flex items-center px-2">
+          <ModeToggle />
+          <AuthDialog />
+        </div>
       </div>
-    </nav>
+    </header>
   );
-}
+};
