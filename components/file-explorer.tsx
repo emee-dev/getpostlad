@@ -1,108 +1,111 @@
-"use client";
-
-import { FileNode } from "@/app/page";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { FileNode, useFileTreeStore } from "@/hooks/use-file-store";
 import { cn } from "@/lib/utils";
-import { ChevronRight, FileIcon, FolderIcon } from "lucide-react";
-import { ScrollArea } from "./ui/scroll-area";
-import { useState } from "react";
+import {
+  ChevronDown,
+  ChevronRight,
+  File,
+  Folder,
+  FolderOpen,
+} from "lucide-react";
 
-interface FileExplorerProps {
-  files: FileNode[];
-  selectedFile: FileNode | null;
-  onFileSelect: (file: FileNode) => void;
+interface FileTreeItemProps {
+  node: FileNode;
+  level: number;
+  className?: string;
 }
 
-function FileTreeNode({ 
-  node, 
-  level = 0,
-  selectedFile,
-  onFileSelect  
-}: { 
-  node: FileNode;
-  level?: number;
-  selectedFile: FileNode | null;
-  onFileSelect: (file: FileNode) => void;
-}) {
-  const [isExpanded, setIsExpanded] = useState(true);
+const FileTreeItem = ({ node, level, className }: FileTreeItemProps) => {
+  const { selectedFile, expandedFolders, setSelectedFile, toggleFolder } =
+    useFileTreeStore();
+  const isExpanded = expandedFolders.has(node.path || "");
+  const isSelected = selectedFile?.path === node.path;
 
   const handleClick = () => {
-    if (node.type === "directory") {
-      setIsExpanded(!isExpanded);
+    if (node.type === "file") {
+      setSelectedFile(node);
     } else {
-      onFileSelect(node);
+      toggleFolder(node.path || "");
     }
   };
 
-  const isSelected = selectedFile?.name === node.name && 
-                    selectedFile?.content === node.content;
+  const paddingLeft = level * 16;
 
   return (
     <div>
-      <button
+      <div
         className={cn(
-          "flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-muted",
-          isSelected && "bg-muted"
+          "flex items-center py-1 px-2 hover:bg-accent cursor-pointer text-sm transition-colors rounded-md mx-1",
+          isSelected && "bg-accent text-accent-foreground"
         )}
-        style={{ paddingLeft: `${(level + 1) * 12}px` }}
+        style={{ paddingLeft: `${paddingLeft + 8}px` }}
         onClick={handleClick}
       >
         {node.type === "directory" && (
-          <ChevronRight 
-            className={cn(
-              "h-4 w-4 transition-transform", 
-              isExpanded && "rotate-90"
-            )} 
-          />
+          <div className="mr-1 flex-shrink-0 text-muted-foreground">
+            {isExpanded ? (
+              <ChevronDown size={16} className="" />
+            ) : (
+              <ChevronRight size={16} className="" />
+            )}
+          </div>
         )}
-        {node.type === "directory" ? (
-          <FolderIcon className="h-4 w-4 text-blue-500" />
-        ) : (
-          <FileIcon className="h-4 w-4 text-gray-500" />
-        )}
-        {node.name}
-      </button>
+
+        <div className="mr-2 flex-shrink-0 text-muted-foreground">
+          {node.type === "directory" ? (
+            isExpanded ? (
+              <FolderOpen size={16} className="" />
+            ) : (
+              <Folder size={16} className="" />
+            )
+          ) : (
+            <File
+              size={16}
+              className=""
+              // Remove if the file does not align properly
+              style={{ marginLeft: `${Math.ceil(paddingLeft / 2) - 12}px` }}
+            />
+          )}
+        </div>
+
+        <span className="truncate">{node.name}</span>
+      </div>
+
       {node.type === "directory" && isExpanded && node.children && (
         <div>
           {node.children.map((child, index) => (
-            <FileTreeNode
-              key={`${child.name}-${index}`}
+            <FileTreeItem
+              key={`${child.path || child.name}-${index}`}
               node={child}
               level={level + 1}
-              selectedFile={selectedFile}
-              onFileSelect={onFileSelect}
             />
           ))}
         </div>
       )}
     </div>
   );
-}
+};
 
-export function FileExplorer({
-  files,
-  selectedFile,
-  onFileSelect,
-}: FileExplorerProps) {
+export const FileExplorer = () => {
+  const { files } = useFileTreeStore();
+
   return (
-    <div className="h-full border-r bg-muted/50">
-      <div className="flex h-10 items-center border-b px-4">
-        <div className="flex items-center gap-2">
-          <FolderIcon className="h-4 w-4" />
-          <span className="text-sm font-medium">Project Files</span>
-        </div>
+    <ScrollArea className="h-[calc(100%-3rem)] font-geist">
+      <div className="">
+        {files.map((node, index) => (
+          <FileTreeItem
+            key={`${node.path || node.name}-${index}`}
+            node={node}
+            level={0}
+            className=""
+          />
+        ))}
+        {files.length === 0 && (
+          <div className="text-center text-muted-foreground text-sm py-8">
+            No files in workspace
+          </div>
+        )}
       </div>
-      <ScrollArea className="h-[calc(100%-2.5rem)]">
-        <div className="p-2">
-          {files.map((file, index) => (
-            <FileTreeNode
-              key={`${file.name}-${index}`}
-              node={file}
-              selectedFile={selectedFile}
-              onFileSelect={onFileSelect}
-            />
-          ))}
-        </div>
-      </ScrollArea>
-    </div>
+    </ScrollArea>
   );
-}
+};
