@@ -52,7 +52,7 @@ const POST = () => {
 
 export default function Home() {
   const { theme } = useTheme();
-  const { selectedFile, updateFile } = useFileTreeStore();
+  const { selectedFile, updateFile, files: sidebarFileTree } = useFileTreeStore();
 
   const [code, setCode] = useState(template);
   const [isPending, setIsPending] = useState(false);
