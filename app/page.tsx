@@ -12,6 +12,7 @@ import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
 import { MutableRefObject, Suspense, useEffect, useRef, useState } from "react";
+import { WebContainer } from "@webcontainer/api";
 
 export type Header = {
   key: string;
@@ -56,10 +57,47 @@ export default function Home() {
   const [code, setCode] = useState(template);
   const [isPending, setIsPending] = useState(false);
   const [isResultPanelVisible, setIsResultPanelVisible] = useState(true);
+  const [webcontainerReady, setWebcontainerReady] = useState(false);
   const editor = useRef<EditorView | null>(null);
+  const webcontainerRef = useRef<WebContainer | null>(null);
+
+  // Initialize WebContainer
+  useEffect(() => {
+    let mounted = true;
+
+    const initWebContainer = async () => {
+      try {
+        console.log("Booting WebContainer...");
+        const webcontainerInstance = await WebContainer.boot();
+        
+        if (mounted) {
+          webcontainerRef.current = webcontainerInstance;
+          setWebcontainerReady(true);
+          console.log("WebContainer ready!");
+        }
+      } catch (error) {
+        console.error("Failed to boot WebContainer:", error);
+      }
+    };
+
+    initWebContainer();
+
+    // Cleanup function
+    return () => {
+      mounted = false;
+      if (webcontainerRef.current) {
+        console.log("Tearing down WebContainer...");
+        webcontainerRef.current.teardown();
+        webcontainerRef.current = null;
+        setWebcontainerReady(false);
+      }
+    };
+  }, []);
 
   const onSend = (src: string) => {
-    console.log(src);
+    console.log("Sending request:", src);
+    console.log("WebContainer ready:", webcontainerReady);
+    console.log("WebContainer instance:", webcontainerRef.current);
   };
 
   const data = null;
@@ -96,6 +134,7 @@ export default function Home() {
               setCode={setCode}
               isPending={isPending}
               isResultPanelVisible={isResultPanelVisible}
+              webcontainerReady={webcontainerReady}
             />
           </section>
 
@@ -113,6 +152,17 @@ export default function Home() {
                 />
               </Link>
             </div>
+            
+            {/* WebContainer Status Indicator */}
+            <div className="absolute right-2 flex items-center gap-2">
+              <div className={cn(
+                "w-2 h-2 rounded-full",
+                webcontainerReady ? "bg-green-500" : "bg-yellow-500"
+              )} />
+              <span className="text-xs">
+                {webcontainerReady ? "Container Ready" : "Initializing..."}
+              </span>
+            </div>
           </footer>
         </SidebarInset>
       </SidebarProvider>
@@ -129,6 +179,7 @@ const HTTP_Layout = ({
   setCode,
   isPending,
   isResultPanelVisible,
+  webcontainerReady,
 }: {
   isResultPanelVisible: boolean;
   data: ResponseData | null;
@@ -138,6 +189,7 @@ const HTTP_Layout = ({
   editor: MutableRefObject<EditorView | null>;
   onSend: (source: string) => void;
   setCode: (val: string) => void;
+  webcontainerReady: boolean;
 }) => {
   return (
     <div className="flex h-full">
