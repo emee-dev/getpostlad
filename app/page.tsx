@@ -68,7 +68,8 @@ export default function Home() {
     const initWebContainer = async () => {
       try {
         console.log("Booting WebContainer...");
-        const webcontainerInstance = await WebContainer.boot();
+        // const webcontainerInstance = await WebContainer.boot();
+        const webcontainerInstance = new WebContainer();
         
         if (mounted) {
           webcontainerRef.current = webcontainerInstance;
