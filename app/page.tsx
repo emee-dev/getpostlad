@@ -99,6 +99,33 @@ export default function Home() {
     console.log("Sending request:", src);
     console.log("WebContainer ready:", webcontainerReady);
     console.log("WebContainer instance:", webcontainerRef.current);
+
+      async function execScriptInCode() {
+    if (webcontainerRef.current) {
+      let execProcess = await webcontainerRef.current.spawn("node", [
+        "fs_file.js",
+      ]);
+
+      if (!execProcess) {
+        console.log("Failed to execute script.");
+        return;
+      }
+
+      execProcess.output.pipeTo(
+        new WritableStream({
+          write(data) {
+            console.log("Piped:", data);
+          },
+        })
+      );
+
+      console.log("Running containers");
+    } else {
+      console.log("WebContainer was not loaded.");
+    }
+  }
+
+  execScriptInCode()
   };
 
   const data = null;
