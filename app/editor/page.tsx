@@ -1,6 +1,6 @@
 "use client";
 import { WebContainer } from "@webcontainer/api";
-import {useState} from "react"
+import {useState, useRef, useEffect} from "react"
 
 export type Header = {
   key: string;
