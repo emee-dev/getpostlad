@@ -91,7 +91,7 @@ export default function Home() {
 
 return (
   <div>
-  <button>Click me for version</button>
+  <button onClick={() => onSend()}>Click me for version</button>
   </div>
 )
 }
