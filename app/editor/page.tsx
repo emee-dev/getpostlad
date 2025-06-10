@@ -91,7 +91,15 @@ export default function Home() {
 
 return (
   <div>
-  <button onClick={() => onSend()}>Click me for version</button>
+    <button onClick={() => onSend()}>Click me for version</button>
+    <div>
+      {
+        webcontainerReady && <div>Container is ready</div>
+      }
+      {
+        !webcontainerReady && <div>Container is not ready</div>
+      }
+    </div>
   </div>
 )
 }
