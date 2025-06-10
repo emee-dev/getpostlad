@@ -20,6 +20,18 @@ export type FileSystemTree = {
   };
 };
 
+export type DeserializedHTTP = {
+  url: string;
+  name?: string;
+  method: string;
+  body?: Record<string, string> | string | unknown;
+  headers: Array<{
+    key: string;
+    value: string;
+    enabled: boolean;
+  }>;
+};
+
 /**
  * Converts an array of FileNode objects to a FileSystemTree structure
  * @param tree - Array of FileNode objects representing the file tree
@@ -43,4 +55,98 @@ export function fromSidebarTree(tree: FileNode[]): FileSystemTree {
   }
 
   return result;
+}
+
+/**
+ * Deserializes JavaScript code containing HTTP function definitions
+ * @param code - JavaScript code as a string containing HTTP method functions
+ * @returns DeserializedHTTP object with parsed request configuration
+ */
+export function deserializeHttpFn(code: string): DeserializedHTTP {
+  const HTTP_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'CONNECT', 'TRACE'];
+  
+  try {
+    // Create a safe execution context using Function constructor
+    const func = new Function(`
+      ${code}
+      
+      // Return an object containing all defined HTTP method functions
+      const result = {};
+      ${HTTP_METHODS.map(method => `
+        if (typeof ${method} === 'function') {
+          result.${method} = ${method};
+        }
+      `).join('')}
+      
+      return result;
+    `);
+    
+    const httpFunctions = func();
+    
+    // Find the first available HTTP method function
+    let selectedMethod: string | null = null;
+    let httpConfig: any = null;
+    
+    for (const method of HTTP_METHODS) {
+      if (httpFunctions[method]) {
+        selectedMethod = method;
+        httpConfig = httpFunctions[method]();
+        break;
+      }
+    }
+    
+    if (!selectedMethod || !httpConfig) {
+      throw new Error('No valid HTTP method function found');
+    }
+    
+    // Transform headers object to array format
+    const headers: Array<{ key: string; value: string; enabled: boolean }> = [];
+    
+    if (httpConfig.headers && typeof httpConfig.headers === 'object') {
+      for (const [key, value] of Object.entries(httpConfig.headers)) {
+        // Check if header is disabled (prefixed with ~)
+        const isDisabled = key.startsWith('~');
+        const cleanKey = isDisabled ? key.substring(1) : key;
+        
+        headers.push({
+          key: cleanKey,
+          value: String(value),
+          enabled: !isDisabled
+        });
+      }
+    }
+    
+    // Build the result object
+    const result: DeserializedHTTP = {
+      url: httpConfig.url || '',
+      method: selectedMethod.toLowerCase(),
+      headers
+    };
+    
+    // Add optional fields if they exist
+    if (httpConfig.name) {
+      result.name = httpConfig.name;
+    }
+    
+    if (httpConfig.body !== undefined) {
+      result.body = httpConfig.body;
+    }
+    
+    // Handle json field as body (common pattern)
+    if (httpConfig.json !== undefined && result.body === undefined) {
+      result.body = httpConfig.json;
+    }
+    
+    return result;
+    
+  } catch (error) {
+    console.error('Error deserializing HTTP function:', error);
+    
+    // Return a default structure on error
+    return {
+      url: '',
+      method: 'get',
+      headers: []
+    };
+  }
 }
