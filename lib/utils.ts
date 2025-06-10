@@ -151,7 +151,6 @@ export function deserializeHttpFn(code: string): DeserializedHTTP {
   }
 }
 
-
 type FormatOptions = {
   useTabs?: boolean;
   tabWidth?: number;
