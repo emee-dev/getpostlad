@@ -150,3 +150,63 @@ export function deserializeHttpFn(code: string): DeserializedHTTP {
     };
   }
 }
+
+/**
+ * Serializes a DeserializedHTTP object into JavaScript code
+ * @param obj - DeserializedHTTP object containing request configuration
+ * @returns JavaScript code string with HTTP method function
+ */
+export function serializeHttpFn(obj: DeserializedHTTP): string {
+  try {
+    // Convert method to uppercase for function name
+    const methodName = obj.method.toUpperCase();
+    
+    // Transform headers array back to object format
+    const headersObj: Record<string, string> = {};
+    
+    for (const header of obj.headers) {
+      // Prefix disabled headers with ~
+      const key = header.enabled ? header.key : `~${header.key}`;
+      headersObj[key] = header.value;
+    }
+    
+    // Build the return object
+    const returnObj: any = {
+      url: obj.url,
+      headers: headersObj
+    };
+    
+    // Add optional name field
+    if (obj.name) {
+      returnObj.name = obj.name;
+    }
+    
+    // Add body/json field if it exists
+    if (obj.body !== undefined) {
+      // If body is an object, use 'json' field, otherwise use 'body'
+      if (typeof obj.body === 'object' && obj.body !== null && !Array.isArray(obj.body)) {
+        returnObj.json = obj.body;
+      } else {
+        returnObj.body = obj.body;
+      }
+    }
+    
+    // Generate the JavaScript code
+    const code = `const ${methodName} = () => {
+  return ${JSON.stringify(returnObj, null, 2).replace(/"/g, '"')};
+};`;
+    
+    return code;
+    
+  } catch (error) {
+    console.error('Error serializing HTTP function:', error);
+    
+    // Return a basic GET function on error
+    return `const GET = () => {
+  return {
+    url: "",
+    headers: {}
+  };
+};`;
+  }
+}
