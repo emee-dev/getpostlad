@@ -12,10 +12,12 @@ export function ResponsePanel({
   data,
   isPending,
   theme,
+  onCancel
 }: {
   data: ResponseData | null;
   theme: string | undefined;
   isPending: boolean;
+  onCancel: () => void
 }) {
   if (isPending) {
     return (
@@ -23,7 +25,7 @@ export function ResponsePanel({
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground">Loading response...</p>
-          <Button className="" size="md">
+          <Button className="" size="md" onClick={() => onCancel?.()}>
             Cancel
           </Button>
         </div>
