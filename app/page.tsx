@@ -247,6 +247,7 @@ const HTTP_Layout = ({
   setCode,
   isPending,
   isResultPanelVisible,
+  onCancel
 }: {
   isResultPanelVisible: boolean;
   data: ResponseData | null;
@@ -256,6 +257,7 @@ const HTTP_Layout = ({
   editor: MutableRefObject<EditorView | null>;
   onSend: (source: string) => void;
   setCode: (val: string) => void;
+  onCancel: () => void
 }) => {
   return (
     <div className="flex h-full">
@@ -286,7 +288,7 @@ const HTTP_Layout = ({
           }
         )}
       >
-        <ResponsePanel data={data} theme={theme} isPending={isPending} />
+        <ResponsePanel data={data} theme={theme} isPending={isPending} onCancel={onCancel} />
       </div>
     </div>
   );
