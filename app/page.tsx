@@ -57,9 +57,34 @@ export default function Home() {
   const [code, setCode] = useState(template);
   const [isPending, setIsPending] = useState(false);
   const [isResultPanelVisible, setIsResultPanelVisible] = useState(true);
+  const [webcontainerReady, setWebcontainerReady] = useState(false);
   const editor = useRef<EditorView | null>(null);
   const webcontainerRef = useRef<WebContainer | null>(null);
 
+  // Initialize WebContainer
+  useEffect(() => {
+    const initWebContainer = async () => {
+      try {
+        const webcontainer = await WebContainer.boot();
+        webcontainerRef.current = webcontainer;
+        setWebcontainerReady(true);
+      } catch (error) {
+        console.error('Failed to initialize WebContainer:', error);
+        setWebcontainerReady(false);
+      }
+    };
+
+    initWebContainer();
+
+    // Cleanup on unmount
+    return () => {
+      if (webcontainerRef.current) {
+        webcontainerRef.current.teardown();
+        webcontainerRef.current = null;
+        setWebcontainerReady(false);
+      }
+    };
+  }, []);
 
   const onSend = (src: string) => {
     console.log("Sending request:", src);
@@ -79,7 +104,7 @@ export default function Home() {
     if (selectedFile && selectedFile.type === "file") {
       updateFile(selectedFile.path as string, code);
     }
-  }, [code]);
+  }, [code, selectedFile, updateFile]);
 
   return (
     <>
