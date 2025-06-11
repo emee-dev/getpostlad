@@ -12,7 +12,7 @@ import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
 import { MutableRefObject, Suspense, useEffect, useRef, useState } from "react";
-import {deserializeHttpFn} from "@/lib/utils";
+import { deserializeHttpFn } from "@/lib/utils";
 
 export type Header = {
   key: string;
