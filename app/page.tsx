@@ -13,6 +13,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { MutableRefObject, Suspense, useEffect, useRef, useState } from "react";
 import { deserializeHttpFn, type DeserializedHTTP } from "@/lib/utils";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
 export type Header = {
   key: string;
@@ -57,16 +58,129 @@ export default function Home() {
   const [code, setCode] = useState(template);
   const [isPending, setIsPending] = useState(false);
   const [isResultPanelVisible, setIsResultPanelVisible] = useState(true);
+  const [data, setData] = useState<ResponseData | null>(null);
   const editor = useRef<EditorView | null>(null);
 
-
-  const onSend = (src: string) => {
+  const onSend = async (src: string) => {
     console.log("Sending request:", src);
+    
+    try {
+      setIsPending(true);
+      setData(null);
+      
+      const deserializedSrc: DeserializedHTTP = deserializeHttpFn(src);
+      
+      // Build headers object from enabled headers
+      const headers: Record<string, string> = {};
+      deserializedSrc.headers.forEach(header => {
+        if (header.enabled) {
+          headers[header.key] = header.value;
+        }
+      });
 
-    const deserializedSrc: DeserializedHTTP = deserializeHttpFn(src);
+      // Build axios request config
+      const axiosConfig: AxiosRequestConfig = {
+        method: deserializedSrc.method.toLowerCase() as any,
+        url: deserializedSrc.url,
+        headers,
+      };
+
+      // Add body/data if present
+      if (deserializedSrc.body !== undefined) {
+        if (typeof deserializedSrc.body === 'object' && deserializedSrc.body !== null) {
+          axiosConfig.data = deserializedSrc.body;
+        } else {
+          axiosConfig.data = deserializedSrc.body;
+        }
+      }
+
+      // Record start time for elapsed time calculation
+      const startTime = Date.now();
+
+      // Make the request
+      const response: AxiosResponse = await axios(axiosConfig);
+      
+      // Calculate elapsed time
+      const elapsedTime = (Date.now() - startTime) / 1000;
+
+      // Transform response headers to our format
+      const responseHeaders: Header[] = Object.entries(response.headers).map(([key, value]) => ({
+        key,
+        value: String(value)
+      }));
+
+      // Convert response data to string
+      let textResponse: string;
+      if (typeof response.data === 'string') {
+        textResponse = response.data;
+      } else {
+        textResponse = JSON.stringify(response.data, null, 2);
+      }
+
+      // Calculate content size
+      const contentSize = new Blob([textResponse]).size;
+
+      // Set the response data
+      const responseData: ResponseData = {
+        headers: responseHeaders,
+        text_response: textResponse,
+        status: response.status,
+        elapsed_time: elapsedTime,
+        content_size: contentSize
+      };
+
+      setData(responseData);
+      
+    } catch (error: any) {
+      console.error("Request failed:", error);
+      
+      // Handle axios errors
+      if (error.response) {
+        // Server responded with error status
+        const elapsedTime = (Date.now() - Date.now()) / 1000; // This will be very small for errors
+        
+        const responseHeaders: Header[] = Object.entries(error.response.headers || {}).map(([key, value]) => ({
+          key,
+          value: String(value)
+        }));
+
+        let textResponse: string;
+        if (typeof error.response.data === 'string') {
+          textResponse = error.response.data;
+        } else {
+          textResponse = JSON.stringify(error.response.data || { error: 'Request failed' }, null, 2);
+        }
+
+        const contentSize = new Blob([textResponse]).size;
+
+        const errorResponseData: ResponseData = {
+          headers: responseHeaders,
+          text_response: textResponse,
+          status: error.response.status,
+          elapsed_time: elapsedTime,
+          content_size: contentSize
+        };
+
+        setData(errorResponseData);
+      } else {
+        // Network error or other issues
+        const errorResponseData: ResponseData = {
+          headers: [],
+          text_response: JSON.stringify({ 
+            error: error.message || 'Network error occurred',
+            code: error.code || 'UNKNOWN_ERROR'
+          }, null, 2),
+          status: 0,
+          elapsed_time: 0,
+          content_size: 0
+        };
+
+        setData(errorResponseData);
+      }
+    } finally {
+      setIsPending(false);
+    }
   };
-
-  const data = null;
 
   // Set the content of selected file to code editor
   useEffect(() => {
