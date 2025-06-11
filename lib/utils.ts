@@ -136,6 +136,11 @@ export function deserializeHttpFn(code: string): DeserializedHTTP {
     if (httpConfig.json !== undefined && result.body === undefined) {
       result.body = httpConfig.json;
     }
+
+    // Handle text field as body
+    if (httpConfig.text !== undefined && result.body === undefined) {
+      result.body = httpConfig.text;
+    }
     
     return result;
     
