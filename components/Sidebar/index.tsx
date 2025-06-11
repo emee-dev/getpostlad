@@ -53,8 +53,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         className={cn({
           hidden: open,
           block: !open,
-        })}
-      />
+        })}>
+        <SidebarGroup>
+          <SidebarGroupLabel className="flex items-center">
+            <span className="font-geist">Collection</span>
+            <div className="ml-auto"></div>
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <FileExplorer />
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
       <SidebarRail />
     </Sidebar>
   );
