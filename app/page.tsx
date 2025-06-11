@@ -63,7 +63,7 @@ export default function Home() {
   const onSend = (src: string) => {
     console.log("Sending request:", src);
 
-    let deserializedSrc = 
+    let deserializedSrc = deserializeHttpFn(src)
   };
 
   const data = null;
