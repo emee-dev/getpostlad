@@ -150,7 +150,7 @@ export default function Home() {
             code: error.code || 'UNKNOWN_ERROR'
           }, null, 2),
           status: 0,
-          elapsed_time: elapsedTime,
+          elapsed_time: 0,
           content_size: 0
         };
 
