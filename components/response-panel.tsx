@@ -17,19 +17,6 @@ export function ResponsePanel({
   theme: string | undefined;
   isPending: boolean;
 }) {
-  if (!data) {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <Lightbulb className="h-8 w-8" />
-          <p className="text-muted-foreground text-sm">
-            No response yet. Click the "Send Request" button to make a request.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   if (isPending) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -43,6 +30,22 @@ export function ResponsePanel({
       </div>
     );
   }
+
+  
+  if (!data) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <Lightbulb className="h-8 w-8" />
+          <p className="text-muted-foreground text-sm">
+            No response yet. Click the "Send Request" button to make a request.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+
 
   return (
     <>
