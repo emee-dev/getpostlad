@@ -64,19 +64,19 @@ export default function Home() {
 
   const onSend = async (src: string) => {
     console.log("Sending request:", src);
-    
+
     try {
       setIsPending(true);
       setData(null);
-      
+
       // Create new AbortController for this request
       abortControllerRef.current = new AbortController();
-      
+
       const deserializedSrc: DeserializedHTTP = deserializeHttpFn(src);
-      
+
       // Build headers object from enabled headers
       const headers: Record<string, string> = {};
-      deserializedSrc.headers.forEach(header => {
+      deserializedSrc.headers.forEach((header) => {
         if (header.enabled) {
           headers[header.key] = header.value;
         }
@@ -91,11 +91,52 @@ export default function Home() {
       };
 
       // Add body/data if present
+      if (deserializedSrc.text !== undefined) {
+        axiosConfig.data = deserializedSrc.text;
+
+        if (axiosConfig.headers) {
+          axiosConfig.headers["Content-Type"] = "text/plain";
+        }
+      }
+
+      if (deserializedSrc.xml !== undefined) {
+        axiosConfig.data = deserializedSrc.xml;
+        if (axiosConfig.headers) {
+          axiosConfig.headers["Content-Type"] = "text/xml";
+        }
+      }
+
+      if (deserializedSrc.json !== undefined) {
+        axiosConfig.data = deserializedSrc.json;
+        if (axiosConfig.headers) {
+          axiosConfig.headers["Content-Type"] = "application/json";
+        }
+      }
+
+      // Default to body if defined
       if (deserializedSrc.body !== undefined) {
-        if (typeof deserializedSrc.body === 'object' && deserializedSrc.body !== null) {
-          axiosConfig.data = deserializedSrc.body;
-        } else {
-          axiosConfig.data = deserializedSrc.body;
+        let _default_body = deserializedSrc.body as "json" | "xml" | "text";
+
+        if (deserializedSrc.text !== undefined && _default_body === "text") {
+          axiosConfig.data = deserializedSrc.text;
+
+          if (axiosConfig.headers) {
+            axiosConfig.headers["Content-Type"] = "text/plain";
+          }
+        }
+
+        if (deserializedSrc.xml !== undefined && _default_body === "xml") {
+          axiosConfig.data = deserializedSrc.xml;
+          if (axiosConfig.headers) {
+            axiosConfig.headers["Content-Type"] = "text/xml";
+          }
+        }
+
+        if (deserializedSrc.json !== undefined && _default_body === "json") {
+          axiosConfig.data = deserializedSrc.json;
+          if (axiosConfig.headers) {
+            axiosConfig.headers["Content-Type"] = "application/json";
+          }
         }
       }
 
@@ -104,19 +145,21 @@ export default function Home() {
 
       // Make the request
       const response: AxiosResponse = await axios(axiosConfig);
-      
+
       // Calculate elapsed time
       const elapsedTime = (Date.now() - startTime) / 1000;
 
       // Transform response headers to our format
-      const responseHeaders: Header[] = Object.entries(response.headers).map(([key, value]) => ({
-        key,
-        value: String(value)
-      }));
+      const responseHeaders: Header[] = Object.entries(response.headers).map(
+        ([key, value]) => ({
+          key,
+          value: String(value),
+        })
+      );
 
       // Convert response data to string
       let textResponse: string;
-      if (typeof response.data === 'string') {
+      if (typeof response.data === "string") {
         textResponse = response.data;
       } else {
         textResponse = JSON.stringify(response.data, null, 2);
@@ -131,49 +174,58 @@ export default function Home() {
         text_response: textResponse,
         status: response.status,
         elapsed_time: elapsedTime,
-        content_size: contentSize
+        content_size: contentSize,
       };
 
       setData(responseData);
-      
     } catch (error: any) {
       console.error("Request failed:", error);
-      
-      // Check if request was cancelled
-      if (axios.isCancel(error) || error.name === 'AbortError') {
-        console.log('Request was cancelled');
 
-         const errorResponseData: ResponseData = {
+      // Check if request was cancelled
+      if (axios.isCancel(error) || error.name === "AbortError") {
+        console.log("Request was cancelled");
+
+        const errorResponseData: ResponseData = {
           headers: [],
-          text_response: JSON.stringify({ 
-            error: error.message || 'Network error occurred',
-            code: error.code || 'UNKNOWN_ERROR'
-          }, null, 2),
+          text_response: JSON.stringify(
+            {
+              error: error.message || "Network error occurred",
+              code: error.code || "UNKNOWN_ERROR",
+            },
+            null,
+            2
+          ),
           status: 0,
           elapsed_time: 0,
-          content_size: 0
+          content_size: 0,
         };
 
         setData(errorResponseData);
-        
+
         return;
       }
-      
+
       // Handle axios errors
       if (error.response) {
         // Server responded with error status
         const elapsedTime = (Date.now() - Date.now()) / 1000; // This will be very small for errors
-        
-        const responseHeaders: Header[] = Object.entries(error.response.headers || {}).map(([key, value]) => ({
+
+        const responseHeaders: Header[] = Object.entries(
+          error.response.headers || {}
+        ).map(([key, value]) => ({
           key,
-          value: String(value)
+          value: String(value),
         }));
 
         let textResponse: string;
-        if (typeof error.response.data === 'string') {
+        if (typeof error.response.data === "string") {
           textResponse = error.response.data;
         } else {
-          textResponse = JSON.stringify(error.response.data || { error: 'Request failed' }, null, 2);
+          textResponse = JSON.stringify(
+            error.response.data || { error: "Request failed" },
+            null,
+            2
+          );
         }
 
         const contentSize = new Blob([textResponse]).size;
@@ -183,7 +235,7 @@ export default function Home() {
           text_response: textResponse,
           status: error.response.status,
           elapsed_time: elapsedTime,
-          content_size: contentSize
+          content_size: contentSize,
         };
 
         setData(errorResponseData);
@@ -191,13 +243,17 @@ export default function Home() {
         // Network error or other issues
         const errorResponseData: ResponseData = {
           headers: [],
-          text_response: JSON.stringify({ 
-            error: error.message || 'Network error occurred',
-            code: error.code || 'UNKNOWN_ERROR'
-          }, null, 2),
+          text_response: JSON.stringify(
+            {
+              error: error.message || "Network error occurred",
+              code: error.code || "UNKNOWN_ERROR",
+            },
+            null,
+            2
+          ),
           status: 0,
           elapsed_time: 0,
-          content_size: 0
+          content_size: 0,
         };
 
         setData(errorResponseData);
