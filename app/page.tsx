@@ -214,6 +214,7 @@ export default function Home() {
               setCode={setCode}
               isPending={isPending}
               isResultPanelVisible={isResultPanelVisible}
+              onCancel={onCancel}
             />
           </section>
 
