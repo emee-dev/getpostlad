@@ -12,6 +12,7 @@ import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
 import { MutableRefObject, Suspense, useEffect, useRef, useState } from "react";
+import {deserializeHttpFn} from "@/lib/utils";
 
 export type Header = {
   key: string;
@@ -61,6 +62,8 @@ export default function Home() {
 
   const onSend = (src: string) => {
     console.log("Sending request:", src);
+
+    let deserializedSrc = 
   };
 
   const data = null;
