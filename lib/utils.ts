@@ -1,5 +1,5 @@
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -24,7 +24,11 @@ export type DeserializedHTTP = {
   url: string;
   name?: string;
   method: string;
-  body?: Record<string, string> | string | unknown;
+  // default is json
+  body?: "json" | "text" | "xml";
+  json?: Record<string, string> | string;
+  text?: string;
+  xml?: string;
   headers: Array<{
     key: string;
     value: string;
@@ -44,12 +48,12 @@ export function fromSidebarTree(tree: FileNode[]): FileSystemTree {
     if (node.type === "file") {
       result[node.name] = {
         file: {
-          contents: node.content || ""
-        }
+          contents: node.content || "",
+        },
       };
     } else if (node.type === "directory") {
       result[node.name] = {
-        directory: node.children ? fromSidebarTree(node.children) : {}
+        directory: node.children ? fromSidebarTree(node.children) : {},
       };
     }
   }
@@ -63,8 +67,18 @@ export function fromSidebarTree(tree: FileNode[]): FileSystemTree {
  * @returns DeserializedHTTP object with parsed request configuration
  */
 export function deserializeHttpFn(code: string): DeserializedHTTP {
-  const HTTP_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS', 'CONNECT', 'TRACE'];
-  
+  const HTTP_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "DELETE",
+    "PATCH",
+    "HEAD",
+    "OPTIONS",
+    "CONNECT",
+    "TRACE",
+  ];
+
   try {
     // Create a safe execution context using Function constructor
     const func = new Function(`
@@ -72,21 +86,23 @@ export function deserializeHttpFn(code: string): DeserializedHTTP {
       
       // Return an object containing all defined HTTP method functions
       const result = {};
-      ${HTTP_METHODS.map(method => `
+      ${HTTP_METHODS.map(
+        (method) => `
         if (typeof ${method} === 'function') {
           result.${method} = ${method};
         }
-      `).join('')}
+      `
+      ).join("")}
       
       return result;
     `);
-    
+
     const httpFunctions = func();
-    
+
     // Find the first available HTTP method function
     let selectedMethod: string | null = null;
     let httpConfig: any = null;
-    
+
     for (const method of HTTP_METHODS) {
       if (httpFunctions[method]) {
         selectedMethod = method;
@@ -94,66 +110,107 @@ export function deserializeHttpFn(code: string): DeserializedHTTP {
         break;
       }
     }
-    
+
     if (!selectedMethod || !httpConfig) {
-      throw new Error('No valid HTTP method function found');
+      throw new Error("No valid HTTP method function found");
     }
-    
+
     // Transform headers object to array format
     const headers: Array<{ key: string; value: string; enabled: boolean }> = [];
-    
-    if (httpConfig.headers && typeof httpConfig.headers === 'object') {
+
+    if (httpConfig.headers && typeof httpConfig.headers === "object") {
       for (const [key, value] of Object.entries(httpConfig.headers)) {
         // Check if header is disabled (prefixed with ~)
-        const isDisabled = key.startsWith('~');
+        const isDisabled = key.startsWith("~");
         const cleanKey = isDisabled ? key.substring(1) : key;
-        
+
         headers.push({
           key: cleanKey,
           value: String(value),
-          enabled: !isDisabled
+          enabled: !isDisabled,
         });
       }
     }
-    
+
+    if (!httpConfig.url) {
+      throw new Error("Url is a required property.");
+    }
+
     // Build the result object
     const result: DeserializedHTTP = {
-      url: httpConfig.url || '',
+      url: httpConfig.url,
       method: selectedMethod.toLowerCase(),
-      headers
+      headers,
     };
-    
+
     // Add optional fields if they exist
     if (httpConfig.name) {
       result.name = httpConfig.name;
     }
-    
+
+    // Add optional fields if they exist
     if (httpConfig.body !== undefined) {
       result.body = httpConfig.body;
     }
-    
-    // Handle json field as body (common pattern)
-    if (httpConfig.json !== undefined && result.body === undefined) {
-      result.body = httpConfig.json;
-    }
 
     // Handle text field as body
-    if (httpConfig.text !== undefined && result.body === undefined) {
-      result.body = httpConfig.text;
+    if (httpConfig.text !== undefined) {
+      result.text = httpConfig.text;
     }
-    
+
+    // Handle xml field as body
+    if (httpConfig.xml !== undefined) {
+      result.xml = httpConfig.xml;
+    }
+
+    // Handle json field as body (default field)
+    if (httpConfig.json !== undefined) {
+      result.json = httpConfig.json;
+    }
+
     return result;
-    
   } catch (error) {
-    console.error('Error deserializing HTTP function:', error);
-    
+    console.error("Error deserializing HTTP function:", error);
+
     // Return a default structure on error
     return {
-      url: '',
-      method: 'get',
-      headers: []
+      url: "",
+      method: "get",
+      headers: [],
     };
   }
+}
+
+function deterministicSort(obj: any, keyOrder: string[] = []): string {
+  const sortKeys = (input: any): any => {
+    if (Array.isArray(input)) {
+      return input.map(sortKeys);
+    } else if (
+      input &&
+      typeof input === "object" &&
+      input.constructor === Object
+    ) {
+      const keys =
+        keyOrder.length > 0
+          ? [
+              ...keyOrder.filter((k) => k in input),
+              ...Object.keys(input)
+                .filter((k) => !keyOrder.includes(k))
+                .sort(),
+            ]
+          : Object.keys(input).sort();
+
+      const result: Record<string, any> = {};
+      for (const key of keys) {
+        result[key] = sortKeys(input[key]);
+      }
+      return result;
+    }
+    return input;
+  };
+
+  const sorted = sortKeys(obj);
+  return sorted;
 }
 
 type FormatOptions = {
@@ -196,26 +253,35 @@ export function serializeHttpFn(
     }
 
     if (obj.body !== undefined) {
-      if (
-        typeof obj.body === "object" &&
-        obj.body !== null &&
-        !Array.isArray(obj.body)
-      ) {
-        returnObj.json = obj.body;
-      } else {
-        returnObj.body = obj.body;
-      }
+      returnObj.body = obj.body;
     }
 
+    if (obj.json !== undefined) {
+      returnObj.json = obj.json;
+    }
+
+    if (obj.text !== undefined) {
+      returnObj.text = obj.text;
+    }
+
+    if (obj.xml !== undefined) {
+      returnObj.xml = obj.xml;
+    }
+
+    // Desired key order (top-level only)
+    const keyOrder = ["name", "url", "body", "json", "text", "xml", "headers"];
+
+    let sorted = deterministicSort(returnObj, keyOrder);
+
     // Convert object to string with custom formatting
-    const serialized = JSON.stringify(returnObj, null, tabWidth)
+    const serialized = JSON.stringify(sorted, null, tabWidth)
       .split("\n")
       .map((line) => indent + line)
       .join(lineEnding);
 
     const lines = [
       `const ${methodName} = () => {`,
-      `${indent}return ${serialized};`,
+      `${indent}return ${serialized.trim()};`,
       `};`,
     ];
 
