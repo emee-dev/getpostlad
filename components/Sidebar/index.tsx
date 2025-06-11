@@ -54,9 +54,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           hidden: open,
           block: !open,
         })}>
-            <SidebarMenu>
-              <FileExplorer />
-            </SidebarMenu>
+          <SidebarMenu>
+            <FileExplorer />
+          </SidebarMenu>
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
