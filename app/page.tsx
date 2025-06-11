@@ -142,6 +142,20 @@ export default function Home() {
       // Check if request was cancelled
       if (axios.isCancel(error) || error.name === 'AbortError') {
         console.log('Request was cancelled');
+
+         const errorResponseData: ResponseData = {
+          headers: [],
+          text_response: JSON.stringify({ 
+            error: error.message || 'Network error occurred',
+            code: error.code || 'UNKNOWN_ERROR'
+          }, null, 2),
+          status: 0,
+          elapsed_time: elapsedTime,
+          content_size: 0
+        };
+
+        setData(errorResponseData);
+        
         return;
       }
       
