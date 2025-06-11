@@ -60,6 +60,7 @@ export default function Home() {
   const [isResultPanelVisible, setIsResultPanelVisible] = useState(true);
   const [data, setData] = useState<ResponseData | null>(null);
   const editor = useRef<EditorView | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const onSend = async (src: string) => {
     console.log("Sending request:", src);
@@ -67,6 +68,9 @@ export default function Home() {
     try {
       setIsPending(true);
       setData(null);
+      
+      // Create new AbortController for this request
+      abortControllerRef.current = new AbortController();
       
       const deserializedSrc: DeserializedHTTP = deserializeHttpFn(src);
       
@@ -83,6 +87,7 @@ export default function Home() {
         method: deserializedSrc.method.toLowerCase() as any,
         url: deserializedSrc.url,
         headers,
+        signal: abortControllerRef.current.signal, // Add abort signal
       };
 
       // Add body/data if present
@@ -134,6 +139,12 @@ export default function Home() {
     } catch (error: any) {
       console.error("Request failed:", error);
       
+      // Check if request was cancelled
+      if (axios.isCancel(error) || error.name === 'AbortError') {
+        console.log('Request was cancelled');
+        return;
+      }
+      
       // Handle axios errors
       if (error.response) {
         // Server responded with error status
@@ -179,10 +190,17 @@ export default function Home() {
       }
     } finally {
       setIsPending(false);
+      abortControllerRef.current = null;
     }
   };
 
-  const onCancel = () => {}
+  const onCancel = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      setIsPending(false);
+      console.log('Request cancelled');
+    }
+  };
 
   // Set the content of selected file to code editor
   useEffect(() => {
