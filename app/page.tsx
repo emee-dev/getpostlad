@@ -182,6 +182,8 @@ export default function Home() {
     }
   };
 
+  const onCancel = () => {}
+
   // Set the content of selected file to code editor
   useEffect(() => {
     if (selectedFile && selectedFile.type === "file") {
