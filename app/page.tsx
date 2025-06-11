@@ -114,17 +114,6 @@ export default function Home() {
                 />
               </Link>
             </div>
-            
-            {/* WebContainer Status Indicator */}
-            {/* <div className="absolute right-2 flex items-center gap-2">
-              <div className={cn(
-                "w-2 h-2 rounded-full",
-                webcontainerReady ? "bg-green-500" : "bg-yellow-500"
-              )} />
-              <span className="text-xs">
-                {webcontainerReady ? "Container Ready" : "Initializing..."}
-              </span>
-            </div> */}
           </footer>
         </SidebarInset>
       </SidebarProvider>
