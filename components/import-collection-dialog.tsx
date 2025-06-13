@@ -16,6 +16,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Upload } from "lucide-react";
+import { useFileTreeStore } from "@/hooks/use-file-store";
+
 
 const COLLECTION_TEMPLATES = [
   { id: "spotify", name: "Spotify Collection" },
@@ -27,6 +29,7 @@ const COLLECTION_TEMPLATES = [
 export function ImportCollectionDialog() {
   const [open, setOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
+  const { setFiles } = useFileTreeStore();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
