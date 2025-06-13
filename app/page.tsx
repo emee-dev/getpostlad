@@ -284,7 +284,7 @@ export default function Home() {
     if (selectedFile && selectedFile.type === "file") {
       updateFile(selectedFile.path as string, code);
     }
-  }, [code, selectedFile, updateFile]);
+  }, [code]);
 
   return (
     <>
