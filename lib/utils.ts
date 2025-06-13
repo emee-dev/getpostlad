@@ -273,15 +273,34 @@ export function serializeHttpFn(
 
     let sorted = deterministicSort(returnObj, keyOrder);
 
-    // Convert object to string with custom formatting
-    const serialized = JSON.stringify(sorted, null, tabWidth)
-      .split("\n")
-      .map((line) => indent + line)
-      .join(lineEnding);
+    // Convert to formatted string manually
+    const entries = Object.entries(sorted).map(([key, value]) => {
+      let formattedValue: string;
+
+      if (typeof value === "string" && /[\n\r]/.test(value)) {
+        // Multiline string - use template literals
+        const clean = value.replace(/\r\n/g, "\n"); // normalize line endings
+        const lines = clean
+          .split("\n")
+          .map((line) => indent + indent + line)
+          .join(lineEnding);
+        formattedValue = `\`${lineEnding}${lines}${lineEnding + indent}\``;
+      } else {
+        formattedValue = JSON.stringify(value, null, tabWidth)
+          .split("\n")
+          .map((l) => indent + l)
+          .join(lineEnding)
+          .trim();
+      }
+
+      return `${indent}${JSON.stringify(key)}: ${formattedValue},`;
+    });
 
     const lines = [
       `const ${methodName} = () => {`,
-      `${indent}return ${serialized.trim()};`,
+      `${indent}return {`,
+      ...entries,
+      `${indent}};`,
       `};`,
     ];
 
