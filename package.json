@@ -40,6 +40,7 @@
     "@webcontainer/api": "^1.6.1",
     "autoprefixer": "10.4.15",
     "axios": "^1.6.2",
+    "chai": "^5.2.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
