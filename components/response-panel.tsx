@@ -5,7 +5,8 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CheckCheck, Dot, Lightbulb, Menu } from "lucide-react";
 import { Suspense } from "react";
-import { TestResults, TestResult } from "@/components/test-results";
+import { TestResults } from "@/components/test-results";
+import { TestResult } from "@/lib/runtime";
 
 export function ResponsePanel({
   data,
