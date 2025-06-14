@@ -5,7 +5,6 @@ import { deserializeHttpFn } from "./utils";
  * Browser-compatible polyfill testing framework
  * Mirrors describe, it, and expect from Jest for collecting structured test results
  */
-
 export type TestResult = {
   id: string;
   name: string;
