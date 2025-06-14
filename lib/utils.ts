@@ -171,7 +171,7 @@ export function deserializeHttpFn(code: string): DeserializedHTTP {
     }
 
     if (httpConfig.pre_request !== undefined) {
-      result.pre_request = toString(httpConfig.pre_request);
+      result.pre_request = toString(httpConfig.pre_request) || undefined;
     }
 
     return result;
