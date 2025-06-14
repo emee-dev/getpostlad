@@ -1,4 +1,5 @@
-import { expect } from "chai"
+import { toString } from "./scripting";
+import { expect } from "chai";
 
 /**
  * Browser-compatible polyfill testing framework
