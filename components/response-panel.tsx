@@ -5,19 +5,17 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CheckCheck, Dot, Lightbulb, Menu } from "lucide-react";
 import { Suspense } from "react";
- 
- 
 
 export function ResponsePanel({
   data,
   isPending,
   theme,
-  onCancel
+  onCancel,
 }: {
   data: ResponseData | null;
   theme: string | undefined;
   isPending: boolean;
-  onCancel: () => void
+  onCancel: () => void;
 }) {
   if (isPending) {
     return (
@@ -33,7 +31,6 @@ export function ResponsePanel({
     );
   }
 
-  
   if (!data) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -46,8 +43,6 @@ export function ResponsePanel({
       </div>
     );
   }
-
-
 
   return (
     <>
@@ -99,6 +94,13 @@ export function ResponsePanel({
                 </span>
               )}
             </TabsTrigger>
+            <TabsTrigger
+              variant="outline"
+              value="tests"
+              className="pl-0 text-left font-base data-[state=active]:border-b-[1.8px]"
+            >
+              Tests
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="body" className="h-full">
@@ -119,7 +121,7 @@ export function ResponsePanel({
             </div>
           </TabsContent>
           <TabsContent value="headers" className="h-full font-mono">
-            <div className=" w-full overflow-auto max-h-[calc(100vh-202px)] scrollbar-hide">
+            <div className="w-full overflow-auto max-h-[calc(100vh-202px)] scrollbar-hide">
               <table className="w-full h-full font-normal border-collapse table-fixed border-spacing-1">
                 <tbody>
                   {data &&
@@ -144,6 +146,9 @@ export function ResponsePanel({
                 </tbody>
               </table>
             </div>
+          </TabsContent>
+          <TabsContent value="tests">
+            <div className="w-full overflow-auto max-h-[calc(100vh-202px)] scrollbar-hide"></div>
           </TabsContent>
         </Tabs>
       </div>
