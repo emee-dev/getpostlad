@@ -14,6 +14,7 @@ import Link from "next/link";
 import { MutableRefObject, Suspense, useEffect, useRef, useState } from "react";
 import { deserializeHttpFn, type DeserializedHTTP } from "@/lib/utils";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import { TestResult } from "@/components/test-results";
 
 export type Header = {
   key: string;
@@ -59,6 +60,7 @@ export default function Home() {
   const [isPending, setIsPending] = useState(false);
   const [isResultPanelVisible, setIsResultPanelVisible] = useState(true);
   const [data, setData] = useState<ResponseData | null>(null);
+  const [testResults, setTestResults] = useState<TestResult[]>([]);
   const editor = useRef<EditorView | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -305,6 +307,7 @@ export default function Home() {
               isPending={isPending}
               isResultPanelVisible={isResultPanelVisible}
               onCancel={onCancel}
+              testResults={testResults}
             />
           </section>
 
@@ -338,7 +341,8 @@ const HTTP_Layout = ({
   setCode,
   isPending,
   isResultPanelVisible,
-  onCancel
+  onCancel,
+  testResults
 }: {
   isResultPanelVisible: boolean;
   data: ResponseData | null;
@@ -348,7 +352,8 @@ const HTTP_Layout = ({
   editor: MutableRefObject<EditorView | null>;
   onSend: (source: string) => void;
   setCode: (val: string) => void;
-  onCancel: () => void
+  onCancel: () => void;
+  testResults: TestResult[];
 }) => {
   return (
     <div className="flex h-full">
@@ -379,7 +384,13 @@ const HTTP_Layout = ({
           }
         )}
       >
-        <ResponsePanel data={data} theme={theme} isPending={isPending} onCancel={onCancel} />
+        <ResponsePanel 
+          data={data} 
+          theme={theme} 
+          isPending={isPending} 
+          onCancel={onCancel} 
+          testResults={testResults}
+        />
       </div>
     </div>
   );

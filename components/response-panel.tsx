@@ -5,17 +5,20 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CheckCheck, Dot, Lightbulb, Menu } from "lucide-react";
 import { Suspense } from "react";
+import { TestResults, TestResult } from "@/components/test-results";
 
 export function ResponsePanel({
   data,
   isPending,
   theme,
   onCancel,
+  testResults,
 }: {
   data: ResponseData | null;
   theme: string | undefined;
   isPending: boolean;
   onCancel: () => void;
+  testResults?: TestResult[];
 }) {
   if (isPending) {
     return (
@@ -100,6 +103,11 @@ export function ResponsePanel({
               className="pl-0 text-left font-base data-[state=active]:border-b-[1.8px]"
             >
               Tests
+              {testResults && testResults.length > 0 && (
+                <span className="ml-2 text-muted-foreground text-[10px]">
+                  {testResults.length}
+                </span>
+              )}
             </TabsTrigger>
           </TabsList>
 
@@ -147,8 +155,10 @@ export function ResponsePanel({
               </table>
             </div>
           </TabsContent>
-          <TabsContent value="tests">
-            <div className="w-full overflow-auto max-h-[calc(100vh-202px)] scrollbar-hide"></div>
+          <TabsContent value="tests" className="h-full">
+            <div className="w-full overflow-auto max-h-[calc(100vh-202px)] scrollbar-hide p-2">
+              <TestResults results={testResults || []} />
+            </div>
           </TabsContent>
         </Tabs>
       </div>
