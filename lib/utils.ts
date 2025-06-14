@@ -30,6 +30,7 @@ export type DeserializedHTTP = {
   json?: Record<string, string> | string;
   text?: string;
   xml?: string;
+  pre_request?: string;
   headers: Array<{
     key: string;
     value: string;
