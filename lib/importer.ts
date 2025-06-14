@@ -103,8 +103,7 @@ function convertPostmanRequest(request: any, name: string): DeserializedHTTP {
   const url = request?.url?.toString() || "";
 
   // Extract method
-  // const method = request.method ? request.method.toLowerCase() : "getx";
-  const method = request?.method || "UNKNOWN";
+  const method = request?.method.toLowerCase() || "UNKNOWN";
 
   // Extract headers
   const headers: Array<{ key: string; value: string; enabled: boolean }> = [];
