@@ -137,7 +137,7 @@ export function CreateWorkspaceDialog() {
             {!selectedEnvironment && <span>Environments</span>}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
+        <DropdownMenuContent align="start" side="right">
           {environments?.map((env) => (
             <DropdownMenuItem
               key={env._id}
