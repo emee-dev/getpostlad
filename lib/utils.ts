@@ -23,8 +23,8 @@ export type DeserializedHTTP = {
   json?: Record<string, string> | string;
   text?: string;
   xml?: string;
-  pre_request?: string;
-  post_response?: string;
+  pre_request?: string; // string when deserialized and an (() => void) when serialized
+  post_response?: string; // string when deserialized and an (() => void) when serialized
   headers: Array<{
     key: string;
     value: string;
