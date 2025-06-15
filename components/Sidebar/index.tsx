@@ -37,7 +37,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <div className="ml-auto"></div>
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="h-[600px] scrollbar-hide">
               <FileExplorer />
             </SidebarMenu>
           </SidebarGroupContent>
@@ -54,7 +54,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <div className="ml-auto"></div>
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="h-[600px] scrollbar-hide">
               <FileExplorer />
             </SidebarMenu>
           </SidebarGroupContent>
