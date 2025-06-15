@@ -108,6 +108,23 @@ export function deserializeHttpFn(code: string): DeserializedHTTP {
       }
     }
 
+    // Transform query object to array format
+    const query: Array<{ key: string; value: any; enabled: boolean }> = [];
+
+    if (httpConfig.query && typeof httpConfig.query === "object") {
+      for (const [key, value] of Object.entries(httpConfig.query)) {
+        // Check if query param is disabled (prefixed with ~)
+        const isDisabled = key.startsWith("~");
+        const cleanKey = isDisabled ? key.substring(1) : key;
+
+        query.push({
+          key: cleanKey,
+          value: value,
+          enabled: !isDisabled,
+        });
+      }
+    }
+
     if (!httpConfig.url) {
       throw new Error("Url is a required property.");
     }
@@ -117,6 +134,7 @@ export function deserializeHttpFn(code: string): DeserializedHTTP {
       url: httpConfig.url,
       method: selectedMethod.toLowerCase(),
       headers,
+      query,
     };
 
     // Add optional fields if they exist
@@ -161,6 +179,7 @@ export function deserializeHttpFn(code: string): DeserializedHTTP {
       url: "",
       method: "get",
       headers: [],
+      query: [],
     };
   }
 }
@@ -222,14 +241,24 @@ export function serializeHttpFn(
 
     // Build headers object
     const headersObj: Record<string, string> = {};
-    for (const header of obj.headers) {
-      const key = header.enabled ? header.key : `~${header.key}`;
-      headersObj[key] = header.value;
+    if (obj.headers) {
+      for (const header of obj.headers) {
+        const key = header.enabled ? header.key : `~${header.key}`;
+        headersObj[key] = header.value;
+      }
+    }
+
+    // Build query object
+    const queryObj: Record<string, any> = {};
+    if (obj.query) {
+      for (const queryParam of obj.query) {
+        const key = queryParam.enabled ? queryParam.key : `~${queryParam.key}`;
+        queryObj[key] = queryParam.value;
+      }
     }
 
     const returnObj: any = {
       url: obj.url,
-      headers: headersObj,
     };
 
     if (obj.name) {
@@ -252,8 +281,18 @@ export function serializeHttpFn(
       returnObj.xml = obj.xml;
     }
 
+    // Add headers if not empty
+    if (Object.keys(headersObj).length > 0) {
+      returnObj.headers = headersObj;
+    }
+
+    // Add query if not empty
+    if (Object.keys(queryObj).length > 0) {
+      returnObj.query = queryObj;
+    }
+
     // Desired key order (top-level only)
-    const keyOrder = ["name", "url", "body", "json", "text", "xml", "headers"];
+    const keyOrder = ["name", "url", "body", "json", "text", "xml", "headers", "query", "pre_request", "post_response"];
 
     let sorted = deterministicSort(returnObj, keyOrder);
 
@@ -279,6 +318,27 @@ export function serializeHttpFn(
 
       return `${indent}${JSON.stringify(key)}: ${formattedValue},`;
     });
+
+    // Handle pre_request and post_response functions
+    if (obj.pre_request) {
+      const preRequestBody = obj.pre_request.trim();
+      const formattedPreRequest = preRequestBody
+        .split("\n")
+        .map((line) => indent + indent + line)
+        .join(lineEnding);
+      
+      entries.push(`${indent}"pre_request": () => {${lineEnding}${formattedPreRequest}${lineEnding}${indent}},`);
+    }
+
+    if (obj.post_response) {
+      const postResponseBody = obj.post_response.trim();
+      const formattedPostResponse = postResponseBody
+        .split("\n")
+        .map((line) => indent + indent + line)
+        .join(lineEnding);
+      
+      entries.push(`${indent}"post_response": () => {${lineEnding}${formattedPostResponse}${lineEnding}${indent}},`);
+    }
 
     const lines = [
       `const ${methodName} = () => {`,
