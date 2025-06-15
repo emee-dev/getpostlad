@@ -44,6 +44,85 @@ export type DeserializedHTTP = {
 };
 
 /**
+ * Normalizes a URL by separating the base URL from query parameters
+ * @param url - Full URL string including query parameters
+ * @returns Object with formattedUrl (base URL) and queryObj (parsed query parameters)
+ */
+export function normalizeUrl(url: string): { formattedUrl: string; queryObj: Record<string, any> } {
+  try {
+    // Handle empty or invalid URLs
+    if (!url || typeof url !== 'string') {
+      return {
+        formattedUrl: '',
+        queryObj: {}
+      };
+    }
+
+    // Find the query string separator
+    const queryIndex = url.indexOf('?');
+    
+    // If no query string, return the original URL with empty query object
+    if (queryIndex === -1) {
+      return {
+        formattedUrl: url,
+        queryObj: {}
+      };
+    }
+
+    // Split URL into base and query parts
+    const formattedUrl = url.substring(0, queryIndex);
+    const queryString = url.substring(queryIndex + 1);
+
+    // Parse query parameters
+    const queryObj: Record<string, any> = {};
+
+    if (queryString) {
+      // Split by & to get individual parameters
+      const params = queryString.split('&');
+
+      for (const param of params) {
+        // Split by = to get key and value
+        const equalIndex = param.indexOf('=');
+        
+        if (equalIndex === -1) {
+          // Parameter without value (e.g., ?flag)
+          const key = decodeURIComponent(param);
+          if (key) {
+            queryObj[key] = '';
+          }
+        } else {
+          // Parameter with value
+          const key = decodeURIComponent(param.substring(0, equalIndex));
+          const value = decodeURIComponent(param.substring(equalIndex + 1));
+          
+          if (key) {
+            // Try to parse as number if it looks like one
+            if (/^-?\d+$/.test(value)) {
+              queryObj[key] = parseInt(value, 10);
+            } else if (/^-?\d*\.\d+$/.test(value)) {
+              queryObj[key] = parseFloat(value);
+            } else {
+              queryObj[key] = value;
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      formattedUrl,
+      queryObj
+    };
+  } catch (error) {
+    console.error('Error normalizing URL:', error);
+    return {
+      formattedUrl: url,
+      queryObj: {}
+    };
+  }
+}
+
+/**
  * Deserializes JavaScript code containing HTTP function definitions
  * @param code - JavaScript code as a string containing HTTP method functions
  * @returns DeserializedHTTP object with parsed request configuration
@@ -291,14 +370,6 @@ export function serializeHttpFn(
       returnObj.query = queryObj;
     }
 
-    if (obj.pre_request !== undefined) {
-      returnObj.pre_request = obj.pre_request;
-    }
-
-    if (obj.post_response !== undefined) {
-      returnObj.post_response = obj.post_response;
-    }
-
     // Desired key order (top-level only)
     const keyOrder = [
       "name",
@@ -318,19 +389,6 @@ export function serializeHttpFn(
     // Convert to formatted string manually
     const entries = Object.entries(sorted).map(([key, value]) => {
       let formattedValue: string;
-
-      if (key.includes("pre_request") || key.includes("post_response")) {
-        const clean = value.replace(/\r\n/g, "\n");
-        const lines = clean
-          .split("\n")
-          .map((line) => line)
-          .join(lineEnding)
-          .trim();
-
-        formattedValue = lines;
-
-        return `${indent}${JSON.stringify(key)}:  ${indent}${indent}${formattedValue}\n${indent}${indent}`;
-      }
 
       if (
         typeof value === "string" &&
@@ -357,24 +415,30 @@ export function serializeHttpFn(
     });
 
     // Handle pre_request and post_response functions
-    const formattedScripts = entries.map((item) => {
-      const fnBody = item.split(":")[1];
+    if (obj.pre_request) {
+      const preRequestBody = obj.pre_request.trim();
+      const formattedPreRequest = preRequestBody
+        .split("\n")
+        .map((line) => indent + indent + line)
+        .join(lineEnding);
+      
+      entries.push(`${indent}"pre_request": () => {${lineEnding}${formattedPreRequest}${lineEnding}${indent}},`);
+    }
 
-      if (item.includes("pre_request")) {
-        item = `${indent}"pre_request": () => {\n` + fnBody + "},";
-      }
-
-      if (item.includes("post_response")) {
-        item = `${indent}"post_response": () => {\n` + fnBody + "},";
-      }
-
-      return item;
-    });
+    if (obj.post_response) {
+      const postResponseBody = obj.post_response.trim();
+      const formattedPostResponse = postResponseBody
+        .split("\n")
+        .map((line) => indent + indent + line)
+        .join(lineEnding);
+      
+      entries.push(`${indent}"post_response": () => {${lineEnding}${formattedPostResponse}${lineEnding}${indent}},`);
+    }
 
     const lines = [
       `const ${methodName} = () => {`,
       `${indent}return {`,
-      ...formattedScripts,
+      ...entries,
       `${indent}};`,
       `};`,
     ];
