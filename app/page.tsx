@@ -89,17 +89,30 @@ export default function Home() {
 
       // Build headers object from enabled headers
       const headers: Record<string, string> = {};
-      deserializedSrc.headers.forEach((header) => {
-        if (header.enabled) {
-          headers[header.key] = header.value;
-        }
-      });
+      if (deserializedSrc.headers) {
+        deserializedSrc.headers.forEach((header) => {
+          if (header.enabled) {
+            headers[header.key] = header.value;
+          }
+        });
+      }
+
+      // Build query parameters object from enabled query params
+      const params: Record<string, any> = {};
+      if (deserializedSrc.query) {
+        deserializedSrc.query.forEach((queryParam) => {
+          if (queryParam.enabled) {
+            params[queryParam.key] = queryParam.value;
+          }
+        });
+      }
 
       // Build axios request config
       const axiosConfig: AxiosRequestConfig = {
         method: deserializedSrc.method.toLowerCase() as any,
         url: deserializedSrc.url,
         headers,
+        params, // Add query parameters here
         signal: abortControllerRef.current.signal, // Add abort signal
       };
 
