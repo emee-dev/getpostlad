@@ -36,7 +36,33 @@ export const Navbar = (props: { className?: string }) => {
           />
         </div>
         <div className="flex items-center pl-2 ml-1 gap-x-1">
-          <DropdownMenu>
+          {/* <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 hover:bg-muted-foreground/20 hover:dark:bg-muted-foreground/15"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                New
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem onClick={() => setIsImportDialogOpen(true)}>
+                <Upload className="mr-2 h-4 w-4" />
+                Import Collection
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu> */}
+          
+          <CreateWorkspaceDialog />
+        </div>
+      </div>
+
+      <div className="fixed right-0 flex items-center h-10 gap-x-4 text-muted-foreground dark:text-muted-foreground/90">
+        <div className="flex items-center px-2">
+           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
@@ -55,13 +81,6 @@ export const Navbar = (props: { className?: string }) => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          
-          <CreateWorkspaceDialog />
-        </div>
-      </div>
-
-      <div className="fixed right-0 flex items-center h-10 gap-x-4 text-muted-foreground dark:text-muted-foreground/90">
-        <div className="flex items-center px-2">
           <ModeToggle />
           <AuthDialog />
         </div>
