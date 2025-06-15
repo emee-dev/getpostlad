@@ -318,6 +318,9 @@ export function serializeHttpFn(
   try {
     const methodName = obj.method.toUpperCase();
 
+    // Use normalizeUrl to separate base URL from query parameters
+    const { formattedUrl, queryObj } = normalizeUrl(obj.url);
+
     // Build headers object
     const headersObj: Record<string, string> = {};
     if (obj.headers) {
@@ -327,17 +330,22 @@ export function serializeHttpFn(
       }
     }
 
-    // Build query object
-    const queryObj: Record<string, any> = {};
+    // Build query object - merge URL query params with obj.query (obj.query takes precedence)
+    const mergedQueryObj: Record<string, any> = {};
+    
+    // First add query parameters from the URL
+    Object.assign(mergedQueryObj, queryObj);
+    
+    // Then add/override with obj.query parameters
     if (obj.query) {
       for (const queryParam of obj.query) {
         const key = queryParam.enabled ? queryParam.key : `~${queryParam.key}`;
-        queryObj[key] = queryParam.value;
+        mergedQueryObj[key] = queryParam.value;
       }
     }
 
     const returnObj: any = {
-      url: obj.url,
+      url: formattedUrl, // Use the cleaned URL without query parameters
     };
 
     if (obj.name) {
@@ -360,14 +368,14 @@ export function serializeHttpFn(
       returnObj.xml = obj.xml;
     }
 
+    // Add merged query if not empty
+    if (Object.keys(mergedQueryObj).length > 0) {
+      returnObj.query = mergedQueryObj;
+    }
+
     // Add headers if not empty
     if (Object.keys(headersObj).length > 0) {
       returnObj.headers = headersObj;
-    }
-
-    // Add query if not empty
-    if (Object.keys(queryObj).length > 0) {
-      returnObj.query = queryObj;
     }
 
     if (obj.pre_request !== undefined) {
