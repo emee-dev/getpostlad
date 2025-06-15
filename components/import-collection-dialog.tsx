@@ -4,7 +4,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -27,8 +26,12 @@ const COLLECTION_TEMPLATES = [
   { id: "twitter", name: "Flutterwave Collection" },
 ];
 
-export function ImportCollectionDialog() {
-  const [open, setOpen] = useState(false);
+interface ImportCollectionDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export function ImportCollectionDialog({ open, onOpenChange }: ImportCollectionDialogProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
@@ -75,7 +78,7 @@ export function ImportCollectionDialog() {
           setFiles(fileNodes);
           
           // Close dialog and reset state
-          setOpen(false);
+          onOpenChange(false);
           setSelectedFile(null);
           setSelectedTemplate("");
           setError("");
@@ -120,23 +123,15 @@ export function ImportCollectionDialog() {
     setIsImporting(false);
   };
 
+  const handleOpenChange = (isOpen: boolean) => {
+    onOpenChange(isOpen);
+    if (!isOpen) {
+      resetDialog();
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => {
-      setOpen(isOpen);
-      if (!isOpen) {
-        resetDialog();
-      }
-    }}>
-      <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 hover:bg-muted-foreground/20 hover:dark:bg-muted-foreground/15"
-        >
-          <Upload className="mr-2 h-4 w-4" />
-          Import
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="font-geist max-w-md">
         <DialogHeader>
           <DialogTitle>Import Collection</DialogTitle>

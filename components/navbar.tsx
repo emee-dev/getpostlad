@@ -7,8 +7,19 @@ import { cn } from "@/lib/utils";
 import { AuthDialog } from "@/components/auth/auth-dialog";
 import { ImportCollectionDialog } from "@/components/import-collection-dialog";
 import { ModeToggle } from "@/components/theme-toggle";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, Upload, Plus } from "lucide-react";
+import { useState } from "react";
 
 export const Navbar = (props: { className?: string }) => {
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+
   return (
     <header
       className={cn(
@@ -25,7 +36,26 @@ export const Navbar = (props: { className?: string }) => {
           />
         </div>
         <div className="flex items-center pl-2 ml-1 gap-x-1">
-          <ImportCollectionDialog />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 hover:bg-muted-foreground/20 hover:dark:bg-muted-foreground/15"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                New
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem onClick={() => setIsImportDialogOpen(true)}>
+                <Upload className="mr-2 h-4 w-4" />
+                Import Collection
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
           <CreateWorkspaceDialog />
         </div>
       </div>
@@ -36,6 +66,12 @@ export const Navbar = (props: { className?: string }) => {
           <AuthDialog />
         </div>
       </div>
+
+      {/* Import Collection Dialog */}
+      <ImportCollectionDialog 
+        open={isImportDialogOpen} 
+        onOpenChange={setIsImportDialogOpen} 
+      />
     </header>
   );
 };
