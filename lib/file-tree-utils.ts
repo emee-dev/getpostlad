@@ -23,7 +23,8 @@ export function flattenVisibleTree(
 
   for (let index = 0; index < nodes.length; index++) {
     const node = nodes[index];
-    const currentPath = node.path || `${parentPath}/${node.name}`.replace(/^\//, "");
+    // Use the node's path if available, otherwise construct it
+    const currentPath = node.path || (parentPath ? `${parentPath}/${node.name}` : node.name);
     
     // Create a unique ID for each node
     const nodeId = `${currentPath}-${level}-${index}`;
@@ -42,6 +43,7 @@ export function flattenVisibleTree(
     if (
       node.type === "directory" &&
       node.children &&
+      node.children.length > 0 &&
       expandedFolders.has(currentPath)
     ) {
       const childNodes = flattenVisibleTree(
@@ -84,12 +86,13 @@ export class TreeFlattener {
     nodes: FileNode[],
     expandedFolders: Set<string>
   ): FlattenedNode[] {
-    // Create a cache key based on the expanded state
+    // Create a cache key based on the expanded state and nodes
     const expandedState = Array.from(expandedFolders).sort().join(",");
-    const cacheKey = `${JSON.stringify(nodes)}-${expandedState}`;
+    const nodesKey = JSON.stringify(nodes.map(n => ({ name: n.name, type: n.type, path: n.path })));
+    const cacheKey = `${nodesKey}-${expandedState}`;
 
     // Check if we have a cached result
-    if (this.cache.has(cacheKey) && this.lastExpandedState === expandedState) {
+    if (this.cache.has(cacheKey)) {
       return this.cache.get(cacheKey)!;
     }
 
@@ -98,7 +101,6 @@ export class TreeFlattener {
 
     // Cache the result
     this.cache.set(cacheKey, result);
-    this.lastExpandedState = expandedState;
 
     // Limit cache size to prevent memory leaks
     if (this.cache.size > 10) {
