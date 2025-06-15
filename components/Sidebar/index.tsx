@@ -23,12 +23,6 @@ export type FileNode = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { open } = useSidebar();
 
-  const { setFiles } = useFileTreeStore();
-
-  useEffect(() => {
-    setFiles([]);
-  }, []);
-
   return (
     <Sidebar {...props}>
       <SidebarContent
