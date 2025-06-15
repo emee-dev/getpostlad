@@ -137,10 +137,10 @@ export const FileExplorer = () => {
   }
 
   return (
-    <div className="h-[calc(100%-3rem)] font-geist">
+    <div className="h-[calc(100%-3rem)] font-geist scrollbar-hide">
       <div
         ref={parentRef}
-        className="h-full overflow-auto"
+        className="h-full overflow-auto scrollbar-hide"
         style={{
           contain: "strict",
         }}
