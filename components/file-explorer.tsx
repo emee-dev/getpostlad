@@ -1,4 +1,5 @@
-import { ScrollArea } from "@/components/ui/scroll-area";
+"use client";
+
 import { FileNode, useFileTreeStore } from "@/hooks/use-file-store";
 import { cn } from "@/lib/utils";
 import {
@@ -8,101 +9,180 @@ import {
   Folder,
   FolderOpen,
 } from "lucide-react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { useRef, useMemo, useCallback, memo } from "react";
+import { flattenVisibleTree, FlattenedNode, TreeFlattener } from "@/lib/file-tree-utils";
 
-interface FileTreeItemProps {
-  node: FileNode;
-  level: number;
-  className?: string;
+// Create a singleton tree flattener for caching
+const treeFlattener = new TreeFlattener();
+
+interface VirtualizedFileTreeItemProps {
+  node: FlattenedNode;
+  isSelected: boolean;
+  isExpanded: boolean;
+  onSelect: (node: FileNode) => void;
+  onToggle: (path: string) => void;
 }
 
-const FileTreeItem = ({ node, level, className }: FileTreeItemProps) => {
-  const { selectedFile, expandedFolders, setSelectedFile, toggleFolder } =
-    useFileTreeStore();
-  const isExpanded = expandedFolders.has(node.path || "");
-  const isSelected = selectedFile?.path === node.path;
-
-  const handleClick = () => {
+const VirtualizedFileTreeItem = memo(({
+  node,
+  isSelected,
+  isExpanded,
+  onSelect,
+  onToggle,
+}: VirtualizedFileTreeItemProps) => {
+  const handleClick = useCallback(() => {
     if (node.type === "file") {
-      setSelectedFile(node);
+      onSelect(node);
     } else {
-      toggleFolder(node.path || "");
+      onToggle(node.path || "");
     }
-  };
+  }, [node, onSelect, onToggle]);
 
-  const paddingLeft = level * 16;
+  const paddingLeft = node.level * 16;
 
   return (
-    <div>
-      <div
-        className={cn(
-          "flex items-center py-1 px-2 hover:bg-accent cursor-pointer text-sm transition-colors rounded-md mx-1",
-          isSelected && "bg-accent text-accent-foreground"
-        )}
-        style={{ paddingLeft: `${paddingLeft + 8}px` }}
-        onClick={handleClick}
-      >
-        {node.type === "directory" && (
-          <div className="mr-1 flex-shrink-0 text-muted-foreground">
-            {isExpanded ? (
-              <ChevronDown size={16} className="" />
-            ) : (
-              <ChevronRight size={16} className="" />
-            )}
-          </div>
-        )}
-
-        <div className="mr-2 flex-shrink-0 text-muted-foreground">
-          {node.type === "directory" ? (
-            isExpanded ? (
-              <FolderOpen size={16} className="" />
-            ) : (
-              <Folder size={16} className="" />
-            )
+    <div
+      className={cn(
+        "flex items-center py-1 px-2 hover:bg-accent cursor-pointer text-sm transition-colors rounded-md mx-1",
+        isSelected && "bg-accent text-accent-foreground"
+      )}
+      style={{ paddingLeft: `${paddingLeft + 8}px` }}
+      onClick={handleClick}
+    >
+      {node.type === "directory" && (
+        <div className="mr-1 flex-shrink-0 text-muted-foreground">
+          {isExpanded ? (
+            <ChevronDown size={16} />
           ) : (
-            <File
-              size={16}
-              style={{ marginLeft: `${Math.ceil(paddingLeft / 2) - 12}px` }}
-            />
+            <ChevronRight size={16} />
           )}
         </div>
-
-        <span className="truncate">{node.name}</span>
-      </div>
-
-      {node.type === "directory" && isExpanded && node.children && (
-        <div>
-          {node.children.map((child, index) => (
-            <FileTreeItem
-              key={`${child.path || child.name}-${index}`}
-              node={child}
-              level={level + 1}
-            />
-          ))}
-        </div>
       )}
-    </div>
-  );
-};
 
-export const FileExplorer = () => {
-  const { files } = useFileTreeStore();
-
-  return (
-    <ScrollArea className="h-[calc(100%-3rem)] font-geist">
-      <div className="">
-        {files.map((node, index) => (
-          <FileTreeItem
-            key={`${node.path || node.name}-${index}`}
-            node={node}
-            level={0}
+      <div className="mr-2 flex-shrink-0 text-muted-foreground">
+        {node.type === "directory" ? (
+          isExpanded ? (
+            <FolderOpen size={16} />
+          ) : (
+            <Folder size={16} />
+          )
+        ) : (
+          <File
+            size={16}
+            style={{ marginLeft: `${Math.ceil(paddingLeft / 2) - 12}px` }}
           />
-        ))}
-        {files.length === 0 && (
-          <div className="text-center text-muted-foreground text-sm py-8">
-            No files in workspace
-          </div>
         )}
       </div>
-    </ScrollArea>
+
+      <span className="truncate">{node.name}</span>
+    </div>
+  );
+});
+
+VirtualizedFileTreeItem.displayName = "VirtualizedFileTreeItem";
+
+export const FileExplorer = () => {
+  const { files, selectedFile, expandedFolders, setSelectedFile, toggleFolder } =
+    useFileTreeStore();
+
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  // Flatten the tree structure for virtualization
+  const flattenedNodes = useMemo(() => {
+    if (!files || files.length === 0) {
+      return [];
+    }
+    return treeFlattener.flatten(files, expandedFolders);
+  }, [files, expandedFolders]);
+
+  // Create virtualizer
+  const virtualizer = useVirtualizer({
+    count: flattenedNodes.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: useCallback(() => 32, []), // Estimated height per item
+    overscan: 10, // Render 10 extra items outside viewport for smooth scrolling
+  });
+
+  // Memoized handlers
+  const handleSelect = useCallback(
+    (node: FileNode) => {
+      setSelectedFile(node);
+    },
+    [setSelectedFile]
+  );
+
+  const handleToggle = useCallback(
+    (path: string) => {
+      toggleFolder(path);
+    },
+    [toggleFolder]
+  );
+
+  // Clear cache when files change significantly
+  useMemo(() => {
+    if (files.length === 0) {
+      treeFlattener.clearCache();
+    }
+  }, [files.length]);
+
+  if (files.length === 0) {
+    return (
+      <div className="h-[calc(100%-3rem)] font-geist">
+        <div className="text-center text-muted-foreground text-sm py-8">
+          No files in workspace
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-[calc(100%-3rem)] font-geist">
+      <div
+        ref={parentRef}
+        className="h-full overflow-auto"
+        style={{
+          contain: "strict",
+        }}
+      >
+        <div
+          style={{
+            height: `${virtualizer.getTotalSize()}px`,
+            width: "100%",
+            position: "relative",
+          }}
+        >
+          {virtualizer.getVirtualItems().map((virtualItem) => {
+            const node = flattenedNodes[virtualItem.index];
+            if (!node) return null;
+
+            const isSelected = selectedFile?.path === node.path;
+            const isExpanded = expandedFolders.has(node.path || "");
+
+            return (
+              <div
+                key={node.id}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: `${virtualItem.size}px`,
+                  transform: `translateY(${virtualItem.start}px)`,
+                }}
+              >
+                <VirtualizedFileTreeItem
+                  node={node}
+                  isSelected={isSelected}
+                  isExpanded={isExpanded}
+                  onSelect={handleSelect}
+                  onToggle={handleToggle}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 };
