@@ -97,47 +97,19 @@ const editorTheme = EditorView.theme({
 export function CustomGutter(): Extension {
   return foldGutter({
     markerDOM: (open) => {
-      const element = document.createElement("div");
-      element.className = "cm-fold-marker";
-      element.style.cssText = `
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 14px;
-        height: 14px;
-        border-radius: 2px;
-        transition: all 0.15s ease;
-        color: hsl(var(--muted-foreground));
-      `;
+      const size = 15;
+      let icon = document.createElement("div");
 
-      // Custom SVG chevron icons
-      const chevronDown = `
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m6 9 6 6 6-6"/>
-        </svg>
-      `;
+      icon.className =
+        "rounded-sm hover:bg-primary/20 hover:dark:bg-[hsl(var(--editor-chevron-hover-color)/0.4)]";
 
-      const chevronRight = `
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m9 18 6-6-6-6"/>
-        </svg>
-      `;
+      if (open) {
+        icon.appendChild(ChevronDown(size));
+      } else {
+        icon.appendChild(ChevronRight(size));
+      }
 
-      element.innerHTML = open ? chevronDown : chevronRight;
-
-      // Add hover effect
-      element.addEventListener("mouseenter", () => {
-        element.style.backgroundColor = "hsl(var(--accent))";
-        element.style.color = "hsl(var(--accent-foreground))";
-      });
-
-      element.addEventListener("mouseleave", () => {
-        element.style.backgroundColor = "transparent";
-        element.style.color = "hsl(var(--muted-foreground))";
-      });
-
-      return element;
+      return icon;
     },
   });
 }
