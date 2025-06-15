@@ -30,6 +30,11 @@ export type DeserializedHTTP = {
     value: string;
     enabled: boolean;
   }>;
+  query?: Array<{
+    key: string;
+    value: string;
+    enabled: boolean;
+  }>;
 };
 
 /**
