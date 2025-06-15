@@ -25,7 +25,7 @@ export type DeserializedHTTP = {
   xml?: string;
   pre_request?: string; // string when deserialized and an (() => void) when serialized
   post_response?: string; // string when deserialized and an (() => void) when serialized
-  headers: Array<{
+  headers?: Array<{
     key: string;
     value: string;
     enabled: boolean;
