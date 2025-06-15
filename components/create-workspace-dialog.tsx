@@ -80,7 +80,7 @@ export function CreateWorkspaceDialog() {
             {selectedWorkspace?.name || "Workspaces"}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
+        <DropdownMenuContent align="start" side="right">
           {workspaces?.map((workspace) => (
             <DropdownMenuItem
               key={workspace._id}
