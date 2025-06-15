@@ -32,7 +32,7 @@ export type DeserializedHTTP = {
   }>;
   query?: Array<{
     key: string;
-    value: string;
+    value: any;
     enabled: boolean;
   }>;
 };
