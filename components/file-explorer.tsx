@@ -70,7 +70,7 @@ const VirtualizedFileTreeItem = memo(({
         ) : (
           <File
             size={16}
-            style={{ marginLeft: node.type === "file" ? "20px" : "0px" }}
+            style={{ marginLeft: `${Math.ceil(paddingLeft / 2) - 12}px` }}
           />
         )}
       </div>
@@ -93,11 +93,7 @@ export const FileExplorer = () => {
     if (!files || files.length === 0) {
       return [];
     }
-    
-    // Use direct flattening instead of the cached version for debugging
-    const result = flattenVisibleTree(files, expandedFolders);
-    console.log("Flattened nodes:", result.length, result);
-    return result;
+    return treeFlattener.flatten(files, expandedFolders);
   }, [files, expandedFolders]);
 
   // Create virtualizer
@@ -123,11 +119,12 @@ export const FileExplorer = () => {
     [toggleFolder]
   );
 
-  console.log("FileExplorer render:", { 
-    filesLength: files.length, 
-    flattenedLength: flattenedNodes.length,
-    expandedFolders: Array.from(expandedFolders)
-  });
+  // Clear cache when files change significantly
+  useMemo(() => {
+    if (files.length === 0) {
+      treeFlattener.clearCache();
+    }
+  }, [files.length]);
 
   if (files.length === 0) {
     return (
@@ -157,10 +154,7 @@ export const FileExplorer = () => {
         >
           {virtualizer.getVirtualItems().map((virtualItem) => {
             const node = flattenedNodes[virtualItem.index];
-            if (!node) {
-              console.warn("Missing node at index:", virtualItem.index);
-              return null;
-            }
+            if (!node) return null;
 
             const isSelected = selectedFile?.path === node.path;
             const isExpanded = expandedFolders.has(node.path || "");
