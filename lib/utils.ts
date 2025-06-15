@@ -370,6 +370,14 @@ export function serializeHttpFn(
       returnObj.query = queryObj;
     }
 
+    if (obj.pre_request !== undefined) {
+      returnObj.pre_request = obj.pre_request;
+    }
+
+    if (obj.post_response !== undefined) {
+      returnObj.post_response = obj.post_response;
+    }
+
     // Desired key order (top-level only)
     const keyOrder = [
       "name",
@@ -389,6 +397,19 @@ export function serializeHttpFn(
     // Convert to formatted string manually
     const entries = Object.entries(sorted).map(([key, value]) => {
       let formattedValue: string;
+
+      if (key.includes("pre_request") || key.includes("post_response")) {
+        const clean = value.replace(/\r\n/g, "\n");
+        const lines = clean
+          .split("\n")
+          .map((line) => line)
+          .join(lineEnding)
+          .trim();
+
+        formattedValue = lines;
+
+        return `${indent}${JSON.stringify(key)}:  ${indent}${indent}${formattedValue}\n${indent}${indent}`;
+      }
 
       if (
         typeof value === "string" &&
@@ -415,30 +436,24 @@ export function serializeHttpFn(
     });
 
     // Handle pre_request and post_response functions
-    if (obj.pre_request) {
-      const preRequestBody = obj.pre_request.trim();
-      const formattedPreRequest = preRequestBody
-        .split("\n")
-        .map((line) => indent + indent + line)
-        .join(lineEnding);
-      
-      entries.push(`${indent}"pre_request": () => {${lineEnding}${formattedPreRequest}${lineEnding}${indent}},`);
-    }
+    const formattedScripts = entries.map((item) => {
+      const fnBody = item.split(":")[1];
 
-    if (obj.post_response) {
-      const postResponseBody = obj.post_response.trim();
-      const formattedPostResponse = postResponseBody
-        .split("\n")
-        .map((line) => indent + indent + line)
-        .join(lineEnding);
-      
-      entries.push(`${indent}"post_response": () => {${lineEnding}${formattedPostResponse}${lineEnding}${indent}},`);
-    }
+      if (item.includes("pre_request")) {
+        item = `${indent}"pre_request": () => {\n` + fnBody + "},";
+      }
+
+      if (item.includes("post_response")) {
+        item = `${indent}"post_response": () => {\n` + fnBody + "},";
+      }
+
+      return item;
+    });
 
     const lines = [
       `const ${methodName} = () => {`,
       `${indent}return {`,
-      ...entries,
+      ...formattedScripts,
       `${indent}};`,
       `};`,
     ];
