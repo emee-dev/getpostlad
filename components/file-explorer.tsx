@@ -95,7 +95,6 @@ export const FileExplorer = () => {
             key={`${node.path || node.name}-${index}`}
             node={node}
             level={0}
-            className=""
           />
         ))}
         {files.length === 0 && (
