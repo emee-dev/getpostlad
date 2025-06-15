@@ -31,6 +31,7 @@ export type DeserializedHTTP = {
   text?: string;
   xml?: string;
   pre_request?: string;
+  post_response?: string;
   headers: Array<{
     key: string;
     value: string;
