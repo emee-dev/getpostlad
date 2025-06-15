@@ -14,7 +14,7 @@ import Link from "next/link";
 import { MutableRefObject, Suspense, useEffect, useRef, useState } from "react";
 import { deserializeHttpFn, type DeserializedHTTP } from "@/lib/utils";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-import { TestResult } from "@/components/test-results";
+import { TestResult, scriptRuntime } from "@/lib/runtime";
 
 export type Header = {
   key: string;
@@ -70,11 +70,22 @@ export default function Home() {
     try {
       setIsPending(true);
       setData(null);
+      setTestResults([]); // Reset test results
 
       // Create new AbortController for this request
       abortControllerRef.current = new AbortController();
 
       const deserializedSrc: DeserializedHTTP = deserializeHttpFn(src);
+
+      // Execute pre_request script if present
+      let preRequestResults: TestResult[] = [];
+      if (deserializedSrc.pre_request) {
+        try {
+          preRequestResults = scriptRuntime(deserializedSrc.pre_request);
+        } catch (error) {
+          console.error("Error executing pre_request script:", error);
+        }
+      }
 
       // Build headers object from enabled headers
       const headers: Record<string, string> = {};
@@ -150,6 +161,20 @@ export default function Home() {
 
       // Calculate elapsed time
       const elapsedTime = (Date.now() - startTime) / 1000;
+
+      // Execute post_response script if present
+      let postResponseResults: TestResult[] = [];
+      if (deserializedSrc.post_response) {
+        try {
+          postResponseResults = scriptRuntime(deserializedSrc.post_response);
+        } catch (error) {
+          console.error("Error executing post_response script:", error);
+        }
+      }
+
+      // Combine test results from pre_request and post_response
+      const combinedTestResults = [...preRequestResults, ...postResponseResults];
+      setTestResults(combinedTestResults);
 
       // Transform response headers to our format
       const responseHeaders: Header[] = Object.entries(response.headers).map(
