@@ -175,6 +175,10 @@ export function deserializeHttpFn(code: string): DeserializedHTTP {
       result.pre_request = toString(httpConfig.pre_request) || undefined;
     }
 
+    if (httpConfig.post_response !== undefined) {
+      result.post_response = toString(httpConfig.post_response) || undefined;
+    }
+
     return result;
   } catch (error) {
     console.error("Error deserializing HTTP function:", error);
