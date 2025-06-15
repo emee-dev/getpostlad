@@ -61,8 +61,6 @@ const FileTreeItem = ({ node, level, className }: FileTreeItemProps) => {
           ) : (
             <File
               size={16}
-              className=""
-              // Remove if the file does not align properly
               style={{ marginLeft: `${Math.ceil(paddingLeft / 2) - 12}px` }}
             />
           )}
