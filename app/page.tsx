@@ -15,6 +15,8 @@ import { MutableRefObject, Suspense, useEffect, useRef, useState } from "react";
 import { deserializeHttpFn, type DeserializedHTTP } from "@/lib/utils";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { TestResult, scriptRuntime } from "@/lib/runtime";
+import { Button } from "@/components/ui/button";
+import { Coffee } from "lucide-react";
 
 export type Header = {
   key: string;
@@ -310,6 +312,10 @@ export default function Home() {
       setIsPending(false);
       console.log('Request cancelled');
     }
+  };
+
+    const handleCoffeeClick = () => {
+    window.open("https://www.buymeacoffee.com/emee_dev", "_blank");
   };
 
   // Set the content of selected file to code editor
