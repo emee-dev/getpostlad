@@ -17,6 +17,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { TestResult, scriptRuntime } from "@/lib/runtime";
 import { Button } from "@/components/ui/button";
 import { Coffee } from "lucide-react";
+import { useWorkspace } from "@/hooks/use-workspace";
 
 export type Header = {
   key: string;
@@ -57,7 +58,8 @@ const POST = () => {
 export default function Home() {
   const { theme } = useTheme();
   const { selectedFile, updateFile } = useFileTreeStore();
-
+  const { selectedEnvironment } = useWorkspace();
+  
   const [code, setCode] = useState(template);
   const [isPending, setIsPending] = useState(false);
   const [isResultPanelVisible, setIsResultPanelVisible] = useState(true);
@@ -77,7 +79,15 @@ export default function Home() {
       // Create new AbortController for this request
       abortControllerRef.current = new AbortController();
 
-      const formattedSrc = interpolateVariables(src);
+      const environments = {} as Record<string, string>;
+
+      if (selectedEnvironment?.variables) {
+        selectedEnvironment?.variables.forEach((item) => {
+          environments[item.key] = item.value;
+        });
+      }
+
+      const formattedSrc = interpolateVariables(src, environments);
 
       const deserializedSrc: DeserializedHTTP = deserializeHttpFn(formattedSrc);
 
