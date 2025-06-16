@@ -96,7 +96,6 @@ const VirtualizedFileTreeItem = memo(({
             ) : (
               <File
                 size={16}
-                style={{ marginLeft: `${Math.ceil(paddingLeft / 2) - 12}px` }}
               />
             )}
           </div>
