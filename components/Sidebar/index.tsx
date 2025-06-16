@@ -160,7 +160,7 @@ const EmptyStateWithContextMenu = () => {
     <>
       <ContextMenu>
         <ContextMenuTrigger asChild>
-          <div className="h-[600px] flex items-center justify-center text-center text-muted-foreground text-sm cursor-context-menu">
+          <div className="h-[600px] flex pt-24 justify-center text-center text-muted-foreground text-sm cursor-context-menu">
             <div>
               <div className="mb-2">No files in workspace</div>
               <div className="text-xs opacity-70">
