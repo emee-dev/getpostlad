@@ -44,6 +44,39 @@ export type DeserializedHTTP = {
 };
 
 /**
+ * Interpolates variable placeholders in a string with values from a variables object
+ * @param src - Source string containing variable placeholders in the form {{ VARIABLE_NAME }}
+ * @param vars - Object containing variable key-value pairs
+ * @returns String with placeholders replaced by corresponding values, or left as-is if not found
+ * 
+ * @example
+ * ```ts
+ * const src = `{{baseUrl}}/transfers - This is a local server endpoint. Some url to our s3 bucket {{s3_bucket}}`;
+ * const result = interpolateVariables(src, {
+ *   baseUrl: "https://localhost:3000/api"
+ * });
+ * // Result: "https://localhost:3000/api/transfers - This is a local server endpoint. Some url to our s3 bucket {{s3_bucket}}"
+ * ```
+ */
+export function interpolateVariables(src: string, vars: Record<string, string>): string {
+  // Regex pattern that matches variable placeholders:
+  // - Allows uppercase/lowercase letters, numbers, and underscores
+  // - Allows optional whitespace around the variable name inside {{ and }}
+  // - Disallows spaces inside the variable name itself
+  const VARIABLE_PLACEHOLDER_REGEX = /\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}/g;
+
+  return src.replace(VARIABLE_PLACEHOLDER_REGEX, (match, variableName) => {
+    // Check if the variable exists in the vars object
+    if (variableName in vars) {
+      return vars[variableName];
+    }
+    
+    // If variable not found, return the original placeholder unchanged
+    return match;
+  });
+}
+
+/**
  * Normalizes a URL by separating the base URL from query parameters
  * @param url - Full URL string including query parameters
  * @returns Object with formattedUrl (base URL) and queryObj (parsed query parameters)
