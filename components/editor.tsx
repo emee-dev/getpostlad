@@ -74,22 +74,11 @@ const editorTheme = EditorView.theme({
     backgroundColor: "var(--editor-selection-color)",
   },
   // Custom fold gutter styles
-  ".cm-foldGutter": {
-    width: "16px",
-  },
+ 
   ".cm-gutterElement": {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-  },
-  ".cm-foldPlaceholder": {
-    backgroundColor: "var(--editor-selection-color)",
-    border: "1px solid hsl(var(--border))",
-    borderRadius: "3px",
-    color: "hsl(var(--muted-foreground))",
-    fontSize: "11px",
-    padding: "0 4px",
-    margin: "0 2px",
   },
 } satisfies ThemeSpec);
 
