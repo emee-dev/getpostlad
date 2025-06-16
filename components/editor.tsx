@@ -73,13 +73,6 @@ const editorTheme = EditorView.theme({
   "&.cm-focused .cm-selectionBackground, ::selection": {
     backgroundColor: "var(--editor-selection-color)",
   },
-  // Custom fold gutter styles
- 
-  ".cm-gutterElement": {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
 } satisfies ThemeSpec);
 
 // Custom fold gutter extension with SVG chevrons
