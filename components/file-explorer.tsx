@@ -14,7 +14,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useRef, useMemo, useCallback, memo, useState } from "react";
+import { useRef, useMemo, useCallback, memo, useState, useEffect } from "react";
 import { flattenVisibleTree, FlattenedNode, TreeFlattener } from "@/lib/file-tree-utils";
 import {
   ContextMenu,
@@ -62,6 +62,9 @@ const VirtualizedFileTreeItem = memo(({
 
   const paddingLeft = node.level * 16;
 
+  // Determine if we should show folder creation options
+  const canCreateInside = node.type === "directory";
+
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>
@@ -102,11 +105,17 @@ const VirtualizedFileTreeItem = memo(({
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent>
-        <ContextMenuItem onClick={() => onContextMenu(node, "newFile")}>
+        <ContextMenuItem 
+          onClick={() => onContextMenu(node, "newFile")}
+          disabled={!canCreateInside}
+        >
           <FilePlus className="mr-2 h-4 w-4" />
           New File
         </ContextMenuItem>
-        <ContextMenuItem onClick={() => onContextMenu(node, "newFolder")}>
+        <ContextMenuItem 
+          onClick={() => onContextMenu(node, "newFolder")}
+          disabled={!canCreateInside}
+        >
           <FolderPlus className="mr-2 h-4 w-4" />
           New Folder
         </ContextMenuItem>
@@ -147,6 +156,11 @@ const FileOperationDialog = ({
 }: FileOperationDialogProps) => {
   const [value, setValue] = useState(defaultValue);
 
+  // Update value when defaultValue changes (for rename dialog)
+  useEffect(() => {
+    setValue(defaultValue);
+  }, [defaultValue]);
+
   const handleConfirm = () => {
     if (value.trim()) {
       onConfirm(value.trim());
@@ -161,8 +175,15 @@ const FileOperationDialog = ({
     }
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen) {
+      setValue(""); // Reset value when closing
+    }
+    onOpenChange(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -180,7 +201,7 @@ const FileOperationDialog = ({
             />
           </div>
           <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <Button variant="outline" onClick={() => handleOpenChange(false)}>
               Cancel
             </Button>
             <Button onClick={handleConfirm} disabled={!value.trim()}>
@@ -259,24 +280,30 @@ export const FileExplorer = () => {
   const handleContextMenu = useCallback((node: FlattenedNode, action: string) => {
     switch (action) {
       case "newFile":
-        setDialogState({
-          open: true,
-          type: "newFile",
-          title: "Create New File",
-          placeholder: "Enter file name (e.g., script.js)",
-          defaultValue: "",
-          targetNode: node,
-        });
+        // Only allow if target is a directory
+        if (node.type === "directory") {
+          setDialogState({
+            open: true,
+            type: "newFile",
+            title: "Create New File",
+            placeholder: "Enter file name (e.g., script.js)",
+            defaultValue: "",
+            targetNode: node,
+          });
+        }
         break;
       case "newFolder":
-        setDialogState({
-          open: true,
-          type: "newFolder",
-          title: "Create New Folder",
-          placeholder: "Enter folder name",
-          defaultValue: "",
-          targetNode: node,
-        });
+        // Only allow if target is a directory
+        if (node.type === "directory") {
+          setDialogState({
+            open: true,
+            type: "newFolder",
+            title: "Create New Folder",
+            placeholder: "Enter folder name",
+            defaultValue: "",
+            targetNode: node,
+          });
+        }
         break;
       case "rename":
         setDialogState({
@@ -284,13 +311,14 @@ export const FileExplorer = () => {
           type: "rename",
           title: `Rename ${node.type === "file" ? "File" : "Folder"}`,
           placeholder: `Enter new ${node.type} name`,
-          defaultValue: node.name,
+          defaultValue: node.name, // Prefill with current name
           targetNode: node,
         });
         break;
       case "delete":
         if (node.path) {
           removeFile(node.path);
+          // The store will handle clearing selectedFile if it matches the deleted file
         }
         break;
     }
@@ -303,22 +331,12 @@ export const FileExplorer = () => {
     
     switch (dialogState.type) {
       case "newFile":
-        if (dialogState.targetNode.type === "directory") {
-          addFile(targetPath, value, "");
-        } else {
-          // If target is a file, add to its parent directory
-          const parentPath = targetPath.split("/").slice(0, -1).join("/");
-          addFile(parentPath, value, "");
-        }
+        // Target is guaranteed to be a directory due to validation in handleContextMenu
+        addFile(targetPath, value, "");
         break;
       case "newFolder":
-        if (dialogState.targetNode.type === "directory") {
-          addDirectory(targetPath, value);
-        } else {
-          // If target is a file, add to its parent directory
-          const parentPath = targetPath.split("/").slice(0, -1).join("/");
-          addDirectory(parentPath, value);
-        }
+        // Target is guaranteed to be a directory due to validation in handleContextMenu
+        addDirectory(targetPath, value);
         break;
       case "rename":
         renameNode(targetPath, value);

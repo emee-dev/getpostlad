@@ -262,6 +262,7 @@ export const useFileTreeStore = create<FileTreeState>((set, get) => ({
   removeFile: (path) =>
     set((state) => ({
       files: removeNodeByPath(state.files, path),
+      // Clear selectedFile if it matches the deleted file
       selectedFile:
         state.selectedFile?.path === path ? null : state.selectedFile,
     })),
