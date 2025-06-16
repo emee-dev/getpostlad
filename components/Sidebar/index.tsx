@@ -106,7 +106,18 @@ const RootFileOperationDialog = ({
   );
 };
 
-const EmptyStateWithContextMenu = () => {
+const EmptyStateMessage = () => (
+  <div className="h-[600px] flex pt-24 justify-center text-center text-muted-foreground text-sm">
+    <div>
+      <div className="mb-2">No files in workspace</div>
+      <div className="text-xs opacity-70">
+        Right-click to add a file or folder
+      </div>
+    </div>
+  </div>
+);
+
+const SidebarWithRootContextMenu = ({ children }: { children: React.ReactNode }) => {
   const { addFile, addDirectory } = useFileTreeStore();
   
   // Dialog state for root-level operations
@@ -160,13 +171,8 @@ const EmptyStateWithContextMenu = () => {
     <>
       <ContextMenu>
         <ContextMenuTrigger asChild>
-          <div className="h-[600px] flex pt-24 justify-center text-center text-muted-foreground text-sm cursor-context-menu">
-            <div>
-              <div className="mb-2">No files in workspace</div>
-              <div className="text-xs opacity-70">
-                Right-click to add a file or folder
-              </div>
-            </div>
+          <div className="h-full w-full">
+            {children}
           </div>
         </ContextMenuTrigger>
         <ContextMenuContent>
@@ -212,13 +218,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <div className="ml-auto"></div>
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="h-[600px] scrollbar-hide">
-              {isEmptyFileTree ? (
-                <EmptyStateWithContextMenu />
-              ) : (
-                <FileExplorer />
-              )}
-            </SidebarMenu>
+            <SidebarWithRootContextMenu>
+              <SidebarMenu className="h-[600px] scrollbar-hide">
+                {isEmptyFileTree ? (
+                  <EmptyStateMessage />
+                ) : (
+                  <FileExplorer />
+                )}
+              </SidebarMenu>
+            </SidebarWithRootContextMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
@@ -233,13 +241,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <div className="ml-auto"></div>
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="h-[600px] scrollbar-hide">
-              {isEmptyFileTree ? (
-                <EmptyStateWithContextMenu />
-              ) : (
-                <FileExplorer />
-              )}
-            </SidebarMenu>
+            <SidebarWithRootContextMenu>
+              <SidebarMenu className="h-[600px] scrollbar-hide">
+                {isEmptyFileTree ? (
+                  <EmptyStateMessage />
+                ) : (
+                  <FileExplorer />
+                )}
+              </SidebarMenu>
+            </SidebarWithRootContextMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
