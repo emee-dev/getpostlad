@@ -12,7 +12,7 @@ import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
 import { MutableRefObject, Suspense, useEffect, useRef, useState } from "react";
-import { deserializeHttpFn, type DeserializedHTTP } from "@/lib/utils";
+import { deserializeHttpFn, interpolateVariables, type DeserializedHTTP } from "@/lib/utils";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { TestResult, scriptRuntime } from "@/lib/runtime";
 import { Button } from "@/components/ui/button";
@@ -77,7 +77,9 @@ export default function Home() {
       // Create new AbortController for this request
       abortControllerRef.current = new AbortController();
 
-      const deserializedSrc: DeserializedHTTP = deserializeHttpFn(src);
+      const formattedSrc = interpolateVariables(src);
+
+      const deserializedSrc: DeserializedHTTP = deserializeHttpFn(formattedSrc);
 
       // Execute pre_request script if present
       let preRequestResults: TestResult[] = [];
