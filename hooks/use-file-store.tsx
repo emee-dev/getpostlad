@@ -14,10 +14,13 @@ interface FileTreeState {
   expandedFolders: Set<string>;
   setSelectedFile: (file: FileNode | null) => void;
   addFile: (path: string, filename: string, content: string) => void;
+  addDirectory: (path: string, directoryName: string) => void;
   removeFile: (path: string) => void;
   updateFile: (path: string, content: string) => void;
+  renameNode: (oldPath: string, newName: string) => void;
   toggleFolder: (path: string) => void;
   setFiles: (files: FileNode[]) => void;
+  mergeFiles: (newFiles: FileNode[]) => void;
 }
 
 // Helper function to find a node by path
@@ -88,36 +91,92 @@ const updateNodeByPath = (
   });
 };
 
-// Helper function to add a node by path
+// Helper function to rename a node by path
+const renameNodeByPath = (
+  nodes: FileNode[],
+  oldPath: string,
+  newName: string
+): FileNode[] => {
+  const pathParts = oldPath.split("/").filter(Boolean);
+
+  if (pathParts.length === 1) {
+    return nodes.map((node) => {
+      if (node.name === pathParts[0]) {
+        const newPath = oldPath.replace(node.name, newName);
+        return {
+          ...node,
+          name: newName,
+          path: newPath,
+          children: node.children ? updateChildrenPaths(node.children, newPath) : undefined,
+        };
+      }
+      return node;
+    });
+  }
+
+  return nodes.map((node) => {
+    if (node.name === pathParts[0] && node.children) {
+      return {
+        ...node,
+        children: renameNodeByPath(
+          node.children,
+          pathParts.slice(1).join("/"),
+          newName
+        ),
+      };
+    }
+    return node;
+  });
+};
+
+// Helper function to update children paths after rename
+const updateChildrenPaths = (children: FileNode[], parentPath: string): FileNode[] => {
+  return children.map((child) => {
+    const newPath = `${parentPath}/${child.name}`;
+    return {
+      ...child,
+      path: newPath,
+      children: child.children ? updateChildrenPaths(child.children, newPath) : undefined,
+    };
+  });
+};
+
+// Helper function to add a file by path
 const addNodeByPath = (
   nodes: FileNode[],
   path: string,
-  filename: string,
-  content: string
+  name: string,
+  type: "file" | "directory",
+  content?: string
 ): FileNode[] => {
   const pathParts = path.split("/").filter(Boolean);
 
   if (pathParts.length === 0) {
     // Add to root
-    return [
-      ...nodes,
-      { name: filename, type: "file", content, path: filename },
-    ];
+    const newNode: FileNode = {
+      name,
+      type,
+      path: name,
+      ...(type === "file" && { content: content || "" }),
+      ...(type === "directory" && { children: [] }),
+    };
+    return [...nodes, newNode];
   }
 
   return nodes.map((node) => {
     if (node.name === pathParts[0]) {
       if (pathParts.length === 1) {
         // Add to this directory
-        const newFile: FileNode = {
-          name: filename,
-          type: "file",
-          content,
-          path: `${path}/${filename}`,
+        const newNode: FileNode = {
+          name,
+          type,
+          path: `${path}/${name}`,
+          ...(type === "file" && { content: content || "" }),
+          ...(type === "directory" && { children: [] }),
         };
         return {
           ...node,
-          children: [...(node.children || []), newFile],
+          children: [...(node.children || []), newNode],
         };
       } else if (node.children) {
         // Continue down the path
@@ -126,7 +185,8 @@ const addNodeByPath = (
           children: addNodeByPath(
             node.children,
             pathParts.slice(1).join("/"),
-            filename,
+            name,
+            type,
             content
           ),
         };
@@ -150,6 +210,38 @@ const addPathsToNodes = (nodes: FileNode[], parentPath = ""): FileNode[] => {
   });
 };
 
+// Helper function to merge file trees
+const mergeFileTrees = (existing: FileNode[], incoming: FileNode[]): FileNode[] => {
+  const merged = [...existing];
+  
+  for (const incomingNode of incoming) {
+    const existingIndex = merged.findIndex(node => node.name === incomingNode.name);
+    
+    if (existingIndex >= 0) {
+      const existingNode = merged[existingIndex];
+      
+      if (existingNode.type === "directory" && incomingNode.type === "directory") {
+        // Merge directories recursively
+        merged[existingIndex] = {
+          ...existingNode,
+          children: mergeFileTrees(
+            existingNode.children || [],
+            incomingNode.children || []
+          ),
+        };
+      } else {
+        // Replace with incoming node (file or type mismatch)
+        merged[existingIndex] = incomingNode;
+      }
+    } else {
+      // Add new node
+      merged.push(incomingNode);
+    }
+  }
+  
+  return merged;
+};
+
 export const useFileTreeStore = create<FileTreeState>((set, get) => ({
   files: [],
   selectedFile: null,
@@ -159,7 +251,12 @@ export const useFileTreeStore = create<FileTreeState>((set, get) => ({
 
   addFile: (path, filename, content) =>
     set((state) => ({
-      files: addNodeByPath(state.files, path, filename, content),
+      files: addNodeByPath(state.files, path, filename, "file", content),
+    })),
+
+  addDirectory: (path, directoryName) =>
+    set((state) => ({
+      files: addNodeByPath(state.files, path, directoryName, "directory"),
     })),
 
   removeFile: (path) =>
@@ -183,6 +280,23 @@ export const useFileTreeStore = create<FileTreeState>((set, get) => ({
       };
     }),
 
+  renameNode: (oldPath, newName) =>
+    set((state) => {
+      const updatedFiles = renameNodeByPath(state.files, oldPath, newName);
+      const pathParts = oldPath.split("/");
+      const newPath = [...pathParts.slice(0, -1), newName].join("/");
+      
+      const updatedSelectedFile =
+        state.selectedFile?.path === oldPath
+          ? { ...state.selectedFile, name: newName, path: newPath }
+          : state.selectedFile;
+
+      return {
+        files: updatedFiles,
+        selectedFile: updatedSelectedFile,
+      };
+    }),
+
   toggleFolder: (path) =>
     set((state) => {
       const newExpanded = new Set(state.expandedFolders);
@@ -195,4 +309,9 @@ export const useFileTreeStore = create<FileTreeState>((set, get) => ({
     }),
 
   setFiles: (files) => set({ files: addPathsToNodes(files) }),
+
+  mergeFiles: (newFiles) =>
+    set((state) => ({
+      files: addPathsToNodes(mergeFileTrees(state.files, newFiles)),
+    })),
 }));

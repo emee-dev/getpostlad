@@ -36,7 +36,7 @@ export function ImportCollectionDialog({ open, onOpenChange }: ImportCollectionD
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [error, setError] = useState<string>("");
-  const { setFiles } = useFileTreeStore();
+  const { mergeFiles } = useFileTreeStore(); // Use mergeFiles instead of setFiles
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -74,8 +74,8 @@ export function ImportCollectionDialog({ open, onOpenChange }: ImportCollectionD
             throw new Error("No requests found in the collection");
           }
 
-          // Update the file tree
-          setFiles(fileNodes);
+          // Merge with existing files instead of replacing
+          mergeFiles(fileNodes);
           
           // Close dialog and reset state
           onOpenChange(false);
