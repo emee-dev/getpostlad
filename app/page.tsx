@@ -349,8 +349,8 @@ export default function Home() {
             />
           </section>
 
-          <footer className="flex items-center justify-center px-2 py-2 text-xs text-gray-500 border-t">
-            <div className="relative w-24 h-full">
+  <footer className="relative flex items-center justify-center px-2 py-2 text-xs text-gray-500 border-t">
+            <div className="relative w-24 h-full flex justify-center">
               <Link
                 href="https://bolt.new/"
                 className="absolute -top-5 bg-black dark:bg-transparent p-2 rounded"
@@ -362,6 +362,18 @@ export default function Home() {
                   height={75}
                 />
               </Link>
+            </div>
+
+            <div className="absolute right-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleCoffeeClick()}
+                className="hover:dark:text-yellow-200"
+              >
+                <Coffee className="mr-1 h-4 w-4" />
+                Buy me a coffee
+              </Button>
             </div>
           </footer>
         </SidebarInset>
