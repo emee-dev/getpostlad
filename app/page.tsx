@@ -14,7 +14,7 @@ import Link from "next/link";
 import { MutableRefObject, Suspense, useEffect, useRef, useState } from "react";
 import { deserializeHttpFn, interpolateVariables, type DeserializedHTTP } from "@/lib/utils";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-import { TestResult, scriptRuntime } from "@/lib/runtime";
+import { TestResult, preRequestRuntime, postResponseRuntime } from "@/lib/runtime";
 import { Button } from "@/components/ui/button";
 import { Coffee } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -92,16 +92,6 @@ export default function Home() {
 
       const deserializedSrc: DeserializedHTTP = deserializeHttpFn(formattedSrc);
 
-      // Execute pre_request script if present
-      let preRequestResults: TestResult[] = [];
-      if (deserializedSrc.pre_request) {
-        try {
-          preRequestResults = scriptRuntime(deserializedSrc.pre_request);
-        } catch (error) {
-          console.error("Error executing pre_request script:", error);
-        }
-      }
-
       // Create RequestScript instance
       const req = new RequestScript({
         url: deserializedSrc.url,
@@ -114,6 +104,16 @@ export default function Home() {
         text: deserializedSrc.text,
         environments,
       });
+
+      // Execute pre_request script if present
+      let preRequestResults: TestResult[] = [];
+      if (deserializedSrc.pre_request) {
+        try {
+          preRequestResults = preRequestRuntime(deserializedSrc.pre_request, req);
+        } catch (error) {
+          console.error("Error executing pre_request script:", error);
+        }
+      }
 
       // Build axios request config using RequestScript
       const axiosConfig: AxiosRequestConfig = {
@@ -172,7 +172,7 @@ export default function Home() {
       let postResponseResults: TestResult[] = [];
       if (deserializedSrc.post_response) {
         try {
-          postResponseResults = scriptRuntime(deserializedSrc.post_response);
+          postResponseResults = postResponseRuntime(deserializedSrc.post_response, res);
         } catch (error) {
           console.error("Error executing post_response script:", error);
         }
