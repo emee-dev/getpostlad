@@ -12,7 +12,11 @@ import { MouseEvent as ReactMouseEvent } from "react";
 
 export type DecoratorFn = (source: string) => void;
 
-const VARIABLE_PLACEHOLDER_REGEX = /\{\{([A-Z_]+)\}\}/g;
+// Updated regex to support wider range of variable names:
+// - Allows uppercase/lowercase letters, numbers, and underscores
+// - Allows optional whitespace around the variable name inside {{ and }}
+// - Disallows spaces inside the variable name itself
+const VARIABLE_PLACEHOLDER_REGEX = /\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\}\}/g;
 const VARIABLE_DECORATOR_SELECTOR = "cm-env-variable";
 
 type GetEnvironment = () => Environment | null;
@@ -113,7 +117,7 @@ class VariableWidget extends WidgetType {
           tooltip.remove();
         }
       }
-    };
+    }
   }
 
   eq(other: WidgetType): boolean {
