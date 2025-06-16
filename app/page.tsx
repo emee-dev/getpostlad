@@ -314,7 +314,7 @@ export default function Home() {
     }
   };
 
-    const handleCoffeeClick = () => {
+  const handleCoffeeClick = () => {
     window.open("https://www.buymeacoffee.com/emee_dev", "_blank");
   };
 
