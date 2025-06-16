@@ -18,6 +18,7 @@ import { TestResult, scriptRuntime } from "@/lib/runtime";
 import { Button } from "@/components/ui/button";
 import { Coffee } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { RequestScript, ResponseScript } from "@/lib/scripting";
 
 export type Header = {
   key: string;
@@ -101,83 +102,32 @@ export default function Home() {
         }
       }
 
-      // Build headers object from enabled headers
-      const headers: Record<string, string> = {};
-      if (deserializedSrc.headers) {
-        deserializedSrc.headers.forEach((header) => {
-          if (header.enabled) {
-            headers[header.key] = header.value;
-          }
-        });
-      }
-
-      // Build query parameters object from enabled query params
-      const params: Record<string, any> = {};
-      if (deserializedSrc.query) {
-        deserializedSrc.query.forEach((queryParam) => {
-          if (queryParam.enabled) {
-            params[queryParam.key] = queryParam.value;
-          }
-        });
-      }
-
-      // Build axios request config
-      const axiosConfig: AxiosRequestConfig = {
-        method: deserializedSrc.method.toLowerCase() as any,
+      // Create RequestScript instance
+      const req = new RequestScript({
         url: deserializedSrc.url,
-        headers,
-        params, // Add query parameters here
+        method: deserializedSrc.method,
+        headers: deserializedSrc.headers,
+        query: deserializedSrc.query,
+        body: deserializedSrc.body,
+        json: deserializedSrc.json,
+        xml: deserializedSrc.xml,
+        text: deserializedSrc.text,
+        environments,
+      });
+
+      // Build axios request config using RequestScript
+      const axiosConfig: AxiosRequestConfig = {
+        method: req.getMethod().toLowerCase() as any,
+        url: req.getUrl(),
+        headers: req.getHeaders(),
+        params: req.getQuery(),
         signal: abortControllerRef.current.signal, // Add abort signal
       };
 
-      // Add body/data if present
-      if (deserializedSrc.text !== undefined) {
-        axiosConfig.data = deserializedSrc.text;
-
-        if (axiosConfig.headers) {
-          axiosConfig.headers["Content-Type"] = "text/plain";
-        }
-      }
-
-      if (deserializedSrc.xml !== undefined) {
-        axiosConfig.data = deserializedSrc.xml;
-        if (axiosConfig.headers) {
-          axiosConfig.headers["Content-Type"] = "text/xml";
-        }
-      }
-
-      if (deserializedSrc.json !== undefined) {
-        axiosConfig.data = deserializedSrc.json;
-        if (axiosConfig.headers) {
-          axiosConfig.headers["Content-Type"] = "application/json";
-        }
-      }
-
-      // Default to body if defined
-      if (deserializedSrc.body !== undefined) {
-        let _default_body = deserializedSrc.body as "json" | "xml" | "text";
-
-        if (deserializedSrc.text !== undefined && _default_body === "text") {
-          axiosConfig.data = deserializedSrc.text;
-
-          if (axiosConfig.headers) {
-            axiosConfig.headers["Content-Type"] = "text/plain";
-          }
-        }
-
-        if (deserializedSrc.xml !== undefined && _default_body === "xml") {
-          axiosConfig.data = deserializedSrc.xml;
-          if (axiosConfig.headers) {
-            axiosConfig.headers["Content-Type"] = "text/xml";
-          }
-        }
-
-        if (deserializedSrc.json !== undefined && _default_body === "json") {
-          axiosConfig.data = deserializedSrc.json;
-          if (axiosConfig.headers) {
-            axiosConfig.headers["Content-Type"] = "application/json";
-          }
-        }
+      // Add body data if present
+      const bodyData = req.getBodyData();
+      if (bodyData !== null) {
+        axiosConfig.data = bodyData;
       }
 
       // Record start time for elapsed time calculation
@@ -188,20 +138,6 @@ export default function Home() {
 
       // Calculate elapsed time
       const elapsedTime = (Date.now() - startTime) / 1000;
-
-      // Execute post_response script if present
-      let postResponseResults: TestResult[] = [];
-      if (deserializedSrc.post_response) {
-        try {
-          postResponseResults = scriptRuntime(deserializedSrc.post_response);
-        } catch (error) {
-          console.error("Error executing post_response script:", error);
-        }
-      }
-
-      // Combine test results from pre_request and post_response
-      const combinedTestResults = [...preRequestResults, ...postResponseResults];
-      setTestResults(combinedTestResults);
 
       // Transform response headers to our format
       const responseHeaders: Header[] = Object.entries(response.headers).map(
@@ -222,13 +158,37 @@ export default function Home() {
       // Calculate content size
       const contentSize = new Blob([textResponse]).size;
 
-      // Set the response data
-      const responseData: ResponseData = {
+      // Create ResponseScript instance
+      const res = new ResponseScript({
         headers: responseHeaders,
         text_response: textResponse,
         status: response.status,
         elapsed_time: elapsedTime,
         content_size: contentSize,
+        environments,
+      });
+
+      // Execute post_response script if present
+      let postResponseResults: TestResult[] = [];
+      if (deserializedSrc.post_response) {
+        try {
+          postResponseResults = scriptRuntime(deserializedSrc.post_response);
+        } catch (error) {
+          console.error("Error executing post_response script:", error);
+        }
+      }
+
+      // Combine test results from pre_request and post_response
+      const combinedTestResults = [...preRequestResults, ...postResponseResults];
+      setTestResults(combinedTestResults);
+
+      // Set the response data using ResponseScript
+      const responseData: ResponseData = {
+        headers: responseHeaders,
+        text_response: res.getText(),
+        status: res.getStatus(),
+        elapsed_time: res.getElapsedTime(),
+        content_size: res.getContentSize(),
       };
 
       setData(responseData);
@@ -284,12 +244,21 @@ export default function Home() {
 
         const contentSize = new Blob([textResponse]).size;
 
-        const errorResponseData: ResponseData = {
+        // Create ResponseScript for error response
+        const errorRes = new ResponseScript({
           headers: responseHeaders,
           text_response: textResponse,
           status: error.response.status,
           elapsed_time: elapsedTime,
           content_size: contentSize,
+        });
+
+        const errorResponseData: ResponseData = {
+          headers: responseHeaders,
+          text_response: errorRes.getText(),
+          status: errorRes.getStatus(),
+          elapsed_time: errorRes.getElapsedTime(),
+          content_size: errorRes.getContentSize(),
         };
 
         setData(errorResponseData);
