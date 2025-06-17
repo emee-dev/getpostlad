@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Coffee } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { RequestScript, ResponseScript } from "@/lib/scripting";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 
 export type Header = {
   key: string;
@@ -59,7 +61,7 @@ const POST = () => {
 export default function Home() {
   const { theme } = useTheme();
   const { selectedFile, updateFile } = useFileTreeStore();
-  const { scripting, selectedEnvironment } = useWorkspace();
+  const { scripting, selectedEnvironment, selectedWorkspace } = useWorkspace();
   
   const [code, setCode] = useState(template);
   const [isPending, setIsPending] = useState(false);
@@ -68,6 +70,9 @@ export default function Home() {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const editor = useRef<EditorView | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Convex mutation for saving response history
+  const createResponseHistory = useMutation(api.request_history.createResponseHistory);
 
   const onSend = async (src: string) => {
     console.log("Sending request:", src);
@@ -192,6 +197,24 @@ export default function Home() {
       };
 
       setData(responseData);
+
+      // Save response to history if workspace and file are selected
+      if (selectedWorkspace && selectedFile?.path) {
+        try {
+          await createResponseHistory({
+            headers: responseHeaders,
+            text_response: res.getText(),
+            status: res.getStatus(),
+            elapsed_time: res.getElapsedTime(),
+            content_size: res.getContentSize(),
+            workspaceId: selectedWorkspace._id,
+            userId: "user123", // Replace with actual user ID
+            requestPath: selectedFile.path,
+          });
+        } catch (error) {
+          console.error("Failed to save response history:", error);
+        }
+      }
     } catch (error: any) {
       console.error("Request failed:", error);
 
@@ -262,6 +285,24 @@ export default function Home() {
         };
 
         setData(errorResponseData);
+
+        // Save error response to history if workspace and file are selected
+        if (selectedWorkspace && selectedFile?.path) {
+          try {
+            await createResponseHistory({
+              headers: responseHeaders,
+              text_response: errorRes.getText(),
+              status: errorRes.getStatus(),
+              elapsed_time: errorRes.getElapsedTime(),
+              content_size: errorRes.getContentSize(),
+              workspaceId: selectedWorkspace._id,
+              userId: "user123", // Replace with actual user ID
+              requestPath: selectedFile.path,
+            });
+          } catch (historyError) {
+            console.error("Failed to save error response history:", historyError);
+          }
+        }
       } else {
         // Network error or other issues
         const errorResponseData: ResponseData = {
@@ -299,6 +340,10 @@ export default function Home() {
     window.open("https://www.buymeacoffee.com/emee_dev", "_blank");
   };
 
+  const handleLoadHistoryResponse = (historyData: ResponseData) => {
+    setData(historyData);
+  };
+
   // Set the content of selected file to code editor
   useEffect(() => {
     if (selectedFile && selectedFile.type === "file") {
@@ -333,6 +378,7 @@ export default function Home() {
               isResultPanelVisible={isResultPanelVisible}
               onCancel={onCancel}
               testResults={testResults}
+              onLoadHistoryResponse={handleLoadHistoryResponse}
             />
           </section>
 
@@ -379,7 +425,8 @@ const HTTP_Layout = ({
   isPending,
   isResultPanelVisible,
   onCancel,
-  testResults
+  testResults,
+  onLoadHistoryResponse
 }: {
   isResultPanelVisible: boolean;
   data: ResponseData | null;
@@ -391,6 +438,7 @@ const HTTP_Layout = ({
   setCode: (val: string) => void;
   onCancel: () => void;
   testResults: TestResult[];
+  onLoadHistoryResponse: (historyData: ResponseData) => void;
 }) => {
   return (
     <div className="flex h-full">
@@ -427,6 +475,7 @@ const HTTP_Layout = ({
           isPending={isPending} 
           onCancel={onCancel} 
           testResults={testResults}
+          onLoadHistoryResponse={onLoadHistoryResponse}
         />
       </div>
     </div>

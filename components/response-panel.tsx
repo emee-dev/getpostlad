@@ -10,6 +10,18 @@ import { TestResult } from "@/lib/runtime";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useFileTreeStore } from "@/hooks/use-file-store";
+
+interface ResponsePanelProps {
+  data: ResponseData | null;
+  theme: string | undefined;
+  isPending: boolean;
+  onCancel: () => void;
+  testResults?: TestResult[];
+  onLoadHistoryResponse?: (historyData: ResponseData) => void;
+}
 
 export function ResponsePanel({
   data,
@@ -17,22 +29,83 @@ export function ResponsePanel({
   theme,
   onCancel,
   testResults,
-}: {
-  data: ResponseData | null;
-  theme: string | undefined;
-  isPending: boolean;
-  onCancel: () => void;
-  testResults?: TestResult[];
-}) {
+  onLoadHistoryResponse,
+}: ResponsePanelProps) {
   
-  const { scripting, setScripting } = useWorkspace();
+  const { scripting, setScripting, selectedWorkspace } = useWorkspace();
+  const { selectedFile } = useFileTreeStore();
+  
+  // Convex mutations and queries
+  const deleteHistory = useMutation(api.request_history.deleteHistory);
+  const deleteAllHistories = useMutation(api.request_history.deleteHistoriesByPath);
+  
+  // Get response histories for current request path
+  const histories = useQuery(
+    api.request_history.getHistories,
+    selectedWorkspace && selectedFile?.path ? {
+      userId: "user123", // Replace with actual user ID
+      workspaceId: selectedWorkspace._id,
+      requestPath: selectedFile.path,
+    } : "skip"
+  );
 
-  const onSaveToFile = () => {}; // Do not implement this at the moment
-  const onDeleteHistory = () => {};
-  const onCopyToClipboard = () => {}; // Do not implement this at the moment
+  // Find current response in history (if it exists)
+  const currentHistoryEntry = histories?.find(h => 
+    h.status === data?.status && 
+    h.text_response === data?.text_response
+  );
+
+  const onSaveToFile = () => {
+    // TODO: Implement save to file functionality
+    console.log("Save to file - not implemented yet");
+  };
+
+  const onDeleteHistory = async () => {
+    if (currentHistoryEntry) {
+      try {
+        await deleteHistory({ id: currentHistoryEntry._id });
+        console.log("Response history deleted");
+      } catch (error) {
+        console.error("Failed to delete response history:", error);
+      }
+    }
+  };
+
+  const onDeleteAllHistories = async () => {
+    if (selectedWorkspace && selectedFile?.path) {
+      try {
+        await deleteAllHistories({
+          userId: "user123", // Replace with actual user ID
+          workspaceId: selectedWorkspace._id,
+          requestPath: selectedFile.path,
+        });
+        console.log("All response histories deleted");
+      } catch (error) {
+        console.error("Failed to delete all response histories:", error);
+      }
+    }
+  };
+
+  const onCopyToClipboard = () => {
+    // TODO: Implement copy to clipboard functionality
+    console.log("Copy to clipboard - not implemented yet");
+  };
   
-  const onToggleScripting = () => {
-  // if run-once set to auto-run vice-versa
+  const onToggleScripting = (mode: "run-once" | "auto-run") => {
+    setScripting(mode);
+  };
+
+  const onLoadHistory = (historyItem: any) => {
+    if (onLoadHistoryResponse) {
+      const historyResponseData: ResponseData = {
+        headers: historyItem.headers,
+        text_response: historyItem.text_response,
+        status: historyItem.status,
+        elapsed_time: historyItem.elapsed_time,
+        content_size: historyItem.content_size,
+      };
+      onLoadHistoryResponse(historyResponseData);
+    }
   };
   
   if (isPending) {
@@ -80,7 +153,7 @@ export function ResponsePanel({
           </div>
         </div>
 
-<DropdownMenu>
+        <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
@@ -92,30 +165,74 @@ export function ResponsePanel({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" side="left">
-            <DropdownMenuItem>Save to File</DropdownMenuItem>
-            <DropdownMenuItem>Delete</DropdownMenuItem>
-            <DropdownMenuItem>Copy to clipboard</DropdownMenuItem>
+            <DropdownMenuItem onClick={onSaveToFile}>
+              Save to File
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={onDeleteHistory}
+              disabled={!currentHistoryEntry}
+            >
+              Delete
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onCopyToClipboard}>
+              Copy to clipboard
+            </DropdownMenuItem>
+            
             <div className="flex items-center px-2 gap-x-1 font-geist text-xs py-2">
-              <span className="text-muted-foreground/80">Scripts</span>{" "}
+              <span className="text-muted-foreground/80">Scripts</span>
               <Separator orientation="horizontal" className="ml-1 w-[65%]" />
             </div>
-            <DropdownMenuCheckboxItem checked={scripting === "run-once"}>
+            
+            <DropdownMenuCheckboxItem 
+              checked={scripting === "run-once"}
+              onCheckedChange={() => onToggleScripting("run-once")}
+            >
               Run once
             </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem checked={scripting === "auto-run"}>
+            <DropdownMenuCheckboxItem 
+              checked={scripting === "auto-run"}
+              onCheckedChange={() => onToggleScripting("auto-run")}
+            >
               Auto-run on Edit
             </DropdownMenuCheckboxItem>
+            
             <div className="flex items-center px-2 gap-x-1 font-geist text-xs py-2">
-              <span className="text-muted-foreground/80">History</span>{" "}
-              <Separator orientation="horizontal" className="ml-1  w-[65%]" />
+              <span className="text-muted-foreground/80">History</span>
+              <Separator orientation="horizontal" className="ml-1 w-[65%]" />
             </div>
-            <DropdownMenuItem>Delete all responses</DropdownMenuItem>
-            <Separator orientation="horizontal" className="my-0.5" />
-            // map through the history from convex and list response
-            <DropdownMenuCheckboxItem>
-              <span>200</span> <ChevronRight className="size-4 mx-1" />{" "}
-              <span>34 ms</span>
-            </DropdownMenuCheckboxItem>
+            
+            <DropdownMenuItem onClick={onDeleteAllHistories}>
+              Delete all responses
+            </DropdownMenuItem>
+            
+            {histories && histories.length > 0 && (
+              <>
+                <Separator orientation="horizontal" className="my-0.5" />
+                {histories.map((historyItem) => (
+                  <DropdownMenuItem
+                    key={historyItem._id}
+                    onClick={() => onLoadHistory(historyItem)}
+                    className="flex items-center justify-between"
+                  >
+                    <div className="flex items-center">
+                      <span className={`font-mono text-xs ${
+                        historyItem.status >= 200 && historyItem.status < 300 
+                          ? 'text-green-600 dark:text-green-400' 
+                          : historyItem.status >= 400 
+                          ? 'text-red-600 dark:text-red-400'
+                          : 'text-yellow-600 dark:text-yellow-400'
+                      }`}>
+                        {historyItem.status}
+                      </span>
+                      <ChevronRight className="size-3 mx-1 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">
+                        {Math.round(historyItem.elapsed_time * 1000)} ms
+                      </span>
+                    </div>
+                  </DropdownMenuItem>
+                ))}
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
