@@ -314,7 +314,7 @@ export function CreateWorkspaceDialog() {
             <DropdownMenuItem disabled>No environments found.</DropdownMenuItem>
           )}
 
-          {selectedWorkspace && selectedEnvironment && (
+          {selectedWorkspace  && (
             <ManageEnvironmentDialog
               environments={environments}
               workspaceId={selectedWorkspace._id}
