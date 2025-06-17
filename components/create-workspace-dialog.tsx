@@ -156,7 +156,7 @@ export function CreateWorkspaceDialog() {
     selectedWorkspace ? { workspaceId: selectedWorkspace._id } : "skip"
   );
 
-  // Reset dialog when close
+  // Reset dialog when closed
   useEffect(() => {
     if (open === false) {
       handleDialogClose();
