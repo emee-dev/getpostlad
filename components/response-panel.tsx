@@ -7,7 +7,7 @@ import { CheckCheck, Dot, Lightbulb, Menu } from "lucide-react";
 import { Suspense } from "react";
 import { TestResults } from "@/components/test-results";
 import { TestResult } from "@/lib/runtime";
-import { ScriptingMode } from "@/hooks/use-workspace";
+import { useWorkspace } from "@/hooks/use-workspace";
 
 export function ResponsePanel({
   data,
@@ -15,15 +15,16 @@ export function ResponsePanel({
   theme,
   onCancel,
   testResults,
-  scripting
 }: {
-  scripting: ScriptingMode,
   data: ResponseData | null;
   theme: string | undefined;
   isPending: boolean;
   onCancel: () => void;
   testResults?: TestResult[];
 }) {
+  
+  const { scripting, setScripting } = useWorkspace();
+  
   if (isPending) {
     return (
       <div className="h-full flex items-center justify-center">
