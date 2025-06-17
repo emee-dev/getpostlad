@@ -14,6 +14,7 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as environments from "../environments.js";
+import type * as request_history from "../request_history.js";
 import type * as workspaces from "../workspaces.js";
 
 /**
@@ -26,6 +27,7 @@ import type * as workspaces from "../workspaces.js";
  */
 declare const fullApi: ApiFromModules<{
   environments: typeof environments;
+  request_history: typeof request_history;
   workspaces: typeof workspaces;
 }>;
 export declare const api: FilterApi<

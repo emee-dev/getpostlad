@@ -14,11 +14,31 @@ export const create = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    // Convert name to lowercase to avoid case-sensitive duplicates
+    const lowercaseName = args.name.toLowerCase().trim();
+    
+    if (!lowercaseName) {
+      throw new Error("Environment name cannot be empty");
+    }
+
+    // Check for duplicate names (case-insensitive) within the same workspace
+    const existingEnvironment = await ctx.db
+      .query("environments")
+      .withIndex("by_workspace_name", (q) =>
+        q.eq("workspaceId", args.workspaceId).eq("name", lowercaseName)
+      )
+      .first();
+
+    if (existingEnvironment) {
+      throw new Error(`Environment with name "${lowercaseName}" already exists in this workspace`);
+    }
+
     const environmentId = await ctx.db.insert("environments", {
       workspaceId: args.workspaceId,
-      name: args.name,
+      name: lowercaseName,
       variables: args.variables,
     });
+    
     return environmentId;
   },
 });
