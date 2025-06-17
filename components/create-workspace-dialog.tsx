@@ -156,6 +156,12 @@ export function CreateWorkspaceDialog() {
     selectedWorkspace ? { workspaceId: selectedWorkspace._id } : "skip"
   );
 
+    useEffect(() => {
+    if (open === false) {
+      handleDialogClose();
+    }
+  }, [open]);
+
   useEffect(() => {
     if (allWorkspaces) {
       setSelectedWorkspace(allWorkspaces[0]);
@@ -250,14 +256,6 @@ export function CreateWorkspaceDialog() {
                 </div>
 
                 <div className="flex gap-2">
-                  {/* <Button 
-                    variant="outline" 
-                    onClick={handleDialogClose} 
-                    className="flex-1"
-                    disabled={isCreating}
-                  >
-                    Cancel
-                  </Button> */}
                   <Button 
                     onClick={handleCreate} 
                     className="flex-1"
