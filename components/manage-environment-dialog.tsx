@@ -29,7 +29,7 @@ import { Dispatch, SetStateAction, useState } from "react";
 interface ManageEnvironmentDialogProps {
   workspaceId: Workspace["_id"];
   environments: Environment[];
-  selectedEnvironment: Environment;
+  selectedEnvironment: Environment | null;
   setIsEnvOpen?: Dispatch<SetStateAction<boolean>>;
 }
 
