@@ -62,16 +62,16 @@ export const getHistories = query({
     requestPath: v.string(),
   },
   handler: async (ctx, args) => {
-      // Get all histories for a specific request path
-      return await ctx.db
-        .query("request_history")
-        .withIndex("by_user_workspace_path", (q) =>
-          q.eq("userId", args.userId)
-           .eq("workspaceId", args.workspaceId)
-           .eq("requestPath", args.requestPath)
-        )
-        .order("desc")
-        .collect();
+    // Get all histories for a specific request path
+    return await ctx.db
+      .query("request_history")
+      .withIndex("by_user_workspace_path", (q) =>
+        q.eq("userId", args.userId)
+         .eq("workspaceId", args.workspaceId)
+         .eq("requestPath", args.requestPath)
+      )
+      .order("desc")
+      .collect();
   },
 });
 
