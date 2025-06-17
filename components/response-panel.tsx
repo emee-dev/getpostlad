@@ -7,6 +7,7 @@ import { CheckCheck, Dot, Lightbulb, Menu } from "lucide-react";
 import { Suspense } from "react";
 import { TestResults } from "@/components/test-results";
 import { TestResult } from "@/lib/runtime";
+import { ScriptingMode } from "@/hooks/use-workspace";
 
 export function ResponsePanel({
   data,
@@ -14,8 +15,9 @@ export function ResponsePanel({
   theme,
   onCancel,
   testResults,
+  scripting
 }: {
-  data: ResponseData | null;
+  scripting: ScriptingMode,
   theme: string | undefined;
   isPending: boolean;
   onCancel: () => void;
