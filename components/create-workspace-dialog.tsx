@@ -242,22 +242,22 @@ export function CreateWorkspaceDialog() {
                   />
                   <p className="text-xs text-muted-foreground">
                     {!isPathManuallyEdited && name ? (
-                      <>Auto-generated from workspace name. You can customize it.</>
+                      <>Auto-generated. You can customize it.</>
                     ) : (
-                      <>This will be used in URLs and must be unique.</>
+                      <> Must be unique.</>
                     )}
                   </p>
                 </div>
 
                 <div className="flex gap-2">
-                  <Button 
+                  {/* <Button 
                     variant="outline" 
                     onClick={handleDialogClose} 
                     className="flex-1"
                     disabled={isCreating}
                   >
                     Cancel
-                  </Button>
+                  </Button> */}
                   <Button 
                     onClick={handleCreate} 
                     className="flex-1"
