@@ -26,6 +26,14 @@ export function ResponsePanel({
 }) {
   
   const { scripting, setScripting } = useWorkspace();
+
+  const onSaveToFile = () => {}; // Do not implement this at the moment
+  const onDeleteHistory = () => {};
+  const onCopyToClipboard = () => {}; // Do not implement this at the moment
+  
+  const onToggleScripting = () => {
+  // if run-once set to auto-run vice-versa
+  };
   
   if (isPending) {
     return (
