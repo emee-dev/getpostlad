@@ -35,27 +35,7 @@ export const Navbar = (props: { className?: string }) => {
             className="h-4 bg-muted-foreground"
           />
         </div>
-        <div className="flex items-center pl-2 ml-1 gap-x-1">
-          {/* <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 hover:bg-muted-foreground/20 hover:dark:bg-muted-foreground/15"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                New
-                <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem onClick={() => setIsImportDialogOpen(true)}>
-                <Upload className="mr-2 h-4 w-4" />
-                Import Collection
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu> */}
-          
+        <div className="flex items-center pl-2 ml-1 gap-x-1">    
           <CreateWorkspaceDialog />
         </div>
       </div>
