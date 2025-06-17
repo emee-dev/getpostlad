@@ -62,7 +62,6 @@ export const getHistories = query({
     requestPath: v.string(),
   },
   handler: async (ctx, args) => {
-    if (args.requestPath) {
       // Get all histories for a specific request path
       return await ctx.db
         .query("request_history")
@@ -73,17 +72,6 @@ export const getHistories = query({
         )
         .order("desc")
         .collect();
-    } else {
-      // Get all histories for the workspace
-      return await ctx.db
-        .query("request_history")
-        .withIndex("by_user_workspace", (q) =>
-          q.eq("userId", args.userId)
-           .eq("workspaceId", args.workspaceId)
-        )
-        .order("desc")
-        .collect();
-    }
   },
 });
 
