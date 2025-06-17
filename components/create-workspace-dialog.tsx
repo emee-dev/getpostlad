@@ -19,9 +19,10 @@ import { Label } from "@/components/ui/label";
 import { api } from "@/convex/_generated/api";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useMutation, useQuery } from "convex/react";
-import { Check } from "lucide-react";
+import { Check, AlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ManageEnvironmentDialog } from "./manage-environment-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Helper function to generate path from name (same as backend)
 function generatePath(name: string): string {
@@ -39,6 +40,9 @@ export function CreateWorkspaceDialog() {
   const [isPathManuallyEdited, setIsPathManuallyEdited] = useState(false);
   const [open, setOpen] = useState(false);
   const [isEnvOpen, setIsEnvOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'info' | 'error'; text: string } | null>(null);
+  
   const {
     selectedWorkspace,
     setSelectedWorkspace,
@@ -51,6 +55,10 @@ export function CreateWorkspaceDialog() {
   } = useWorkspace();
 
   const createWorkspace = useMutation(api.workspaces.create);
+  const getWorkspaceByPath = useQuery(
+    api.workspaces.getByPath,
+    path ? { path: path.toLowerCase().trim() } : "skip"
+  );
   const allWorkspaces = useQuery(api.workspaces.list, { userId: "user123" }); // Replace with actual user ID
 
   // Auto-generate path when name changes (only if path hasn't been manually edited)
@@ -60,22 +68,65 @@ export function CreateWorkspaceDialog() {
     }
   }, [name, isPathManuallyEdited]);
 
+  // Check if workspace exists when path changes
+  useEffect(() => {
+    if (path && getWorkspaceByPath) {
+      setMessage({
+        type: 'info',
+        text: `Workspace "${getWorkspaceByPath.name}" already exists with this path. Creating will select the existing workspace.`
+      });
+    } else {
+      setMessage(null);
+    }
+  }, [path, getWorkspaceByPath]);
+
   const handleCreate = async () => {
     if (!name.trim()) return;
     
+    setIsCreating(true);
+    setMessage(null);
+    
     try {
-      await createWorkspace({ 
+      const workspaceId = await createWorkspace({ 
         name: name.trim(), 
         userId: "user123", // Replace with actual user ID
         path: path.trim() || undefined // Send path if provided, otherwise let backend generate
       });
-      setName("");
-      setPath("");
-      setIsPathManuallyEdited(false);
-      setOpen(false);
+
+      // Check if this was an existing workspace
+      const isExisting = getWorkspaceByPath && getWorkspaceByPath._id === workspaceId;
+      
+      if (isExisting) {
+        setMessage({
+          type: 'success',
+          text: `Selected existing workspace "${getWorkspaceByPath.name}"`
+        });
+        // Set the existing workspace as selected
+        setSelectedWorkspace(getWorkspaceByPath);
+      } else {
+        setMessage({
+          type: 'success',
+          text: `Successfully created workspace "${name.trim()}"`
+        });
+      }
+
+      // Reset form after a brief delay to show the success message
+      setTimeout(() => {
+        setName("");
+        setPath("");
+        setIsPathManuallyEdited(false);
+        setMessage(null);
+        setOpen(false);
+      }, 1500);
+
     } catch (error) {
       console.error("Error creating workspace:", error);
-      // You might want to show an error toast here
+      setMessage({
+        type: 'error',
+        text: error instanceof Error ? error.message : "Failed to create workspace"
+      });
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -96,6 +147,7 @@ export function CreateWorkspaceDialog() {
     setName("");
     setPath("");
     setIsPathManuallyEdited(false);
+    setMessage(null);
     setOpen(false);
   };
 
@@ -156,6 +208,13 @@ export function CreateWorkspaceDialog() {
                 <DialogTitle>Create New Workspace</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 py-4">
+                {message && (
+                  <Alert variant={message.type === 'error' ? 'destructive' : 'default'}>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{message.text}</AlertDescription>
+                  </Alert>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="name">Workspace Name</Label>
                   <Input
@@ -163,6 +222,7 @@ export function CreateWorkspaceDialog() {
                     placeholder="My API Project"
                     value={name}
                     onChange={(e) => handleNameChange(e.target.value)}
+                    disabled={isCreating}
                   />
                 </div>
                 
@@ -178,6 +238,7 @@ export function CreateWorkspaceDialog() {
                     placeholder="my-api-project"
                     value={path}
                     onChange={(e) => handlePathChange(e.target.value)}
+                    disabled={isCreating}
                   />
                   <p className="text-xs text-muted-foreground">
                     {!isPathManuallyEdited && name ? (
@@ -189,15 +250,27 @@ export function CreateWorkspaceDialog() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={handleDialogClose} className="flex-1">
+                  <Button 
+                    variant="outline" 
+                    onClick={handleDialogClose} 
+                    className="flex-1"
+                    disabled={isCreating}
+                  >
                     Cancel
                   </Button>
                   <Button 
                     onClick={handleCreate} 
                     className="flex-1"
-                    disabled={!name.trim()}
+                    disabled={!name.trim() || isCreating}
                   >
-                    Create
+                    {isCreating ? (
+                      <>
+                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                        {getWorkspaceByPath ? 'Selecting...' : 'Creating...'}
+                      </>
+                    ) : (
+                      getWorkspaceByPath ? 'Select Existing' : 'Create'
+                    )}
                   </Button>
                 </div>
               </div>

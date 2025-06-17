@@ -31,38 +31,18 @@ export const create = mutation({
       throw new Error("Workspace path cannot be empty");
     }
 
-    // Check for duplicate paths (case-insensitive)
+    // Check for existing workspace with the same path
     const existingWorkspace = await ctx.db
       .query("workspaces")
       .withIndex("by_path", (q) => q.eq("path", workspacePath))
       .first();
 
     if (existingWorkspace) {
-      // If path already exists, append a number to make it unique
-      let counter = 1;
-      let uniquePath = `${workspacePath}-${counter}`;
-      
-      while (true) {
-        const pathExists = await ctx.db
-          .query("workspaces")
-          .withIndex("by_path", (q) => q.eq("path", uniquePath))
-          .first();
-        
-        if (!pathExists) {
-          workspacePath = uniquePath;
-          break;
-        }
-        
-        counter++;
-        uniquePath = `${workspacePath}-${counter}`;
-        
-        // Prevent infinite loop
-        if (counter > 1000) {
-          throw new Error("Unable to generate unique workspace path");
-        }
-      }
+      // If workspace already exists, just return its ID (do nothing)
+      return existingWorkspace._id;
     }
 
+    // Create new workspace since it doesn't exist
     const workspaceId = await ctx.db.insert("workspaces", {
       name: trimmedName,
       path: workspacePath,
