@@ -251,7 +251,7 @@ export function CreateWorkspaceDialog() {
                     {!isPathManuallyEdited && name ? (
                       <>Auto-generated. You can customize it.</>
                     ) : (
-                      <> Must be unique.</>
+                      <> Path must be unique.</>
                     )}
                   </p>
                 </div>
