@@ -23,6 +23,8 @@ export type Environment = {
   variables: Variable[];
 };
 
+export type ScriptingMode = "run-once" | "auto-run";
+
 interface WorkspaceState {
   workspaces: Workspace[];
   selectedWorkspace: Workspace | null;
@@ -34,6 +36,10 @@ interface WorkspaceState {
   selectedEnvironment: Environment | null;
   setSelectedEnvironment: (ws: Environment) => void;
   setEnvironments: (ws: Environment[]) => void;
+
+  // Scripting mode
+  scripting: ScriptingMode;
+  setScripting: (mode: ScriptingMode) => void;
 }
 
 export const useWorkspace = create<WorkspaceState>((set, get) => ({
@@ -42,9 +48,13 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
   selectedWorkspace: null,
   selectedEnvironment: null,
   expandedFolders: new Set(),
+  scripting: "run-once", // Default value
 
   setSelectedWorkspace: (ws) => set({ selectedWorkspace: ws }),
   setWorkspaces: (ws) => set({ workspaces: ws }),
   setSelectedEnvironment: (env) => set({ selectedEnvironment: env }),
   setEnvironments: (env) => set({ environments: env }),
+  
+  // Toggle between the two scripting modes
+  setScripting: (mode) => set({ scripting: mode }),
 }));
