@@ -5,6 +5,7 @@ export type Workspace = {
   _id: Id<"workspaces">;
   _creationTime: number;
   name: string;
+  path: string; // Added path field
   userId: string;
 };
 
