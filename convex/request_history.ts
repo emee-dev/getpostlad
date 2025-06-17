@@ -55,47 +55,11 @@ export const createResponseHistory = mutation({
   },
 });
 
-export const findResponse = query({
+export const getHistories = query({
   args: {
     userId: v.string(),
     workspaceId: v.id("workspaces"),
     requestPath: v.string(),
-    status: v.optional(v.number()), // Optional status filter
-  },
-  handler: async (ctx, args) => {
-    if (args.status !== undefined) {
-      // Find specific response by status
-      return await ctx.db
-        .query("request_history")
-        .withIndex("by_user_workspace_path_status", (q) =>
-          q.eq("userId", args.userId)
-           .eq("workspaceId", args.workspaceId)
-           .eq("requestPath", args.requestPath)
-           .eq("status", args.status)
-        )
-        .first();
-    } else {
-      // Find most recent response for the path
-      const responses = await ctx.db
-        .query("request_history")
-        .withIndex("by_user_workspace_path", (q) =>
-          q.eq("userId", args.userId)
-           .eq("workspaceId", args.workspaceId)
-           .eq("requestPath", args.requestPath)
-        )
-        .order("desc")
-        .take(1);
-      
-      return responses[0] || null;
-    }
-  },
-});
-
-export const findHistories = query({
-  args: {
-    userId: v.string(),
-    workspaceId: v.id("workspaces"),
-    requestPath: v.optional(v.string()), // Optional path filter
   },
   handler: async (ctx, args) => {
     if (args.requestPath) {
@@ -152,25 +116,5 @@ export const deleteHistoriesByPath = mutation({
     for (const history of histories) {
       await ctx.db.delete(history._id);
     }
-  },
-});
-
-export const getRecentHistories = query({
-  args: {
-    userId: v.string(),
-    workspaceId: v.id("workspaces"),
-    limit: v.optional(v.number()),
-  },
-  handler: async (ctx, args) => {
-    const limit = args.limit || 50;
-    
-    return await ctx.db
-      .query("request_history")
-      .withIndex("by_user_workspace", (q) =>
-        q.eq("userId", args.userId)
-         .eq("workspaceId", args.workspaceId)
-      )
-      .order("desc")
-      .take(limit);
   },
 });
