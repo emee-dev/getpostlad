@@ -18,6 +18,7 @@ export function ResponsePanel({
   scripting
 }: {
   scripting: ScriptingMode,
+  data: ResponseData | null;
   theme: string | undefined;
   isPending: boolean;
   onCancel: () => void;
