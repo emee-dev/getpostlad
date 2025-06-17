@@ -73,7 +73,7 @@ export function CreateWorkspaceDialog() {
     if (path && getWorkspaceByPath) {
       setMessage({
         type: 'info',
-        text: `Workspace "${getWorkspaceByPath.name}" already exists with this path. Creating will select the existing workspace.`
+        text: `Workspace "${getWorkspaceByPath.name}" already exists with this path.`
       });
     } else {
       setMessage(null);
