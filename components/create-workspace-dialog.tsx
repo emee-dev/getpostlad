@@ -284,7 +284,7 @@ export function CreateWorkspaceDialog() {
           >
             {selectedEnvironment && <span>{selectedEnvironment.name}</span>}
 
-            {!selectedEnvironment && <span>Environments</span>}
+              {!selectedEnvironment && <span>Set Env</span>}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" side="right">
