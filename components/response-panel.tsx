@@ -1,13 +1,15 @@
 import { ResponseData } from "@/app/page";
 import { CodeEditor } from "@/components/editor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2 } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CheckCheck, Dot, Lightbulb, Menu } from "lucide-react";
 import { Suspense } from "react";
 import { TestResults } from "@/components/test-results";
 import { TestResult } from "@/lib/runtime";
 import { useWorkspace } from "@/hooks/use-workspace";
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Separator } from "@/components/ui/separator";
 
 export function ResponsePanel({
   data,
@@ -70,14 +72,44 @@ export function ResponsePanel({
           </div>
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="ml-auto hover:bg-muted-foreground/20 size-7 hover:dark:bg-muted-foreground/15"
-        >
-          <Menu className="h-4" />
-          <span className="sr-only">More actions</span>
-        </Button>
+<DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-auto hover:bg-muted-foreground/20 size-7 hover:dark:bg-muted-foreground/15"
+            >
+              <Menu className="h-4" />
+              <span className="sr-only">More actions</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" side="left">
+            <DropdownMenuItem>Save to File</DropdownMenuItem>
+            <DropdownMenuItem>Delete</DropdownMenuItem>
+            <DropdownMenuItem>Copy to clipboard</DropdownMenuItem>
+            <div className="flex items-center px-2 gap-x-1 font-geist text-xs py-2">
+              <span className="text-muted-foreground/80">Scripts</span>{" "}
+              <Separator orientation="horizontal" className="ml-1 w-[65%]" />
+            </div>
+            <DropdownMenuCheckboxItem checked={scripting === "run-once"}>
+              Run once
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuCheckboxItem checked={scripting === "auto-run"}>
+              Auto-run on Edit
+            </DropdownMenuCheckboxItem>
+            <div className="flex items-center px-2 gap-x-1 font-geist text-xs py-2">
+              <span className="text-muted-foreground/80">History</span>{" "}
+              <Separator orientation="horizontal" className="ml-1  w-[65%]" />
+            </div>
+            <DropdownMenuItem>Delete all responses</DropdownMenuItem>
+            <Separator orientation="horizontal" className="my-0.5" />
+            // map through the history from convex and list response
+            <DropdownMenuCheckboxItem>
+              <span>200</span> <ChevronRight className="size-4 mx-1" />{" "}
+              <span>34 ms</span>
+            </DropdownMenuCheckboxItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="scrollbar-hide">
