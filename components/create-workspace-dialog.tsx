@@ -236,9 +236,6 @@ export function CreateWorkspaceDialog() {
                 <div className="space-y-2">
                   <Label htmlFor="path">
                     Workspace Path
-                    <span className="text-xs text-muted-foreground ml-2">
-                      (URL-friendly identifier)
-                    </span>
                   </Label>
                   <Input
                     id="path"
