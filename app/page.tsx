@@ -59,7 +59,7 @@ const POST = () => {
 export default function Home() {
   const { theme } = useTheme();
   const { selectedFile, updateFile } = useFileTreeStore();
-  const { selectedEnvironment } = useWorkspace();
+  const { scripting, selectedEnvironment } = useWorkspace();
   
   const [code, setCode] = useState(template);
   const [isPending, setIsPending] = useState(false);
