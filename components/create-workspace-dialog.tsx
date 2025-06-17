@@ -155,7 +155,7 @@ export function CreateWorkspaceDialog() {
             </DropdownMenuItem>
           ))}
 
-          {!selectedEnvironment || !environments && (
+          {!selectedEnvironment && !environments && (
             <DropdownMenuItem disabled>No environments found.</DropdownMenuItem>
           )}
 
