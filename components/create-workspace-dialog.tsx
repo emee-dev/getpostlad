@@ -74,7 +74,6 @@ export function CreateWorkspaceDialog() {
           <Button
             variant="ghost"
             size="sm"
-            disabled={!workspaces || workspaces.length === 0}
             className="h-7 hover:bg-muted-foreground/20 hover:dark:bg-muted-foreground/15"
           >
             {selectedWorkspace?.name || "Workspaces"}
