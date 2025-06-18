@@ -14,11 +14,30 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Upload, Plus } from "lucide-react";
+import { ChevronDown, Upload, Plus, Download } from "lucide-react";
 import { useState } from "react";
+import { useFileTreeStore } from "@/hooks/use-file-store";
+import { useWorkspace } from "@/hooks/use-workspace";
+import { exportAndDownloadZip } from "@/lib/exporter";
 
 export const Navbar = (props: { className?: string }) => {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const { files } = useFileTreeStore();
+  const { selectedWorkspace } = useWorkspace();
+
+  const handleExportCollection = async () => {
+    try {
+      // Get workspace name and normalize it
+      const workspaceName = selectedWorkspace?.name || "collection";
+      const normalizedName = workspaceName.toLowerCase().replace(/\s+/g, "");
+      
+      // Export and download the collection
+      await exportAndDownloadZip(files, normalizedName);
+    } catch (error) {
+      console.error("Failed to export collection:", error);
+      // You could add a toast notification here for better UX
+    }
+  };
 
   return (
     <header
@@ -58,6 +77,14 @@ export const Navbar = (props: { className?: string }) => {
               <DropdownMenuItem onClick={() => setIsImportDialogOpen(true)}>
                 <Upload className="mr-2 h-4 w-4" />
                 Import Collection
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={handleExportCollection}
+                disabled={files.length === 0}
+                aria-label="Export collection as ZIP file"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export Collection
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
