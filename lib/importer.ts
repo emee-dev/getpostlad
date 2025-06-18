@@ -1,3 +1,4 @@
+// @ts-expect-error
 import { Collection, Item, ItemGroup } from "postman-collection";
 import { DeserializedHTTP, serializeHttpFn } from "./utils";
 import { FileNode } from "@/hooks/use-file-store";
@@ -109,7 +110,7 @@ function convertPostmanRequest(request: any, name: string): DeserializedHTTP {
   // Extract headers
   const headers: Array<{ key: string; value: string; enabled: boolean }> = [];
 
-  request?.headers?.each((h) => {
+  request?.headers?.each((h: any) => {
     headers.push({
       key: h.key || "",
       value: h.value || "",
