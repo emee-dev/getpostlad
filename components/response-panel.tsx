@@ -55,7 +55,7 @@ export function ResponsePanel({
 
   // Find current response in history (if it exists)
   const currentHistoryEntry =
-    histories?.find((h) => h.status === data?.status) || histories.at(0);
+    histories?.find((h) => h.status === data?.status) || histories?.at(0);
 
 
   const onSaveToFile = () => {
