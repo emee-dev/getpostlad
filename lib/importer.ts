@@ -2,12 +2,198 @@
 import { Collection, Item, ItemGroup } from "postman-collection";
 import { DeserializedHTTP, serializeHttpFn } from "./utils";
 import { FileNode } from "@/hooks/use-file-store";
+import JSZip from "jszip";
 
 export type FormatOptions = {
   useTabs?: boolean;
   tabWidth?: number;
   lineEnding?: "\n" | "\r\n";
 };
+
+/**
+ * Imports a ZIP file and converts it to a FileNode tree structure
+ * @param arg - ZIP file input (File, Blob, or ArrayBuffer)
+ * @returns Promise<FileNode[]> - Array of FileNode representing the extracted file structure
+ */
+export async function importFromZip(arg: unknown): Promise<FileNode[]> {
+  try {
+    // Validate input type
+    if (!arg || (typeof arg !== 'object')) {
+      throw new Error("Invalid input: expected File, Blob, or ArrayBuffer");
+    }
+
+    // Load the ZIP file using JSZip
+    const zip = new JSZip();
+    let loadedZip: JSZip;
+
+    try {
+      loadedZip = await zip.loadAsync(arg as any);
+    } catch (error) {
+      throw new Error(`Failed to load ZIP file: ${error instanceof Error ? error.message : "Invalid ZIP format"}`);
+    }
+
+    // Build the file tree structure
+    const fileTree: FileNode[] = [];
+    const directoryMap = new Map<string, FileNode>();
+
+    // Process all files in the ZIP
+    const filePromises: Promise<void>[] = [];
+
+    loadedZip.forEach((relativePath, zipEntry) => {
+      const promise = processZipEntry(relativePath, zipEntry, fileTree, directoryMap);
+      filePromises.push(promise);
+    });
+
+    // Wait for all files to be processed
+    await Promise.all(filePromises);
+
+    // Sort the file tree for consistent output
+    sortFileTree(fileTree);
+
+    return fileTree;
+  } catch (error) {
+    console.error("Error importing ZIP file:", error);
+    throw new Error(`Failed to import ZIP file: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
+}
+
+/**
+ * Processes a single ZIP entry and adds it to the file tree
+ */
+async function processZipEntry(
+  relativePath: string,
+  zipEntry: JSZip.JSZipObject,
+  fileTree: FileNode[],
+  directoryMap: Map<string, FileNode>
+): Promise<void> {
+  // Normalize path separators and remove leading/trailing slashes
+  const normalizedPath = relativePath.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+  
+  if (!normalizedPath) {
+    return; // Skip empty paths
+  }
+
+  const pathParts = normalizedPath.split("/");
+  const fileName = pathParts[pathParts.length - 1];
+  const isDirectory = zipEntry.dir || normalizedPath.endsWith("/");
+
+  if (isDirectory) {
+    // Handle directory
+    ensureDirectoryPath(pathParts, fileTree, directoryMap);
+  } else {
+    // Handle file
+    try {
+      // Read file content as text
+      const content = await zipEntry.async("text");
+      
+      // Ensure parent directories exist
+      if (pathParts.length > 1) {
+        const parentPath = pathParts.slice(0, -1);
+        ensureDirectoryPath(parentPath, fileTree, directoryMap);
+      }
+
+      // Create file node
+      const fileNode: FileNode = {
+        name: fileName,
+        type: "file",
+        content: content,
+        path: normalizedPath,
+      };
+
+      // Add file to appropriate parent directory or root
+      if (pathParts.length === 1) {
+        // Root level file
+        fileTree.push(fileNode);
+      } else {
+        // File in subdirectory
+        const parentPath = pathParts.slice(0, -1).join("/");
+        const parentDir = directoryMap.get(parentPath);
+        if (parentDir && parentDir.children) {
+          parentDir.children.push(fileNode);
+        }
+      }
+    } catch (error) {
+      console.warn(`Failed to read file content for ${relativePath}:`, error);
+      // Create file node with empty content if reading fails
+      const fileNode: FileNode = {
+        name: fileName,
+        type: "file",
+        content: "",
+        path: normalizedPath,
+      };
+
+      if (pathParts.length === 1) {
+        fileTree.push(fileNode);
+      } else {
+        const parentPath = pathParts.slice(0, -1).join("/");
+        const parentDir = directoryMap.get(parentPath);
+        if (parentDir && parentDir.children) {
+          parentDir.children.push(fileNode);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Ensures that all directories in a path exist in the file tree
+ */
+function ensureDirectoryPath(
+  pathParts: string[],
+  fileTree: FileNode[],
+  directoryMap: Map<string, FileNode>
+): void {
+  let currentPath = "";
+  let currentLevel = fileTree;
+
+  for (let i = 0; i < pathParts.length; i++) {
+    const dirName = pathParts[i];
+    currentPath = currentPath ? `${currentPath}/${dirName}` : dirName;
+
+    // Check if directory already exists
+    if (directoryMap.has(currentPath)) {
+      const existingDir = directoryMap.get(currentPath)!;
+      currentLevel = existingDir.children!;
+      continue;
+    }
+
+    // Create new directory
+    const dirNode: FileNode = {
+      name: dirName,
+      type: "directory",
+      children: [],
+      path: currentPath,
+    };
+
+    // Add to current level
+    currentLevel.push(dirNode);
+    
+    // Update maps and current level
+    directoryMap.set(currentPath, dirNode);
+    currentLevel = dirNode.children!;
+  }
+}
+
+/**
+ * Recursively sorts the file tree (directories first, then files, both alphabetically)
+ */
+function sortFileTree(nodes: FileNode[]): void {
+  nodes.sort((a, b) => {
+    // Directories come before files
+    if (a.type !== b.type) {
+      return a.type === "directory" ? -1 : 1;
+    }
+    // Alphabetical sorting within same type
+    return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+  });
+
+  // Recursively sort children
+  for (const node of nodes) {
+    if (node.type === "directory" && node.children) {
+      sortFileTree(node.children);
+    }
+  }
+}
 
 /**
  * Converts a Postman collection JSON to a FileNode tree structure
