@@ -1,5 +1,5 @@
 import JSZip from "jszip";
-import { FileNode } from "./utils";
+import { FileNode } from "@/hooks/use-file-store";
 
 /**
  * Exports a file tree to a ZIP archive
