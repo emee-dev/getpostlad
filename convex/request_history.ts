@@ -22,10 +22,11 @@ export const createResponseHistory = mutation({
     const existingHistory = await ctx.db
       .query("request_history")
       .withIndex("by_user_workspace_path_status", (q) =>
-        q.eq("userId", args.userId)
-         .eq("workspaceId", args.workspaceId)
-         .eq("requestPath", args.requestPath)
-         .eq("status", args.status)
+        q
+          .eq("userId", args.userId)
+          .eq("workspaceId", args.workspaceId)
+          .eq("requestPath", args.requestPath)
+          .eq("status", args.status)
       )
       .first();
 
@@ -59,7 +60,7 @@ export const findHistories = query({
   args: {
     userId: v.string(),
     workspaceId: v.id("workspaces"),
-    requestPath: v.optional(v.string()), // Optional path filter
+    requestPath: v.string(),
   },
   handler: async (ctx, args) => {
     if (args.requestPath) {
@@ -67,9 +68,10 @@ export const findHistories = query({
       return await ctx.db
         .query("request_history")
         .withIndex("by_user_workspace_path", (q) =>
-          q.eq("userId", args.userId)
-           .eq("workspaceId", args.workspaceId)
-           .eq("requestPath", args.requestPath)
+          q
+            .eq("userId", args.userId)
+            .eq("workspaceId", args.workspaceId)
+            .eq("requestPath", args.requestPath)
         )
         .order("desc")
         .collect();
@@ -78,8 +80,7 @@ export const findHistories = query({
       return await ctx.db
         .query("request_history")
         .withIndex("by_user_workspace", (q) =>
-          q.eq("userId", args.userId)
-           .eq("workspaceId", args.workspaceId)
+          q.eq("userId", args.userId).eq("workspaceId", args.workspaceId)
         )
         .order("desc")
         .collect();
@@ -98,9 +99,10 @@ export const getHistories = query({
     return await ctx.db
       .query("request_history")
       .withIndex("by_user_workspace_path", (q) =>
-        q.eq("userId", args.userId)
-         .eq("workspaceId", args.workspaceId)
-         .eq("requestPath", args.requestPath)
+        q
+          .eq("userId", args.userId)
+          .eq("workspaceId", args.workspaceId)
+          .eq("requestPath", args.requestPath)
       )
       .order("desc")
       .collect();
@@ -126,9 +128,10 @@ export const deleteHistoriesByPath = mutation({
     const histories = await ctx.db
       .query("request_history")
       .withIndex("by_user_workspace_path", (q) =>
-        q.eq("userId", args.userId)
-         .eq("workspaceId", args.workspaceId)
-         .eq("requestPath", args.requestPath)
+        q
+          .eq("userId", args.userId)
+          .eq("workspaceId", args.workspaceId)
+          .eq("requestPath", args.requestPath)
       )
       .collect();
 
