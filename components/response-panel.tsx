@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CheckCheck, Dot, Lightbulb, Menu } from "lucide-react";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { TestResults } from "@/components/test-results";
 import { TestResult } from "@/lib/runtime";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -41,7 +41,7 @@ export function ResponsePanel({
     api.request_history.deleteHistoriesByPath
   );
   const createResponseHistory = useMutation(api.request_history.createResponseHistory);
-
+  
   // Get response histories for current request path
   const histories = useQuery(
     api.request_history.getHistories,
