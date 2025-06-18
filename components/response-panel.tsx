@@ -185,7 +185,7 @@ export function ResponsePanel({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" side="left">
             <DropdownMenuItem onClick={onSave} disabled={!data}>
-              Save to File
+              Save
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={onDeleteHistory}
