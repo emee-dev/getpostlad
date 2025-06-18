@@ -141,3 +141,41 @@ export const deleteHistoriesByPath = mutation({
     }
   },
 });
+
+export const findResponse = query({
+  args: {
+    userId: v.string(),
+    workspaceId: v.id("workspaces"),
+    requestPath: v.string(),
+    status: v.optional(v.number()), // Optional status filter
+  },
+  handler: async (ctx, args) => {
+    if (args.status !== undefined) {
+      // Find specific response by status
+      return await ctx.db
+        .query("request_history")
+        .withIndex("by_user_workspace_path_status", (q) =>
+          q
+            .eq("userId", args.userId)
+            .eq("workspaceId", args.workspaceId)
+            .eq("requestPath", args.requestPath)
+            .eq("status", args.status || 0)
+        )
+        .first();
+    } else {
+      // Find most recent response for the path
+      const responses = await ctx.db
+        .query("request_history")
+        .withIndex("by_user_workspace_path", (q) =>
+          q
+            .eq("userId", args.userId)
+            .eq("workspaceId", args.workspaceId)
+            .eq("requestPath", args.requestPath)
+        )
+        .order("desc")
+        .take(1);
+
+      return responses[0] || null;
+    }
+  },
+});
