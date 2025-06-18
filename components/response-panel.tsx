@@ -58,9 +58,8 @@ export function ResponsePanel({
     histories?.find((h) => h.status === data?.status) || histories?.at(0);
 
 
-  const onSaveToFile = () => {
-    // TODO: Implement save to file functionality
-    console.log("Save to file - not implemented yet");
+  const onSave = () => {
+    // TODO: Implement save history
   };
 
   const onDeleteHistory = async () => {
@@ -168,7 +167,7 @@ export function ResponsePanel({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" side="left">
-            <DropdownMenuItem onClick={onSaveToFile}>
+            <DropdownMenuItem onClick={onSave}>
               Save to File
             </DropdownMenuItem>
             <DropdownMenuItem 
