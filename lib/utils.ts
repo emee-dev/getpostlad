@@ -12,14 +12,6 @@ type FormatOptions = {
   lineEnding?: "\n" | "\r\n";
 };
 
-export type FileNode = {
-  name: string;
-  type: "file" | "directory";
-  content?: string;
-  children?: FileNode[];
-  path: string;
-};
-
 export type DeserializedHTTP = {
   url: string;
   name?: string;
