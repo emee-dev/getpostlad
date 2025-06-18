@@ -194,7 +194,7 @@ export function ResponsePanel({
               Delete
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onCopyToClipboard}>
-              Copy to clipboard
+              Copy
             </DropdownMenuItem>
             
             <div className="flex items-center px-2 gap-x-1 font-geist text-xs py-2">
