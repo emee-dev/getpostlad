@@ -40,6 +40,7 @@ export function ResponsePanel({
   const deleteAllHistories = useMutation(
     api.request_history.deleteHistoriesByPath
   );
+  const createResponseHistory = useMutation(api.request_history.createResponseHistory);
 
   // Get response histories for current request path
   const histories = useQuery(
@@ -57,9 +58,25 @@ export function ResponsePanel({
   const currentHistoryEntry =
     histories?.find((h) => h.status === data?.status) || histories?.at(0);
 
-
-  const onSave = () => {
-    // TODO: Implement save history
+  const onSave = async () => {
+    // Save current response data to history
+    if (data && selectedWorkspace && selectedFile?.path) {
+      try {
+        await createResponseHistory({
+          headers: data.headers,
+          text_response: data.text_response,
+          status: data.status,
+          elapsed_time: data.elapsed_time,
+          content_size: data.content_size,
+          workspaceId: selectedWorkspace._id,
+          userId: "user123", // Replace with actual user ID
+          requestPath: selectedFile.path,
+        });
+        console.log("Response saved to history");
+      } catch (error) {
+        console.error("Failed to save response to history:", error);
+      }
+    }
   };
 
   const onDeleteHistory = async () => {
@@ -167,7 +184,7 @@ export function ResponsePanel({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" side="left">
-            <DropdownMenuItem onClick={onSave}>
+            <DropdownMenuItem onClick={onSave} disabled={!data}>
               Save to File
             </DropdownMenuItem>
             <DropdownMenuItem 
@@ -203,9 +220,10 @@ export function ResponsePanel({
               <Separator orientation="horizontal" className="ml-1 w-[65%]" />
             </div>
             
-            <DropdownMenuItem onClick={onDeleteAllHistories}
-              disabled={histories && histories.length > 0}
-              >
+            <DropdownMenuItem 
+              onClick={onDeleteAllHistories}
+              disabled={!histories || histories.length === 0}
+            >
               Delete all responses
             </DropdownMenuItem>
             
