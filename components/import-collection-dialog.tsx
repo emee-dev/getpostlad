@@ -8,7 +8,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Upload, FileText, AlertCircle } from "lucide-react";
-import { useFileTr\eeStore } from "@/hooks/use-file-store";
+import { useFileTreeStore } from "@/hooks/use-file-store";
 import { postmanJSONImporter, importFromZip } from "@/lib/importer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
