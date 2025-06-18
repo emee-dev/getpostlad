@@ -12,7 +12,7 @@ import { useFileTreeStore } from "@/hooks/use-file-store";
 import { postmanJSONImporter, importFromZip } from "@/lib/importer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-interface ImportCollectionDialogProps {
+interface ImportCollectionDialogProps { 
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
