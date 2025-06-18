@@ -12,14 +12,22 @@ import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
 import { MutableRefObject, Suspense, useEffect, useRef, useState } from "react";
-import { deserializeHttpFn, interpolateVariables, type DeserializedHTTP } from "@/lib/utils";
+import {
+  deserializeHttpFn,
+  interpolateVariables,
+  type DeserializedHTTP,
+} from "@/lib/utils";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-import { TestResult, preRequestRuntime, postResponseRuntime } from "@/lib/runtime";
+import {
+  TestResult,
+  preRequestRuntime,
+  postResponseRuntime,
+} from "@/lib/runtime";
 import { Button } from "@/components/ui/button";
 import { Coffee } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { RequestScript, ResponseScript } from "@/lib/scripting";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 export type Header = {
@@ -62,7 +70,7 @@ export default function Home() {
   const { theme } = useTheme();
   const { selectedFile, updateFile } = useFileTreeStore();
   const { scripting, selectedEnvironment, selectedWorkspace } = useWorkspace();
-  
+
   const [code, setCode] = useState(template);
   const [isPending, setIsPending] = useState(false);
   const [isResultPanelVisible, setIsResultPanelVisible] = useState(true);
@@ -70,9 +78,16 @@ export default function Home() {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const editor = useRef<EditorView | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-
-  // Convex mutation for saving response history
-  const createResponseHistory = useMutation(api.request_history.createResponseHistory);
+  const findHistory = useQuery(
+    api.request_history.findResponse,
+    selectedWorkspace && selectedFile
+      ? {
+          requestPath: selectedFile.path as string,
+          userId: "user123",
+          workspaceId: selectedWorkspace._id,
+        }
+      : "skip"
+  );
 
   const onSend = async (src: string) => {
     console.log("Sending request:", src);
@@ -114,7 +129,10 @@ export default function Home() {
       let preRequestResults: TestResult[] = [];
       if (deserializedSrc.pre_request) {
         try {
-          preRequestResults = preRequestRuntime(deserializedSrc.pre_request, req);
+          preRequestResults = preRequestRuntime(
+            deserializedSrc.pre_request,
+            req
+          );
         } catch (error) {
           console.error("Error executing pre_request script:", error);
         }
@@ -177,14 +195,20 @@ export default function Home() {
       let postResponseResults: TestResult[] = [];
       if (deserializedSrc.post_response) {
         try {
-          postResponseResults = postResponseRuntime(deserializedSrc.post_response, res);
+          postResponseResults = postResponseRuntime(
+            deserializedSrc.post_response,
+            res
+          );
         } catch (error) {
           console.error("Error executing post_response script:", error);
         }
       }
 
       // Combine test results from pre_request and post_response
-      const combinedTestResults = [...preRequestResults, ...postResponseResults];
+      const combinedTestResults = [
+        ...preRequestResults,
+        ...postResponseResults,
+      ];
       setTestResults(combinedTestResults);
 
       // Set the response data using ResponseScript
@@ -197,24 +221,6 @@ export default function Home() {
       };
 
       setData(responseData);
-
-      // Save response to history if workspace and file are selected
-      if (selectedWorkspace && selectedFile?.path) {
-        try {
-          await createResponseHistory({
-            headers: responseHeaders,
-            text_response: res.getText(),
-            status: res.getStatus(),
-            elapsed_time: res.getElapsedTime(),
-            content_size: res.getContentSize(),
-            workspaceId: selectedWorkspace._id,
-            userId: "user123", // Replace with actual user ID
-            requestPath: selectedFile.path,
-          });
-        } catch (error) {
-          console.error("Failed to save response history:", error);
-        }
-      }
     } catch (error: any) {
       console.error("Request failed:", error);
 
@@ -285,24 +291,6 @@ export default function Home() {
         };
 
         setData(errorResponseData);
-
-        // Save error response to history if workspace and file are selected
-        if (selectedWorkspace && selectedFile?.path) {
-          try {
-            await createResponseHistory({
-              headers: responseHeaders,
-              text_response: errorRes.getText(),
-              status: errorRes.getStatus(),
-              elapsed_time: errorRes.getElapsedTime(),
-              content_size: errorRes.getContentSize(),
-              workspaceId: selectedWorkspace._id,
-              userId: "user123", // Replace with actual user ID
-              requestPath: selectedFile.path,
-            });
-          } catch (historyError) {
-            console.error("Failed to save error response history:", historyError);
-          }
-        }
       } else {
         // Network error or other issues
         const errorResponseData: ResponseData = {
@@ -332,7 +320,7 @@ export default function Home() {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       setIsPending(false);
-      console.log('Request cancelled');
+      console.log("Request cancelled");
     }
   };
 
@@ -357,6 +345,25 @@ export default function Home() {
       updateFile(selectedFile.path as string, code);
     }
   }, [code]);
+
+  // Update the response panel
+  useEffect(() => {
+    if (
+      selectedWorkspace &&
+      findHistory &&
+      selectedFile &&
+      selectedFile.type === "file"
+    ) {
+      setData({
+        content_size: findHistory.content_size,
+        elapsed_time: findHistory.elapsed_time,
+        headers: findHistory.headers,
+        status: findHistory.status,
+        text_response: findHistory.text_response,
+      });
+    }
+  }, [selectedFile, findHistory, selectedWorkspace]);
+  
 
   return (
     <>
