@@ -37,23 +37,26 @@ export function ResponsePanel({
   
   // Convex mutations and queries
   const deleteHistory = useMutation(api.request_history.deleteHistory);
-  const deleteAllHistories = useMutation(api.request_history.deleteHistoriesByPath);
-  
+  const deleteAllHistories = useMutation(
+    api.request_history.deleteHistoriesByPath
+  );
+
   // Get response histories for current request path
   const histories = useQuery(
     api.request_history.getHistories,
-    selectedWorkspace && selectedFile?.path ? {
-      userId: "user123", // Replace with actual user ID
-      workspaceId: selectedWorkspace._id,
-      requestPath: selectedFile.path,
-    } : "skip"
+    selectedWorkspace && selectedFile?.path
+      ? {
+          userId: "user123", // Replace with actual user ID
+          workspaceId: selectedWorkspace._id,
+          requestPath: selectedFile.path,
+        }
+      : "skip"
   );
 
   // Find current response in history (if it exists)
-  const currentHistoryEntry = histories?.find(h => 
-    h.status === data?.status && 
-    h.text_response === data?.text_response
-  );
+  const currentHistoryEntry =
+    histories?.find((h) => h.status === data?.status) || histories.at(0);
+
 
   const onSaveToFile = () => {
     // TODO: Implement save to file functionality
