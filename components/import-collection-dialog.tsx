@@ -5,26 +5,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Upload, FileText, AlertCircle } from "lucide-react";
 import { useFileTreeStore } from "@/hooks/use-file-store";
-import { postmanJSONImporter } from "@/lib/importer";
+import { postmanJSONImporter, importFromZip } from "@/lib/importer";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-
-const COLLECTION_TEMPLATES = [
-  { id: "spotify", name: "Spotify Collection" },
-  { id: "tavus", name: "Tavus Collection" },
-  { id: "github", name: "Paystack Collection" },
-  { id: "twitter", name: "Flutterwave Collection" },
-];
 
 interface ImportCollectionDialogProps {
   open: boolean;
@@ -32,15 +18,21 @@ interface ImportCollectionDialogProps {
 }
 
 export function ImportCollectionDialog({ open, onOpenChange }: ImportCollectionDialogProps) {
-  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [error, setError] = useState<string>("");
-  const { mergeFiles } = useFileTreeStore(); // Use mergeFiles instead of setFiles
+  const { mergeFiles } = useFileTreeStore();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Validate file type
+      const fileExtension = file.name.toLowerCase().split('.').pop();
+      if (fileExtension !== 'json' && fileExtension !== 'zip') {
+        setError("Please select a valid .json or .zip file");
+        return;
+      }
+      
       setSelectedFile(file);
       setError("");
     }
@@ -56,11 +48,32 @@ export function ImportCollectionDialog({ open, onOpenChange }: ImportCollectionD
     setError("");
 
     try {
-      const reader = new FileReader();
-      
-      reader.onload = (e) => {
+      const fileExtension = selectedFile.name.toLowerCase().split('.').pop();
+      let fileNodes;
+
+      if (fileExtension === 'json') {
+        // Handle JSON import (Postman collection)
+        const reader = new FileReader();
+        
+        const fileContent = await new Promise<string>((resolve, reject) => {
+          reader.onload = (e) => {
+            try {
+              const content = e.target?.result as string;
+              resolve(content);
+            } catch (error) {
+              reject(error);
+            }
+          };
+          
+          reader.onerror = () => {
+            reject(new Error("Failed to read file"));
+          };
+          
+          reader.readAsText(selectedFile);
+        });
+
         try {
-          const content = JSON.parse(e.target?.result as string);
+          const content = JSON.parse(fileContent);
           
           // Validate that it's a Postman collection
           if (!content.info || !content.item) {
@@ -68,57 +81,48 @@ export function ImportCollectionDialog({ open, onOpenChange }: ImportCollectionD
           }
 
           // Parse the collection using the importer
-          const fileNodes = postmanJSONImporter(content);
+          fileNodes = postmanJSONImporter(content);
           
           if (fileNodes.length === 0) {
             throw new Error("No requests found in the collection");
           }
-
-          // Merge with existing files instead of replacing
-          mergeFiles(fileNodes);
-          
-          // Close dialog and reset state
-          onOpenChange(false);
-          setSelectedFile(null);
-          setSelectedTemplate("");
-          setError("");
-          
-          console.log(`Successfully imported ${fileNodes.length} items from collection`);
         } catch (parseError) {
-          console.error("Error parsing collection:", parseError);
-          setError(parseError instanceof Error ? parseError.message : "Failed to parse collection file");
-        } finally {
-          setIsImporting(false);
+          throw new Error(parseError instanceof Error ? parseError.message : "Failed to parse JSON file");
         }
-      };
+      } else if (fileExtension === 'zip') {
+        // Handle ZIP import
+        try {
+          fileNodes = await importFromZip(selectedFile);
+          
+          if (fileNodes.length === 0) {
+            throw new Error("No files found in the ZIP archive");
+          }
+        } catch (zipError) {
+          throw new Error(zipError instanceof Error ? zipError.message : "Failed to extract ZIP file");
+        }
+      } else {
+        throw new Error("Unsupported file type. Please select a .json or .zip file");
+      }
 
-      reader.onerror = () => {
-        setError("Failed to read file");
-        setIsImporting(false);
-      };
-
-      reader.readAsText(selectedFile);
+      // Merge with existing files
+      mergeFiles(fileNodes);
+      
+      // Close dialog and reset state
+      onOpenChange(false);
+      setSelectedFile(null);
+      setError("");
+      
+      console.log(`Successfully imported ${fileNodes.length} items from ${fileExtension.toUpperCase()} file`);
     } catch (error) {
       console.error("Error importing collection:", error);
-      setError("Failed to import collection");
+      setError(error instanceof Error ? error.message : "Failed to import collection");
+    } finally {
       setIsImporting(false);
     }
   };
 
-  const handleTemplateImport = () => {
-    if (!selectedTemplate) {
-      setError("Please select a template");
-      return;
-    }
-    
-    // TODO: Implement template import logic
-    console.log("Importing template:", selectedTemplate);
-    setError("Template import not yet implemented");
-  };
-
   const resetDialog = () => {
     setSelectedFile(null);
-    setSelectedTemplate("");
     setError("");
     setIsImporting(false);
   };
@@ -146,77 +150,45 @@ export function ImportCollectionDialog({ open, onOpenChange }: ImportCollectionD
 
         <div className="space-y-6 py-4">
           <div className="space-y-3">
-            <Label>Choose a template</Label>
-            <Select
-              value={selectedTemplate}
-              onValueChange={setSelectedTemplate}
-              disabled={isImporting}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a template" />
-              </SelectTrigger>
-              <SelectContent>
-                {COLLECTION_TEMPLATES.map((template) => (
-                  <SelectItem key={template.id} value={template.id}>
-                    {template.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button 
-              onClick={handleTemplateImport}
-              disabled={!selectedTemplate || isImporting}
-              variant="outline"
-              className="w-full"
-            >
-              Import Template
-            </Button>
-          </div>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or
-              </span>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <Label>Upload Postman collection</Label>
+            <Label>Upload collection file</Label>
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <input
                   type="file"
-                  accept=".json"
+                  accept=".json,.zip"
                   onChange={handleFileUpload}
                   className="hidden"
                   id="collection-file"
                   disabled={isImporting}
                 />
                 <label htmlFor="collection-file" className="flex-1">
-                  <Button 
-                    variant="outline" 
-                    asChild 
-                    className="w-full"
-                    disabled={isImporting}
-                  >
-                    <span>
-                      <Upload className="mr-2 h-4 w-4" />
-                      Choose File (.json)
-                    </span>
-                  </Button>
+                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 hover:border-muted-foreground/50 transition-colors cursor-pointer">
+                    <div className="flex flex-col items-center gap-2 text-center">
+                      <Upload className="h-8 w-8 text-muted-foreground" />
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">
+                          Choose a collection file
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Supports .json (Postman) and .zip files
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </label>
               </div>
               
               {selectedFile && (
-                <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground truncate">
-                    {selectedFile.name}
-                  </span>
+                <div className="flex items-center gap-2 p-3 bg-muted rounded-md">
+                  <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">
+                      {selectedFile.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {(selectedFile.size / 1024).toFixed(1)} KB
+                    </p>
+                  </div>
                 </div>
               )}
 
