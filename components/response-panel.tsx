@@ -231,19 +231,22 @@ export function ResponsePanel({
               <>
                 <Separator orientation="horizontal" className="my-0.5" />
                 {histories.map((historyItem) => (
-                  <DropdownMenuItem
+                  <DropdownMenuCheckboxItem
                     key={historyItem._id}
                     onClick={() => onLoadHistory(historyItem)}
+                    checked={data && data.status === historyItem.status}
                     className="flex items-center justify-between"
                   >
                     <div className="flex items-center">
-                      <span className={`font-mono text-xs ${
-                        historyItem.status >= 200 && historyItem.status < 300 
-                          ? 'text-green-600 dark:text-green-400' 
-                          : historyItem.status >= 400 
-                          ? 'text-red-600 dark:text-red-400'
-                          : 'text-yellow-600 dark:text-yellow-400'
-                      }`}>
+                      <span
+                        className={`font-mono text-xs ${
+                          historyItem.status >= 200 && historyItem.status < 300
+                            ? "text-green-600 dark:text-green-400"
+                            : historyItem.status >= 400
+                              ? "text-red-600 dark:text-red-400"
+                              : "text-yellow-600 dark:text-yellow-400"
+                        }`}
+                      >
                         {historyItem.status}
                       </span>
                       <ChevronRight className="size-3 mx-1 text-muted-foreground" />
@@ -251,7 +254,7 @@ export function ResponsePanel({
                         {Math.round(historyItem.elapsed_time * 1000)} ms
                       </span>
                     </div>
-                  </DropdownMenuItem>
+                  </DropdownMenuCheckboxItem>
                 ))}
               </>
             )}
