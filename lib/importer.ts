@@ -1,5 +1,6 @@
 import { Collection, Item, ItemGroup } from "postman-collection";
-import { FileNode, DeserializedHTTP, serializeHttpFn } from "./utils";
+import { DeserializedHTTP, serializeHttpFn } from "./utils";
+import { FileNode } from "@/hooks/use-file-store";
 
 export type FormatOptions = {
   useTabs?: boolean;
