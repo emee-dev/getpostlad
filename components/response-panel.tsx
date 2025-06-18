@@ -204,7 +204,9 @@ export function ResponsePanel({
               <Separator orientation="horizontal" className="ml-1 w-[65%]" />
             </div>
             
-            <DropdownMenuItem onClick={onDeleteAllHistories}>
+            <DropdownMenuItem onClick={onDeleteAllHistories}
+              disabled={histories && histories.length > 0}
+              >
               Delete all responses
             </DropdownMenuItem>
             
