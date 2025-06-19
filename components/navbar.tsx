@@ -6,6 +6,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { AuthDialog } from "@/components/auth/auth-dialog";
 import { ImportCollectionDialog } from "@/components/import-collection-dialog";
+import { SearchDialog } from "@/components/search-dialog";
 import { ModeToggle } from "@/components/theme-toggle";
 import {
   DropdownMenu,
@@ -22,6 +23,7 @@ import { exportAndDownloadZip } from "@/lib/exporter";
 
 export const Navbar = (props: { className?: string }) => {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
   const { files } = useFileTreeStore();
   const { selectedWorkspace } = useWorkspace();
 
@@ -64,11 +66,13 @@ export const Navbar = (props: { className?: string }) => {
           <Button
             variant="ghost"
             size="icon"
-            className="size-7 hover:bg-muted-foreground/50 mr-1"
+            className="size-7 hover:bg-muted-foreground/20 hover:dark:bg-muted-foreground/15 mr-1"
+            onClick={() => setIsSearchDialogOpen(true)}
           >
-            <Search className="h-4" />
-            <span className="sr-only">Search trigger dialog</span>
+            <Search className="h-4 w-4" />
+            <span className="sr-only">Search files</span>
           </Button>
+          
            <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -100,6 +104,12 @@ export const Navbar = (props: { className?: string }) => {
           <AuthDialog />
         </div>
       </div>
+
+      {/* Search Dialog */}
+      <SearchDialog 
+        open={isSearchDialogOpen} 
+        onOpenChange={setIsSearchDialogOpen} 
+      />
 
       {/* Import Collection Dialog */}
       <ImportCollectionDialog 
