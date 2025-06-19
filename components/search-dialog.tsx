@@ -99,11 +99,11 @@ function highlightMatches(
       parts.push(text.slice(lastIndex, start));
     }
 
-    // Add highlighted text
+    // Add highlighted text with softer styling
     parts.push(
       <span
         key={index}
-        className="bg-yellow-400/30 text-yellow-900 dark:bg-yellow-600/30 dark:text-yellow-100"
+        className="bg-yellow-400/40 text-yellow-900 dark:bg-yellow-500/20 dark:text-yellow-200 rounded-sm px-0.5"
       >
         {text.slice(start, end)}
       </span>
