@@ -1,20 +1,18 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { CodeEditor } from "@/components/editor";
 import { useFileTreeStore, FileNode } from "@/hooks/use-file-store";
 import { useTheme } from "next-themes";
 import Fuse, { FuseResultMatch } from "fuse.js";
-import { File, Folder } from "lucide-react";
+import { File } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useVirtualizer } from "@tanstack/react-virtual";
 
 interface SearchDialogProps {
   open: boolean;
@@ -68,11 +66,6 @@ function flattenFileTree(tree: FileNode[], parentPath: string = ""): FlatFile[] 
   return flatFiles;
 }
 
-// Get first N lines of content
-function getPreviewLines(content: string, maxLines: number = 4): string[] {
-  return content.split('\n').slice(0, maxLines);
-}
-
 // Highlight matching text
 function highlightMatches(text: string, matches: FuseResultMatch[] = []): React.ReactNode {
   if (!matches.length) return text;
@@ -85,7 +78,6 @@ function highlightMatches(text: string, matches: FuseResultMatch[] = []): React.
   if (!textMatches.length) return text;
   
   // Create highlighted version
-  let highlightedText = text;
   const highlights: Array<{ start: number; end: number }> = [];
   
   textMatches.forEach(match => {
@@ -111,7 +103,7 @@ function highlightMatches(text: string, matches: FuseResultMatch[] = []): React.
     
     // Add highlighted text
     parts.push(
-      <span key={index} className="bg-yellow-200 dark:bg-yellow-800 text-yellow-900 dark:text-yellow-100 px-0.5 rounded">
+      <span key={index} className="bg-yellow-400/30 text-yellow-900 dark:bg-yellow-600/30 dark:text-yellow-100">
         {text.slice(start, end)}
       </span>
     );
@@ -133,6 +125,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const debouncedQuery = useDebouncedValue(query, 200);
+  const parentRef = useRef<HTMLDivElement>(null);
 
   // Flatten file tree for searching
   const flatFiles = useMemo(() => flattenFileTree(files), [files]);
@@ -153,14 +146,22 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
     });
   }, [flatFiles]);
 
-  // Search results
+  // Search results - only show when there's a query
   const searchResults = useMemo(() => {
     if (!debouncedQuery.trim()) {
-      return flatFiles.slice(0, 10).map(item => ({ item, score: 0 }));
+      return [];
     }
     
-    return fuse.search(debouncedQuery).slice(0, 10);
-  }, [debouncedQuery, fuse, flatFiles]);
+    return fuse.search(debouncedQuery).slice(0, 100); // Increased for virtualization
+  }, [debouncedQuery, fuse]);
+
+  // Virtualization
+  const virtualizer = useVirtualizer({
+    count: searchResults.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 40, // Fixed height for each item
+    overscan: 5,
+  });
 
   // Reset selected index when results change
   useEffect(() => {
@@ -200,6 +201,13 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [open, searchResults, selectedIndex, onOpenChange]);
 
+  // Scroll selected item into view
+  useEffect(() => {
+    if (selectedIndex >= 0 && selectedIndex < searchResults.length) {
+      virtualizer.scrollToIndex(selectedIndex, { align: 'center' });
+    }
+  }, [selectedIndex, virtualizer]);
+
   // Handle file selection
   const handleSelectFile = (flatFile: FlatFile) => {
     setSelectedFile(flatFile.node);
@@ -218,134 +226,131 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl h-[80vh] p-0 gap-0">
-        <DialogHeader className="px-6 py-4 border-b">
-          <DialogTitle className="text-lg font-semibold">
-            Search Files
-          </DialogTitle>
-        </DialogHeader>
-        
-        <div className="flex flex-col h-full">
-          {/* Search Input */}
-          <div className="px-6 py-4 border-b">
-            <Input
-              placeholder="Search files by name, path, or content..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-full"
-              autoFocus
-            />
-          </div>
+      <DialogContent className="max-w-7xl h-[85vh] p-0 gap-0 bg-background border-border">
+        {/* Fixed Search Input */}
+        <div className="flex-shrink-0 p-4 border-b border-border">
+          <Input
+            placeholder="Search files..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full bg-background border-border font-mono text-sm focus:ring-1 focus:ring-primary"
+            autoFocus
+          />
+        </div>
 
-          <div className="flex flex-1 min-h-0">
-            {/* Results Panel */}
-            <div className="w-1/2 border-r flex flex-col">
-              <div className="px-4 py-2 border-b bg-muted/30 text-sm font-medium">
+        <div className="flex flex-1 min-h-0">
+          {/* Results Panel */}
+          <div className="w-1/2 border-r border-border flex flex-col bg-background">
+            <div className="flex-shrink-0 px-4 py-2 border-b border-border bg-muted/20">
+              <span className="text-sm font-mono text-muted-foreground">
                 Results ({searchResults.length})
-              </div>
-              
-              <ScrollArea className="flex-1">
-                <div className="p-2">
-                  {searchResults.length === 0 ? (
-                    <div className="text-center text-muted-foreground py-8">
-                      {debouncedQuery ? "No files found" : "Start typing to search..."}
-                    </div>
-                  ) : (
-                    <div className="space-y-1">
-                      {searchResults.map((result, index) => {
-                        const { item, matches } = result;
-                        const isSelected = index === selectedIndex;
-                        const previewLines = getPreviewLines(item.content);
-                        
-                        return (
+              </span>
+            </div>
+            
+            {/* Virtualized Results */}
+            <div className="flex-1 min-h-0">
+              {searchResults.length === 0 ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center text-muted-foreground font-mono text-sm">
+                    {debouncedQuery ? "No files found" : "Start typing to search..."}
+                  </div>
+                </div>
+              ) : (
+                <div
+                  ref={parentRef}
+                  className="h-full overflow-auto"
+                  style={{ contain: "strict" }}
+                >
+                  <div
+                    style={{
+                      height: `${virtualizer.getTotalSize()}px`,
+                      width: "100%",
+                      position: "relative",
+                    }}
+                  >
+                    {virtualizer.getVirtualItems().map((virtualItem) => {
+                      const result = searchResults[virtualItem.index];
+                      const { item, matches } = result;
+                      const isSelected = virtualItem.index === selectedIndex;
+                      
+                      return (
+                        <div
+                          key={virtualItem.key}
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: `${virtualItem.size}px`,
+                            transform: `translateY(${virtualItem.start}px)`,
+                          }}
+                        >
                           <div
-                            key={item.path}
                             className={cn(
-                              "p-3 rounded-md cursor-pointer transition-colors border",
+                              "h-full px-4 py-2 cursor-pointer transition-colors flex items-center gap-3 font-mono text-sm",
                               isSelected 
-                                ? "bg-primary/10 border-primary/20" 
-                                : "hover:bg-muted/50 border-transparent"
+                                ? "bg-primary/20 text-primary-foreground" 
+                                : "hover:bg-muted/30 text-foreground"
                             )}
                             onClick={() => handleSelectFile(item)}
                           >
-                            {/* File Header */}
-                            <div className="flex items-center gap-2 mb-2">
-                              <File className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <div className="font-medium text-sm truncate">
-                                  {highlightMatches(item.name, matches)}
-                                </div>
-                                <div className="text-xs text-muted-foreground truncate">
-                                  {highlightMatches(item.path, matches)}
-                                </div>
+                            <File className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="truncate">
+                                {highlightMatches(item.name, matches)}
+                              </div>
+                              <div className="text-xs text-muted-foreground truncate">
+                                {highlightMatches(item.path, matches)}
                               </div>
                             </div>
-                            
-                            {/* Content Preview */}
-                            {previewLines.length > 0 && (
-                              <div className="text-xs font-mono bg-muted/30 rounded p-2 mt-2">
-                                {previewLines.map((line, lineIndex) => (
-                                  <div 
-                                    key={lineIndex} 
-                                    className="truncate text-muted-foreground"
-                                  >
-                                    <span className="text-muted-foreground/60 mr-2">
-                                      {lineIndex + 1}
-                                    </span>
-                                    {highlightMatches(line, matches)}
-                                  </div>
-                                ))}
-                                {item.content.split('\n').length > 4 && (
-                                  <div className="text-muted-foreground/60 mt-1">
-                                    ... {item.content.split('\n').length - 4} more lines
-                                  </div>
-                                )}
-                              </div>
-                            )}
                           </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </ScrollArea>
+              )}
             </div>
+          </div>
 
-            {/* Preview Panel */}
-            <div className="w-1/2 flex flex-col">
-              <div className="px-4 py-2 border-b bg-muted/30 text-sm font-medium flex items-center gap-2">
+          {/* Preview Panel */}
+          <div className="w-1/2 flex flex-col bg-background">
+            <div className="flex-shrink-0 px-4 py-2 border-b border-border bg-muted/20">
+              <div className="flex items-center gap-2 font-mono text-sm">
                 {selectedFile ? (
                   <>
-                    <File className="h-4 w-4" />
-                    <span className="truncate">{selectedFile.name}</span>
+                    <File className="h-4 w-4 text-muted-foreground" />
+                    <span className="truncate text-foreground">{selectedFile.name}</span>
                     <span className="text-muted-foreground">•</span>
                     <span className="text-muted-foreground text-xs truncate">
                       {selectedFile.path}
                     </span>
                   </>
                 ) : (
-                  "Preview"
+                  <span className="text-muted-foreground">Preview</span>
                 )}
               </div>
-              
-              <div className="flex-1 min-h-0">
-                {selectedFile ? (
-                  <div className="h-full">
-                    <CodeEditor
-                      value={selectedFile.content}
-                      language="javascript"
-                      readOnly
-                      lineWrap
-                      theme={(theme as any) || "system"}
-                      className="h-full"
-                    />
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center h-full text-muted-foreground">
+            </div>
+            
+            <div className="flex-1 min-h-0">
+              {selectedFile ? (
+                <div className="h-full">
+                  <CodeEditor
+                    value={selectedFile.content}
+                    language="javascript"
+                    readOnly
+                    lineWrap
+                    theme={(theme as any) || "system"}
+                    className="h-full"
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <span className="text-muted-foreground font-mono text-sm">
                     Select a file to preview
-                  </div>
-                )}
-              </div>
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
