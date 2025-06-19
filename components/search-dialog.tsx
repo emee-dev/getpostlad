@@ -1,18 +1,16 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { CodeEditor } from "@/components/editor";
-import { useFileTreeStore, FileNode } from "@/hooks/use-file-store";
-import { useTheme } from "next-themes";
-import Fuse, { FuseResultMatch } from "fuse.js";
-import { File } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { FileNode, useFileTreeStore } from "@/hooks/use-file-store";
 import { cn } from "@/lib/utils";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import Fuse, { FuseResultMatch } from "fuse.js";
+import { File } from "lucide-react";
+import { useTheme } from "next-themes";
+import { useEffect, useMemo, useRef, useState } from "react";
+
 
 interface SearchDialogProps {
   open: boolean;
@@ -26,31 +24,28 @@ interface FlatFile {
   node: FileNode;
 }
 
-interface SearchResult {
-  item: FlatFile;
-  score?: number;
-  matches?: FuseResultMatch[];
-}
-
 // Custom debounce hook
 function useDebouncedValue<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value);
-  
+
   useEffect(() => {
     const handler = setTimeout(() => setDebounced(value), delay);
     return () => clearTimeout(handler);
   }, [value, delay]);
-  
+
   return debounced;
 }
 
 // Flatten file tree into searchable array
-function flattenFileTree(tree: FileNode[], parentPath: string = ""): FlatFile[] {
+function flattenFileTree(
+  tree: FileNode[],
+  parentPath: string = ""
+): FlatFile[] {
   const flatFiles: FlatFile[] = [];
-  
+
   for (const node of tree) {
     const currentPath = parentPath ? `${parentPath}/${node.name}` : node.name;
-    
+
     if (node.type === "file") {
       flatFiles.push({
         name: node.name,
@@ -62,60 +57,66 @@ function flattenFileTree(tree: FileNode[], parentPath: string = ""): FlatFile[] 
       flatFiles.push(...flattenFileTree(node.children, currentPath));
     }
   }
-  
+
   return flatFiles;
 }
 
 // Highlight matching text
-function highlightMatches(text: string, matches: FuseResultMatch[] = []): React.ReactNode {
+function highlightMatches(
+  text: string,
+  matches: FuseResultMatch[] = []
+): React.ReactNode {
   if (!matches.length) return text;
-  
+
   // Find matches for this specific text
-  const textMatches = matches.filter(match => 
-    match.value === text || text.includes(match.value || "")
+  const textMatches = matches.filter(
+    (match) => match.value === text || text.includes(match.value || "")
   );
-  
+
   if (!textMatches.length) return text;
-  
+
   // Create highlighted version
   const highlights: Array<{ start: number; end: number }> = [];
-  
-  textMatches.forEach(match => {
+
+  textMatches.forEach((match) => {
     if (match.indices) {
       match.indices.forEach(([start, end]) => {
         highlights.push({ start, end: end + 1 });
       });
     }
   });
-  
+
   // Sort highlights by start position
   highlights.sort((a, b) => a.start - b.start);
-  
+
   // Build highlighted JSX
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
-  
+
   highlights.forEach(({ start, end }, index) => {
     // Add text before highlight
     if (start > lastIndex) {
       parts.push(text.slice(lastIndex, start));
     }
-    
+
     // Add highlighted text
     parts.push(
-      <span key={index} className="bg-yellow-400/30 text-yellow-900 dark:bg-yellow-600/30 dark:text-yellow-100">
+      <span
+        key={index}
+        className="bg-yellow-400/30 text-yellow-900 dark:bg-yellow-600/30 dark:text-yellow-100"
+      >
         {text.slice(start, end)}
       </span>
     );
-    
+
     lastIndex = end;
   });
-  
+
   // Add remaining text
   if (lastIndex < text.length) {
     parts.push(text.slice(lastIndex));
   }
-  
+
   return <>{parts}</>;
 }
 
@@ -136,7 +137,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
       keys: [
         { name: "name", weight: 0.4 },
         { name: "path", weight: 0.3 },
-        { name: "content", weight: 0.3 }
+        { name: "content", weight: 0.3 },
       ],
       includeScore: true,
       includeMatches: true,
@@ -151,7 +152,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
     if (!debouncedQuery.trim()) {
       return [];
     }
-    
+
     return fuse.search(debouncedQuery).slice(0, 100); // Increased for virtualization
   }, [debouncedQuery, fuse]);
 
@@ -172,17 +173,17 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!open) return;
-      
+
       switch (e.key) {
         case "ArrowDown":
           e.preventDefault();
-          setSelectedIndex(prev => 
+          setSelectedIndex((prev) =>
             prev < searchResults.length - 1 ? prev + 1 : prev
           );
           break;
         case "ArrowUp":
           e.preventDefault();
-          setSelectedIndex(prev => prev > 0 ? prev - 1 : prev);
+          setSelectedIndex((prev) => (prev > 0 ? prev - 1 : prev));
           break;
         case "Enter":
           e.preventDefault();
@@ -204,7 +205,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   // Scroll selected item into view
   useEffect(() => {
     if (selectedIndex >= 0 && selectedIndex < searchResults.length) {
-      virtualizer.scrollToIndex(selectedIndex, { align: 'center' });
+      virtualizer.scrollToIndex(selectedIndex, { align: "center" });
     }
   }, [selectedIndex, virtualizer]);
 
@@ -226,9 +227,9 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl h-[85vh] p-0 gap-0 bg-background border-border">
+      <DialogContent className="max-w-[88%] h-[85%] flex-col flex p-0 gap-y-2 bg-background border-border">
         {/* Fixed Search Input */}
-        <div className="flex-shrink-0 p-4 border-b border-border">
+        <div className="px-4 py-4 border-border mt-7 h-16">
           <Input
             placeholder="Search files..."
             value={query}
@@ -238,27 +239,29 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
           />
         </div>
 
-        <div className="flex flex-1 min-h-0">
+        <div className="flex flex-1 min-h-0 gap-x-1 p-2">
           {/* Results Panel */}
-          <div className="w-1/2 border-r border-border flex flex-col bg-background">
-            <div className="flex-shrink-0 px-4 py-2 border-b border-border bg-muted/20">
+          <div className="w-1/2  flex flex-col bg-background">
+            <div className="flex-shrink-0 px-4 py-2 bg-muted/20 rounded-sm ">
               <span className="text-sm font-mono text-muted-foreground">
                 Results ({searchResults.length})
               </span>
             </div>
-            
+
             {/* Virtualized Results */}
             <div className="flex-1 min-h-0">
               {searchResults.length === 0 ? (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center text-muted-foreground font-mono text-sm">
-                    {debouncedQuery ? "No files found" : "Start typing to search..."}
+                    {debouncedQuery
+                      ? "No files found"
+                      : "Start typing to search..."}
                   </div>
                 </div>
               ) : (
                 <div
                   ref={parentRef}
-                  className="h-full overflow-auto"
+                  className="h-full overflow-auto scrollbar-hide"
                   style={{ contain: "strict" }}
                 >
                   <div
@@ -272,7 +275,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                       const result = searchResults[virtualItem.index];
                       const { item, matches } = result;
                       const isSelected = virtualItem.index === selectedIndex;
-                      
+
                       return (
                         <div
                           key={virtualItem.key}
@@ -287,9 +290,9 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                         >
                           <div
                             className={cn(
-                              "h-full px-4 py-2 cursor-pointer transition-colors flex items-center gap-3 font-mono text-sm",
-                              isSelected 
-                                ? "bg-primary/20 text-primary-foreground" 
+                              "h-full rounded-sm px-4 py-2 cursor-pointer transition-colors flex items-center gap-3 font-mono text-sm",
+                              isSelected
+                                ? "bg-primary/20 text-primary-foreground"
                                 : "hover:bg-muted/30 text-foreground"
                             )}
                             onClick={() => handleSelectFile(item)}
@@ -297,10 +300,16 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                             <File className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                             <div className="flex-1 min-w-0">
                               <div className="truncate">
-                                {highlightMatches(item.name, matches)}
+                                {highlightMatches(
+                                  item.name,
+                                  matches as FuseResultMatch[]
+                                )}
                               </div>
                               <div className="text-xs text-muted-foreground truncate">
-                                {highlightMatches(item.path, matches)}
+                                {highlightMatches(
+                                  item.path,
+                                  matches as FuseResultMatch[]
+                                )}
                               </div>
                             </div>
                           </div>
@@ -314,13 +323,15 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
           </div>
 
           {/* Preview Panel */}
-          <div className="w-1/2 flex flex-col bg-background">
-            <div className="flex-shrink-0 px-4 py-2 border-b border-border bg-muted/20">
+          <div className="w-1/2 flex flex-col bg-background border rounded-sm">
+            <div className="flex-shrink-0 px-4 py-2 bg-muted/20">
               <div className="flex items-center gap-2 font-mono text-sm">
                 {selectedFile ? (
                   <>
                     <File className="h-4 w-4 text-muted-foreground" />
-                    <span className="truncate text-foreground">{selectedFile.name}</span>
+                    <span className="truncate text-foreground">
+                      {selectedFile.name}
+                    </span>
                     <span className="text-muted-foreground">•</span>
                     <span className="text-muted-foreground text-xs truncate">
                       {selectedFile.path}
@@ -331,7 +342,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                 )}
               </div>
             </div>
-            
+
             <div className="flex-1 min-h-0">
               {selectedFile ? (
                 <div className="h-full">
