@@ -1,7 +1,7 @@
 "use client";
 
 import { CodeEditor } from "@/components/editor";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { FileNode, useFileTreeStore } from "@/hooks/use-file-store";
 import { cn } from "@/lib/utils";
@@ -228,6 +228,12 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[88%] h-[85%] flex-col flex p-0 gap-y-2 bg-background border-border">
+        <DialogHeader className="sr-only">
+          <DialogTitle>File Search </DialogTitle>
+          <DialogDescription>
+            Find requests as fast as possible
+          </DialogDescription>
+        </DialogHeader>
         {/* Fixed Search Input */}
         <div className="px-4 py-4 border-border mt-7 h-16">
           <Input
