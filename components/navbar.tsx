@@ -61,6 +61,14 @@ export const Navbar = (props: { className?: string }) => {
 
       <div className="fixed right-0 flex items-center h-10 gap-x-4 text-muted-foreground dark:text-muted-foreground/90">
         <div className="flex items-center px-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7 hover:bg-muted-foreground/50 mr-1"
+          >
+            <Search className="h-4" />
+            <span className="sr-only">Search trigger dialog</span>
+          </Button>
            <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
