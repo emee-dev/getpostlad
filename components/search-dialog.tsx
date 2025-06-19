@@ -31,7 +31,7 @@ interface FlatFile {
 interface SearchResult {
   item: FlatFile;
   score?: number;
-  matches?: Fuse.FuseResultMatch[];
+  matches?: FuseResultMatch[];
 }
 
 // Custom debounce hook
@@ -74,7 +74,7 @@ function getPreviewLines(content: string, maxLines: number = 4): string[] {
 }
 
 // Highlight matching text
-function highlightMatches(text: string, matches: Fuse.FuseResultMatch[] = []): React.ReactNode {
+function highlightMatches(text: string, matches: FuseResultMatch[] = []): React.ReactNode {
   if (!matches.length) return text;
   
   // Find matches for this specific text
