@@ -58,22 +58,6 @@ export function flattenVisibleTree(
 }
 
 /**
- * Estimates the height of a tree item based on its content
- * @param node - The flattened node
- * @returns Estimated height in pixels
- */
-export function estimateItemHeight(node: FlattenedNode): number {
-  // Base height for a single line item
-  const baseHeight = 32;
-  
-  // Add extra height for very long names that might wrap
-  const nameLength = node.name.length;
-  const extraHeight = nameLength > 50 ? Math.ceil(nameLength / 50) * 16 : 0;
-  
-  return baseHeight + extraHeight;
-}
-
-/**
  * Memoization helper for flattened tree to avoid unnecessary recalculations
  */
 export class TreeFlattener {
