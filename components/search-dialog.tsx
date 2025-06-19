@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { CodeEditor } from "@/components/editor";
 import { useFileTreeStore, FileNode } from "@/hooks/use-file-store";
 import { useTheme } from "next-themes";
-import Fuse from "fuse.js";
+import Fuse, { FuseResultMatch } from "fuse.js";
 import { File, Folder } from "lucide-react";
 import { cn } from "@/lib/utils";
 
