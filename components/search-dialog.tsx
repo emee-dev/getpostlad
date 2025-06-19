@@ -359,6 +359,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                     lineWrap
                     theme={(theme as any) || "system"}
                     className="h-full"
+                    disableHttpDecorators={true}
                   />
                 </div>
               ) : (

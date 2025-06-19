@@ -45,6 +45,7 @@ interface CodeEditorProps {
   onChange?: (value: string) => void;
   language?: "json" | "javascript";
   onDecoratorClick?: DecoratorFn;
+  disableHttpDecorators?: boolean;
 }
 
 type ThemeSpec = { [selector: string]: CSS.Properties };
@@ -130,6 +131,7 @@ export function CodeEditor({
   className,
   value,
   theme,
+  disableHttpDecorators = false,
 }: CodeEditorProps) {
   const selectedEnvironment = useWorkspace((s) => s.selectedEnvironment);
 
@@ -160,8 +162,12 @@ export function CodeEditor({
       EditorView.updateListener.of((update) => {
         if (update.docChanged) onChange?.(update.state.doc.toString());
       }),
-      createEditorDecorators((src) => onDecoratorClick?.(src)),
     ];
+
+    // Conditionally add HTTP decorators
+    if (!disableHttpDecorators && onDecoratorClick) {
+      extensions.push(createEditorDecorators((src) => onDecoratorClick(src)));
+    }
 
     if (readOnly) extensions.push(EditorState.readOnly.of(true));
     if (lineWrap) extensions.push(EditorView.lineWrapping);
@@ -174,7 +180,7 @@ export function CodeEditor({
     });
 
     return () => viewRef.current?.destroy();
-  }, [language]);
+  }, [language, disableHttpDecorators, onDecoratorClick]);
 
   useEffect(() => {
     latestEnvRef.current = selectedEnvironment;
