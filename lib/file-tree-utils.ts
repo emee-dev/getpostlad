@@ -87,7 +87,7 @@ export class TreeFlattener {
     // Limit cache size to prevent memory leaks
     if (this.cache.size > 10) {
       const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+      this.cache.delete(firstKey || "");
     }
 
     return result;
