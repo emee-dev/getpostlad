@@ -59,7 +59,7 @@ export const Navbar = (props: { className?: string }) => {
         </div>
         <div className="flex items-center pl-2 ml-1 gap-x-1"> 
           <AuthLoading>
-             <div className="flex items-center gap-2 text-muted-foreground text-sm">
+             <div className="flex items-center font-geist gap-2 text-muted-foreground text-sm">
               <Loader2 className="h-4 w-4 animate-spin" />
               Authenticating...
             </div>
