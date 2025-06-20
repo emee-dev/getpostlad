@@ -17,6 +17,7 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
+  ContextMenuSeparator,
 } from "@/components/ui/context-menu";
 import {
   Dialog,
@@ -27,7 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { FilePlus, FolderPlus } from "lucide-react";
+import { FilePlus, FolderPlus, Trash2 } from "lucide-react";
 
 export type FileNode = {
   name: string;
@@ -118,7 +119,7 @@ const EmptyStateMessage = () => (
 );
 
 const SidebarWithRootContextMenu = ({ children }: { children: React.ReactNode }) => {
-  const { addFile, addDirectory } = useFileTreeStore();
+  const { addFile, addDirectory, setFiles } = useFileTreeStore();
   
   // Dialog state for root-level operations
   const [dialogState, setDialogState] = useState<{
@@ -133,7 +134,7 @@ const SidebarWithRootContextMenu = ({ children }: { children: React.ReactNode })
     placeholder: "",
   });
 
-  const handleContextMenu = useCallback((action: "newFile" | "newFolder") => {
+  const handleContextMenu = useCallback((action: "newFile" | "newFolder" | "clearRequests") => {
     switch (action) {
       case "newFile":
         setDialogState({
@@ -151,8 +152,12 @@ const SidebarWithRootContextMenu = ({ children }: { children: React.ReactNode })
           placeholder: "Enter folder name",
         });
         break;
+      case "clearRequests":
+        // Clear all files by setting an empty array
+        setFiles([]);
+        break;
     }
-  }, []);
+  }, [addFile, addDirectory, setFiles]);
 
   const handleDialogConfirm = useCallback((value: string) => {
     switch (dialogState.type) {
@@ -183,6 +188,14 @@ const SidebarWithRootContextMenu = ({ children }: { children: React.ReactNode })
           <ContextMenuItem onClick={() => handleContextMenu("newFolder")}>
             <FolderPlus className="mr-2 h-4 w-4" />
             New Folder
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem 
+            onClick={() => handleContextMenu("clearRequests")}
+            className="text-destructive focus:text-destructive"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Clear Requests
           </ContextMenuItem>
         </ContextMenuContent>
       </ContextMenu>
