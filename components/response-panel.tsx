@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useFileTreeStore } from "@/hooks/use-file-store";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ResponsePanelProps {
   data: ResponseData | null;
@@ -102,9 +103,57 @@ export function ResponsePanel({
     }
   };
 
-  const onCopyToClipboard = () => {
-    // TODO: Implement copy to clipboard functionality
-    console.log("Copy to clipboard - not implemented yet");
+  const onCopyToClipboard = async () => {
+    if (!data) return;
+
+    try {
+      // Format the response data for clipboard
+      const clipboardContent = formatResponseForClipboard(data);
+      
+      // Copy to clipboard using the Clipboard API
+      await navigator.clipboard.writeText(clipboardContent);
+      
+      console.log("Response copied to clipboard");
+      // You could add a toast notification here for better UX
+    } catch (error) {
+      console.error("Failed to copy to clipboard:", error);
+      // Fallback for older browsers or when clipboard API fails
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = formatResponseForClipboard(data);
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+        console.log("Response copied to clipboard (fallback method)");
+      } catch (fallbackError) {
+        console.error("Fallback clipboard copy also failed:", fallbackError);
+      }
+    }
+  };
+
+  // Helper function to format response data for clipboard
+  const formatResponseForClipboard = (responseData: ResponseData): string => {
+    const lines: string[] = [];
+    
+    // Add status line
+    lines.push(`HTTP/2.0 ${responseData.status}`);
+    lines.push("");
+    
+    // Add headers section
+    if (responseData.headers && responseData.headers.length > 0) {
+      lines.push("/** Response headers below */");
+      responseData.headers.forEach(header => {
+        lines.push(`${header.key}: ${header.value}`);
+      });
+      lines.push("");
+    }
+    
+    // Add body section
+    lines.push("/** Response body below */");
+    lines.push(responseData.text_response || "");
+    
+    return lines.join("\n");
   };
   
   const onToggleScripting = (mode: "run-once" | "auto-run") => {
@@ -123,6 +172,9 @@ export function ResponsePanel({
       onLoadHistoryResponse(historyResponseData);
     }
   };
+
+  // Check if workspace is selected for enabling/disabling actions
+  const isWorkspaceSelected = selectedWorkspace !== null && selectedWorkspace !== undefined;
   
   if (isPending) {
     return (
@@ -151,6 +203,37 @@ export function ResponsePanel({
     );
   }
 
+  const ActionsDropdownButton = () => {
+    const button = (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="ml-auto hover:bg-muted-foreground/20 size-7 hover:dark:bg-muted-foreground/15"
+        disabled={!isWorkspaceSelected}
+      >
+        <Menu className="h-4" />
+        <span className="sr-only">More actions</span>
+      </Button>
+    );
+
+    if (!isWorkspaceSelected) {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {button}
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Select a workspace to enable actions</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+
+    return button;
+  };
+
   return (
     <>
       <div className="top-0 flex items-center rounded-sm h-9 text-muted-foreground">
@@ -170,15 +253,8 @@ export function ResponsePanel({
         </div>
 
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="ml-auto hover:bg-muted-foreground/20 size-7 hover:dark:bg-muted-foreground/15"
-            >
-              <Menu className="h-4" />
-              <span className="sr-only">More actions</span>
-            </Button>
+          <DropdownMenuTrigger asChild disabled={!isWorkspaceSelected}>
+            <ActionsDropdownButton />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" side="left">
             <DropdownMenuItem onClick={onSave} disabled={!data}>
@@ -190,7 +266,7 @@ export function ResponsePanel({
             >
               Delete
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onCopyToClipboard}>
+            <DropdownMenuItem onClick={onCopyToClipboard} disabled={!data}>
               Copy
             </DropdownMenuItem>
             
