@@ -172,9 +172,6 @@ export function ResponsePanel({
       onLoadHistoryResponse(historyResponseData);
     }
   };
-
-  // Check if workspace is selected for enabling/disabling actions
-  const isWorkspaceSelected = selectedWorkspace !== null && selectedWorkspace !== undefined;
   
   if (isPending) {
     return (
@@ -238,7 +235,7 @@ export function ResponsePanel({
         </div>
 
         <DropdownMenu>
-          <DropdownMenuTrigger asChild disabled={!isWorkspaceSelected}>
+          <DropdownMenuTrigger asChild>
             <ActionsDropdownButton />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" side="left">
