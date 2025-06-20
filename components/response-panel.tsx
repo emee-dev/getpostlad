@@ -209,27 +209,27 @@ export function ResponsePanel({
         variant="ghost"
         size="icon"
         className="ml-auto hover:bg-muted-foreground/20 size-7 hover:dark:bg-muted-foreground/15"
-        disabled={!isWorkspaceSelected}
+        disabled={!selectedWorkspace}
       >
         <Menu className="h-4" />
         <span className="sr-only">More actions</span>
       </Button>
     );
 
-    if (!isWorkspaceSelected) {
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              {button}
-            </TooltipTrigger>
-            <TooltipContent className="font-geist">
-              <p>No workspace selected</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
-    }
+    // if (!isWorkspaceSelected) {
+    //   return (
+    //     <TooltipProvider>
+    //       <Tooltip>
+    //         <TooltipTrigger asChild>
+    //           {button}
+    //         </TooltipTrigger>
+    //         <TooltipContent className="font-geist">
+    //           <p>No workspace selected</p>
+    //         </TooltipContent>
+    //       </Tooltip>
+    //     </TooltipProvider>
+    //   );
+    // }
 
     return button;
   };
