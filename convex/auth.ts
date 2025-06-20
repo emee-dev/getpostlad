@@ -21,10 +21,10 @@ export const isConnected = query({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
     const record = await ctx.db
-      .query("integrations")
+      .query("authAccounts")
       .filter((q) => q.eq(q.field("userId"), args.userId))
       .first();
 
-    return !!(record?.accountId);
+    return !!(record?.userId);
   },
 });
