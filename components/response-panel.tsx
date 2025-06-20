@@ -209,6 +209,7 @@ export function ResponsePanel({
         variant="ghost"
         size="icon"
         className="ml-auto hover:bg-muted-foreground/20 size-7 hover:dark:bg-muted-foreground/15"
+        disabled={!isWorkspaceSelected}
       >
         <Menu className="h-4" />
         <span className="sr-only">More actions</span>
