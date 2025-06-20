@@ -192,7 +192,7 @@ export function ResponsePanel({
 
   if (!data) {
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="h-full font-geist flex items-center justify-center">
         <div className="flex flex-col items-center gap-2">
           <Lightbulb className="h-8 w-8" />
           <p className="text-muted-foreground text-sm">
