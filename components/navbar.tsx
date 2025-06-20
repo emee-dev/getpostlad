@@ -57,7 +57,7 @@ export const Navbar = (props: { className?: string }) => {
             className="h-4 bg-muted-foreground"
           />
         </div>
-        <div className="flex items-center pl-2 ml-1 gap-x-1">    
+        <div className="flex items-center text-sm pl-2 ml-1 gap-x-1"> 
           <AuthLoading>
              <Loader2 className="h-4 w-4 animate-spin" />
               Authenticating...
