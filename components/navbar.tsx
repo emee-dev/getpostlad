@@ -15,12 +15,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Upload, Plus, Download, Search } from "lucide-react";
+import { ChevronDown, Upload, Plus, Loader2, Download, Search } from "lucide-react";
 import { useState } from "react";
 import { useFileTreeStore } from "@/hooks/use-file-store";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { exportAndDownloadZip } from "@/lib/exporter";
-import { Authenticated, Unauthenticated } from "convex/react";
+import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 
 export const Navbar = (props: { className?: string }) => {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
@@ -58,6 +58,10 @@ export const Navbar = (props: { className?: string }) => {
           />
         </div>
         <div className="flex items-center pl-2 ml-1 gap-x-1">    
+          <AuthLoading>
+             <Loader2 className="h-4 w-4 animate-spin" />
+              Authenticating...
+          </AuthLoading>
           <Authenticated>
             <CreateWorkspaceDialog />
           </Authenticated>
