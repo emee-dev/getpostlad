@@ -244,6 +244,7 @@ function UnauthenticatedContent() {
 export function AuthDialog() {
   return (
     <>
+      // AuthLoading here
       <Authenticated>
         <AuthenticatedContent />
       </Authenticated>
