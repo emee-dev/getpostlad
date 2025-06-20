@@ -44,12 +44,6 @@ function AuthenticatedContent() {
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>Name</Label>
-            <div className="p-3 bg-muted rounded-md">
-              {user?.name || "No name"}
-            </div>
-          </div>
-          <div className="space-y-2">
             <Label>Email</Label>
             <div className="p-3 bg-muted rounded-md">
               {user?.email || "No email"}
@@ -69,15 +63,14 @@ function UnauthenticatedContent() {
   const { signIn } = useAuthActions();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password || !name) {
-      setError("All fields are required");
+    if (!email || !password) {
+      setError("Email and password are required");
       return;
     }
 
@@ -88,7 +81,6 @@ function UnauthenticatedContent() {
       await signIn("password", { 
         email, 
         password, 
-        name,
         flow: "signUp" 
       });
       setOpen(false);
@@ -128,7 +120,6 @@ function UnauthenticatedContent() {
   const resetForm = () => {
     setEmail("");
     setPassword("");
-    setName("");
     setError("");
     setIsLoading(false);
   };
@@ -208,18 +199,6 @@ function UnauthenticatedContent() {
           
           <TabsContent value="signup">
             <form onSubmit={handleSignUp} className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="name-signup">Name</Label>
-                <Input
-                  id="name-signup"
-                  type="text"
-                  placeholder="Enter your name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  disabled={isLoading}
-                  required
-                />
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="email-signup">Email</Label>
                 <Input
