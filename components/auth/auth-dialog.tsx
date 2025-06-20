@@ -12,9 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { User, LogOut } from "lucide-react";
+import { User, LogOut, Loader2 } from "lucide-react";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { Authenticated, Unauthenticated, useQuery } from "convex/react";
+import { Authenticated, Unauthenticated, AuthLoading, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 function AuthenticatedContent() {
@@ -241,10 +241,25 @@ function UnauthenticatedContent() {
   );
 }
 
+function AuthLoadingContent() {
+  return (
+    <Button
+      size="icon"
+      variant="ghost"
+      className="hover:bg-muted-foreground/20 size-7 hover:dark:bg-muted-foreground/15"
+      disabled
+    >
+      <Loader2 className="h-4 w-4 animate-spin" />
+    </Button>
+  );
+}
+
 export function AuthDialog() {
   return (
     <>
-      // AuthLoading here
+      <AuthLoading>
+        <AuthLoadingContent />
+      </AuthLoading>
       <Authenticated>
         <AuthenticatedContent />
       </Authenticated>
