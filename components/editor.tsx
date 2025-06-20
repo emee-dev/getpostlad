@@ -1,6 +1,7 @@
 import { Environment, useWorkspace } from "@/hooks/use-workspace";
 import { createEditorDecorators } from "@/lib/editor-decorators";
 import { cn } from "@/lib/utils";
+import { useThrottledValue } from "@/lib/throttle";
 import { catppuccinFrappe } from "@catppuccin/codemirror";
 import { closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete";
 import {
@@ -143,6 +144,10 @@ export function CodeEditor({
   const latestEnvRef = useRef<Environment | null>(selectedEnvironment);
   const decoVersionRef = useRef(0);
 
+  // Throttle the value prop to prevent excessive dispatches to CodeMirror
+  // This reduces race conditions and cursor jumping during rapid typing
+  const throttledValue = useThrottledValue(value, 300);
+
   useEffect(() => {
     if (!editorContainerRef.current) return;
 
@@ -213,14 +218,16 @@ export function CodeEditor({
     });
   }, [selectedEnvironment]);
 
+  // Use throttled value to prevent excessive dispatches during rapid typing
+  // This solves race conditions and cursor jumping issues
   useEffect(() => {
     const view = viewRef.current;
-    if (view && value !== view.state.doc.toString()) {
+    if (view && throttledValue !== view.state.doc.toString()) {
       view.dispatch({
-        changes: { from: 0, to: view.state.doc.length, insert: value },
+        changes: { from: 0, to: view.state.doc.length, insert: throttledValue },
       });
     }
-  }, [value]);
+  }, [throttledValue]);
 
   return (
     <div className={cn("relative", className)}>
