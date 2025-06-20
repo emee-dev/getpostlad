@@ -216,21 +216,6 @@ export function ResponsePanel({
       </Button>
     );
 
-    // if (!isWorkspaceSelected) {
-    //   return (
-    //     <TooltipProvider>
-    //       <Tooltip>
-    //         <TooltipTrigger asChild>
-    //           {button}
-    //         </TooltipTrigger>
-    //         <TooltipContent className="font-geist">
-    //           <p>No workspace selected</p>
-    //         </TooltipContent>
-    //       </Tooltip>
-    //     </TooltipProvider>
-    //   );
-    // }
-
     return button;
   };
 
