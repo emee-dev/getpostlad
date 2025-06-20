@@ -13,7 +13,9 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as auth from "../auth.js";
 import type * as environments from "../environments.js";
+import type * as http from "../http.js";
 import type * as request_history from "../request_history.js";
 import type * as workspaces from "../workspaces.js";
 
@@ -26,7 +28,9 @@ import type * as workspaces from "../workspaces.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
   environments: typeof environments;
+  http: typeof http;
   request_history: typeof request_history;
   workspaces: typeof workspaces;
 }>;
