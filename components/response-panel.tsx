@@ -202,15 +202,7 @@ export function ResponsePanel({
 
   const ActionsDropdownButton = () => {
     const button = (
-      <Button
-        variant="ghost"
-        size="icon"
-        className="ml-auto hover:bg-muted-foreground/20 size-7 hover:dark:bg-muted-foreground/15"
-        disabled={!selectedWorkspace}
-      >
-        <Menu className="h-4" />
-        <span className="sr-only">More actions</span>
-      </Button>
+
     );
 
     return button;
@@ -236,7 +228,11 @@ export function ResponsePanel({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <ActionsDropdownButton />
+            <Button variant="ghost" size="icon"
+            className="ml-auto hover:bg-muted-foreground/20 size-7 hover:dark:bg-muted-foreground/15" disabled={!selectedWorkspace}>
+            <Menu className="h-4" />
+            <span className="sr-only">More actions</span>
+          </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" side="left">
             <DropdownMenuItem onClick={onSave} disabled={!data}>
