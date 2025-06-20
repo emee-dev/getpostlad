@@ -226,7 +226,7 @@ export function ResponsePanel({
             <span className="sr-only">More actions</span>
           </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" side="left">
+          <DropdownMenuContent className="font-geist" align="start" side="left">
             <DropdownMenuItem onClick={onSave} disabled={!data}>
               Save
             </DropdownMenuItem>
