@@ -1,7 +1,8 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { authTables } from "@convex-dev/auth/server";
 
-export default defineSchema({
+const applicationTables = {
   workspaces: defineTable({
     name: v.string(),
     path: v.string(), // Unique lowercased path
@@ -38,4 +39,9 @@ export default defineSchema({
   }).index("by_user_workspace", ["userId", "workspaceId"])
     .index("by_user_workspace_path", ["userId", "workspaceId", "requestPath"])
     .index("by_user_workspace_path_status", ["userId", "workspaceId", "requestPath", "status"]),
+};
+
+export default defineSchema({
+  ...authTables,
+  ...applicationTables,
 });

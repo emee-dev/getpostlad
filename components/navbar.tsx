@@ -20,6 +20,7 @@ import { useState } from "react";
 import { useFileTreeStore } from "@/hooks/use-file-store";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { exportAndDownloadZip } from "@/lib/exporter";
+import { Authenticated, Unauthenticated } from "convex/react";
 
 export const Navbar = (props: { className?: string }) => {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
@@ -57,7 +58,14 @@ export const Navbar = (props: { className?: string }) => {
           />
         </div>
         <div className="flex items-center pl-2 ml-1 gap-x-1">    
-          <CreateWorkspaceDialog />
+          <Authenticated>
+            <CreateWorkspaceDialog />
+          </Authenticated>
+          <Unauthenticated>
+            <div className="text-sm text-muted-foreground">
+              Sign in to create workspaces
+            </div>
+          </Unauthenticated>
         </div>
       </div>
 
