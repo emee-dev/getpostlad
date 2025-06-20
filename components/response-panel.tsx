@@ -223,8 +223,8 @@ export function ResponsePanel({
             <TooltipTrigger asChild>
               {button}
             </TooltipTrigger>
-            <TooltipContent>
-              <p>Select a workspace to enable actions</p>
+            <TooltipContent className="font-geist">
+              <p>No workspace selected</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
