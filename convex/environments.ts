@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const create = mutation({
   args: {
@@ -14,6 +15,17 @@ export const create = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("Not signed in");
+    }
+
+    // Verify the workspace belongs to the current user
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace || workspace.userId !== userId) {
+      throw new Error("Not authorized to create environments in this workspace");
+    }
+
     // Convert name to lowercase to avoid case-sensitive duplicates
     const lowercaseName = args.name.toLowerCase().trim();
     
@@ -48,6 +60,17 @@ export const listByWorkspace = query({
     workspaceId: v.id("workspaces"),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("Not signed in");
+    }
+
+    // Verify the workspace belongs to the current user
+    const workspace = await ctx.db.get(args.workspaceId);
+    if (!workspace || workspace.userId !== userId) {
+      throw new Error("Not authorized to access environments in this workspace");
+    }
+
     return await ctx.db
       .query("environments")
       .withIndex("by_workspace", (q) =>
@@ -69,6 +92,22 @@ export const update = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("Not signed in");
+    }
+
+    // Get the environment and verify ownership through workspace
+    const environment = await ctx.db.get(args.id);
+    if (!environment) {
+      throw new Error("Environment not found");
+    }
+
+    const workspace = await ctx.db.get(environment.workspaceId);
+    if (!workspace || workspace.userId !== userId) {
+      throw new Error("Not authorized to update this environment");
+    }
+
     await ctx.db.patch(args.id, {
       variables: args.variables,
     });

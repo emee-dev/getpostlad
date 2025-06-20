@@ -59,7 +59,7 @@ export function CreateWorkspaceDialog() {
     api.workspaces.getByPath,
     path ? { path: path.toLowerCase().trim() } : "skip"
   );
-  const allWorkspaces = useQuery(api.workspaces.list, { userId: "user123" }); // Replace with actual user ID
+  const allWorkspaces = useQuery(api.workspaces.list);
 
   // Auto-generate path when name changes (only if path hasn't been manually edited)
   useEffect(() => {
@@ -89,7 +89,6 @@ export function CreateWorkspaceDialog() {
     try {
       const workspaceId = await createWorkspace({ 
         name: name.trim(), 
-        userId: "user123", // Replace with actual user ID
         path: path.trim() || undefined // Send path if provided, otherwise let backend generate
       });
 

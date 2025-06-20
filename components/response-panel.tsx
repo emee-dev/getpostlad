@@ -47,7 +47,6 @@ export function ResponsePanel({
     api.request_history.getHistories,
     selectedWorkspace && selectedFile?.path
       ? {
-          userId: "user123", // Replace with actual user ID
           workspaceId: selectedWorkspace._id,
           requestPath: selectedFile.path,
         }
@@ -69,7 +68,6 @@ export function ResponsePanel({
           elapsed_time: data.elapsed_time,
           content_size: data.content_size,
           workspaceId: selectedWorkspace._id,
-          userId: "user123", // Replace with actual user ID
           requestPath: selectedFile.path,
         });
         console.log("Response saved to history");
@@ -94,7 +92,6 @@ export function ResponsePanel({
     if (selectedWorkspace && selectedFile?.path) {
       try {
         await deleteAllHistories({
-          userId: "user123", // Replace with actual user ID
           workspaceId: selectedWorkspace._id,
           requestPath: selectedFile.path,
         });

@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 // Helper function to generate a unique path from name
 function generatePath(name: string): string {
@@ -14,10 +15,14 @@ function generatePath(name: string): string {
 export const create = mutation({
   args: {
     name: v.string(),
-    userId: v.string(),
     path: v.optional(v.string()), // Optional custom path
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("Not signed in");
+    }
+
     const trimmedName = args.name.trim();
     
     if (!trimmedName) {
@@ -46,7 +51,7 @@ export const create = mutation({
     const workspaceId = await ctx.db.insert("workspaces", {
       name: trimmedName,
       path: workspacePath,
-      userId: args.userId,
+      userId: userId,
     });
     
     return workspaceId;
@@ -54,13 +59,16 @@ export const create = mutation({
 });
 
 export const list = query({
-  args: {
-    userId: v.string(),
-  },
+  args: {},
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("Not signed in");
+    }
+
     return await ctx.db
       .query("workspaces")
-      .filter((q) => q.eq(q.field("userId"), args.userId))
+      .filter((q) => q.eq(q.field("userId"), userId))
       .collect();
   },
 });
@@ -70,7 +78,19 @@ export const getById = query({
     id: v.id("workspaces"),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("Not signed in");
+    }
+
+    const workspace = await ctx.db.get(args.id);
+    
+    // Verify the workspace belongs to the current user
+    if (workspace && workspace.userId !== userId) {
+      throw new Error("Not authorized to access this workspace");
+    }
+
+    return workspace;
   },
 });
 
@@ -79,9 +99,21 @@ export const getByPath = query({
     path: v.string(),
   },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("Not signed in");
+    }
+
+    const workspace = await ctx.db
       .query("workspaces")
       .withIndex("by_path", (q) => q.eq("path", args.path.toLowerCase()))
       .first();
+
+    // Verify the workspace belongs to the current user
+    if (workspace && workspace.userId !== userId) {
+      throw new Error("Not authorized to access this workspace");
+    }
+
+    return workspace;
   },
 });

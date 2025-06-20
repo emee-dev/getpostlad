@@ -83,7 +83,6 @@ export default function Home() {
     selectedWorkspace && selectedFile
       ? {
           requestPath: selectedFile.path as string,
-          userId: "user123",
           workspaceId: selectedWorkspace._id,
         }
       : "skip"

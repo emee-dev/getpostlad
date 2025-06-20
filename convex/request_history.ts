@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const createResponseHistory = mutation({
   args: {
@@ -14,16 +15,20 @@ export const createResponseHistory = mutation({
     elapsed_time: v.number(),
     content_size: v.number(),
     workspaceId: v.id("workspaces"),
-    userId: v.string(),
     requestPath: v.string(),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("Not signed in");
+    }
+
     // Check if a history entry with the same status already exists
     const existingHistory = await ctx.db
       .query("request_history")
       .withIndex("by_user_workspace_path_status", (q) =>
         q
-          .eq("userId", args.userId)
+          .eq("userId", userId)
           .eq("workspaceId", args.workspaceId)
           .eq("requestPath", args.requestPath)
           .eq("status", args.status)
@@ -48,7 +53,7 @@ export const createResponseHistory = mutation({
         elapsed_time: args.elapsed_time,
         content_size: args.content_size,
         workspaceId: args.workspaceId,
-        userId: args.userId,
+        userId: userId,
         requestPath: args.requestPath,
       });
       return historyId;
@@ -58,18 +63,22 @@ export const createResponseHistory = mutation({
 
 export const findHistories = query({
   args: {
-    userId: v.string(),
     workspaceId: v.id("workspaces"),
     requestPath: v.string(),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("Not signed in");
+    }
+
     if (args.requestPath) {
       // Get all histories for a specific request path
       return await ctx.db
         .query("request_history")
         .withIndex("by_user_workspace_path", (q) =>
           q
-            .eq("userId", args.userId)
+            .eq("userId", userId)
             .eq("workspaceId", args.workspaceId)
             .eq("requestPath", args.requestPath)
         )
@@ -80,7 +89,7 @@ export const findHistories = query({
       return await ctx.db
         .query("request_history")
         .withIndex("by_user_workspace", (q) =>
-          q.eq("userId", args.userId).eq("workspaceId", args.workspaceId)
+          q.eq("userId", userId).eq("workspaceId", args.workspaceId)
         )
         .order("desc")
         .collect();
@@ -90,17 +99,21 @@ export const findHistories = query({
 
 export const getHistories = query({
   args: {
-    userId: v.string(),
     workspaceId: v.id("workspaces"),
     requestPath: v.string(),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("Not signed in");
+    }
+
     // Get all histories for a specific request path
     return await ctx.db
       .query("request_history")
       .withIndex("by_user_workspace_path", (q) =>
         q
-          .eq("userId", args.userId)
+          .eq("userId", userId)
           .eq("workspaceId", args.workspaceId)
           .eq("requestPath", args.requestPath)
       )
@@ -114,22 +127,41 @@ export const deleteHistory = mutation({
     id: v.id("request_history"),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("Not signed in");
+    }
+
+    // Verify the history belongs to the current user before deleting
+    const history = await ctx.db.get(args.id);
+    if (!history) {
+      throw new Error("History not found");
+    }
+    
+    if (history.userId !== userId) {
+      throw new Error("Not authorized to delete this history");
+    }
+
     await ctx.db.delete(args.id);
   },
 });
 
 export const deleteHistoriesByPath = mutation({
   args: {
-    userId: v.string(),
     workspaceId: v.id("workspaces"),
     requestPath: v.string(),
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("Not signed in");
+    }
+
     const histories = await ctx.db
       .query("request_history")
       .withIndex("by_user_workspace_path", (q) =>
         q
-          .eq("userId", args.userId)
+          .eq("userId", userId)
           .eq("workspaceId", args.workspaceId)
           .eq("requestPath", args.requestPath)
       )
@@ -144,19 +176,23 @@ export const deleteHistoriesByPath = mutation({
 
 export const findResponse = query({
   args: {
-    userId: v.string(),
     workspaceId: v.id("workspaces"),
     requestPath: v.string(),
     status: v.optional(v.number()), // Optional status filter
   },
   handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("Not signed in");
+    }
+
     if (args.status !== undefined) {
       // Find specific response by status
       return await ctx.db
         .query("request_history")
         .withIndex("by_user_workspace_path_status", (q) =>
           q
-            .eq("userId", args.userId)
+            .eq("userId", userId)
             .eq("workspaceId", args.workspaceId)
             .eq("requestPath", args.requestPath)
             .eq("status", args.status || 0)
@@ -168,7 +204,7 @@ export const findResponse = query({
         .query("request_history")
         .withIndex("by_user_workspace_path", (q) =>
           q
-            .eq("userId", args.userId)
+            .eq("userId", userId)
             .eq("workspaceId", args.workspaceId)
             .eq("requestPath", args.requestPath)
         )
