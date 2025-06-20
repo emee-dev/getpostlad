@@ -200,14 +200,6 @@ export function ResponsePanel({
     );
   }
 
-  const ActionsDropdownButton = () => {
-    const button = (
-
-    );
-
-    return button;
-  };
-
   return (
     <>
       <div className="top-0 flex items-center rounded-sm h-9 text-muted-foreground">
