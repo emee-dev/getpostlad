@@ -170,7 +170,7 @@ export function ImportCollectionDialog({ open, onOpenChange }: ImportCollectionD
                           Choose a collection file
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Supports .json (Postman >= v2.0) and .zip files
+                          {`Supports .json (Postman >= v2.0) and .zip files`}
                         </p>
                       </div>
                     </div>
