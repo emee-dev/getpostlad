@@ -50,7 +50,7 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
   selectedWorkspace: null,
   selectedEnvironment: null,
   expandedFolders: new Set(),
-  isResultPanelVisible: false,
+  isResultPanelVisible: true,
   scripting: "run-once", // Default value
 
   setSelectedWorkspace: (ws) => set({ selectedWorkspace: ws }),
