@@ -39,6 +39,10 @@ const applicationTables = {
   }).index("by_user_workspace", ["userId", "workspaceId"])
     .index("by_user_workspace_path", ["userId", "workspaceId", "requestPath"])
     .index("by_user_workspace_path_status", ["userId", "workspaceId", "requestPath", "status"]),
+
+  subscriptions: defineTable({
+    purchase: v.any(), // Raw purchase object from Freemius checkout
+  }),
 };
 
 export default defineSchema({

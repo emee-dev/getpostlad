@@ -17,6 +17,7 @@ import type * as auth from "../auth.js";
 import type * as environments from "../environments.js";
 import type * as http from "../http.js";
 import type * as request_history from "../request_history.js";
+import type * as subscriptions from "../subscriptions.js";
 import type * as workspaces from "../workspaces.js";
 
 /**
@@ -32,6 +33,7 @@ declare const fullApi: ApiFromModules<{
   environments: typeof environments;
   http: typeof http;
   request_history: typeof request_history;
+  subscriptions: typeof subscriptions;
   workspaces: typeof workspaces;
 }>;
 export declare const api: FilterApi<
