@@ -141,7 +141,7 @@ const updateChildrenPaths = (children: FileNode[], parentPath: string): FileNode
   });
 };
 
-// Helper function to add a file by path
+// Helper function to add a file by path with duplicate checking
 const addNodeByPath = (
   nodes: FileNode[],
   path: string,
@@ -152,11 +152,32 @@ const addNodeByPath = (
   const pathParts = path.split("/").filter(Boolean);
 
   if (pathParts.length === 0) {
-    // Add to root
+    // Add to root - check for existing file with same name
+    const fullPath = name;
+    const existingIndex = nodes.findIndex((node) => node.name === name);
+    
+    if (existingIndex !== -1) {
+      // File exists - overwrite if it's a file, or skip if it's a directory
+      const existingNode = nodes[existingIndex];
+      if (existingNode.type === "file" && type === "file") {
+        // Overwrite existing file
+        const updatedNode: FileNode = {
+          ...existingNode,
+          content: content || "",
+        };
+        return nodes.map((node, index) => 
+          index === existingIndex ? updatedNode : node
+        );
+      }
+      // If trying to add directory over file or vice versa, skip
+      return nodes;
+    }
+
+    // Create new node
     const newNode: FileNode = {
       name,
       type,
-      path: name,
+      path: fullPath,
       ...(type === "file" && { content: content || "" }),
       ...(type === "directory" && { children: [] }),
     };
@@ -166,11 +187,35 @@ const addNodeByPath = (
   return nodes.map((node) => {
     if (node.name === pathParts[0]) {
       if (pathParts.length === 1) {
-        // Add to this directory
+        // Add to this directory - check for existing file
+        const fullPath = `${path}/${name}`;
+        const existingIndex = (node.children || []).findIndex((child) => child.name === name);
+        
+        if (existingIndex !== -1) {
+          // File exists in this directory
+          const existingChild = node.children![existingIndex];
+          if (existingChild.type === "file" && type === "file") {
+            // Overwrite existing file
+            const updatedChild: FileNode = {
+              ...existingChild,
+              content: content || "",
+            };
+            return {
+              ...node,
+              children: node.children!.map((child, index) => 
+                index === existingIndex ? updatedChild : child
+              ),
+            };
+          }
+          // If trying to add directory over file or vice versa, skip
+          return node;
+        }
+
+        // Create new node in this directory
         const newNode: FileNode = {
           name,
           type,
-          path: `${path}/${name}`,
+          path: fullPath,
           ...(type === "file" && { content: content || "" }),
           ...(type === "directory" && { children: [] }),
         };
