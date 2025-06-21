@@ -123,7 +123,7 @@ export const Navbar = (props: { className?: string }) => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 hover:bg-muted-foreground/20 hover:dark:bg-muted-foreground/15 font-geist font-sm"
+                className="h-7 hover:bg-muted-foreground/20 hover:dark:bg-muted-foreground/15 font-geist text-sm"
               >
                 <Plus className="mr-2 h-4 w-4" />
                 New
