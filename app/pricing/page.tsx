@@ -269,8 +269,7 @@ export default function PricingPage() {
               className="text-primary hover:underline"
             >
               Discord
-            </a>{" "}
-            for help, updates, and discussions.
+            </a>
           </p>
         </div>
       </div>
