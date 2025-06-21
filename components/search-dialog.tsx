@@ -257,7 +257,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             placeholder="Search files..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full bg-background border-border font-mono text-sm focus:ring-1 focus:ring-primary"
+            className="w-full bg-background border-border font-geist text-sm focus:ring-1 focus:ring-primary"
             autoFocus
           />
         </div>
@@ -266,7 +266,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
           {/* Results Panel */}
           <div className="w-1/2  flex flex-col bg-background">
             <div className="flex-shrink-0 px-4 py-2 bg-muted/20 rounded-sm ">
-              <span className="text-sm font-mono text-muted-foreground">
+              <span className="text-sm font-geist text-muted-foreground">
                 Results ({searchResults.length})
               </span>
             </div>
@@ -275,7 +275,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
             <div className="flex-1 min-h-0">
               {searchResults.length === 0 ? (
                 <div className="flex items-center justify-center h-full">
-                  <div className="text-center text-muted-foreground font-mono text-sm">
+                  <div className="text-center text-muted-foreground font-geist text-sm">
                     {debouncedQuery
                       ? "No files found"
                       : "Start typing to search..."}
@@ -313,7 +313,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                         >
                           <div
                             className={cn(
-                              "h-full rounded-sm px-4 py-2 cursor-pointer transition-colors flex items-center gap-3 font-mono text-sm",
+                              "h-full rounded-sm px-4 py-2 cursor-pointer transition-colors flex items-center gap-3 font-geist text-sm",
                               isSelected
                                 ? "bg-primary/20 text-primary-foreground"
                                 : "hover:bg-muted/30 text-foreground"
@@ -348,7 +348,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
           {/* Preview Panel */}
           <div className="w-1/2 flex flex-col bg-background border rounded-sm">
             <div className="flex-shrink-0 px-4 py-2 bg-muted/20">
-              <div className="flex items-center gap-2 font-mono text-sm">
+              <div className="flex items-center gap-2 font-geist text-sm">
                 {selectedFile ? (
                   <>
                     <File className="h-4 w-4 text-muted-foreground" />
@@ -380,7 +380,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                 </div>
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <span className="text-muted-foreground font-mono text-sm">
+                  <span className="text-muted-foreground font-geist text-sm">
                     Select a file to preview
                   </span>
                 </div>
