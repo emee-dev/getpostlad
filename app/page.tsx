@@ -43,35 +43,12 @@ export type ResponseData = {
   content_size: number;
 };
 
-const template = `const GET = () => {
-  return {
-    name: "Optional request {{BASE_URL}}",
-    url: "https://httpbin.org/delay/5",
-    headers: {
-      'Content-type': 'application/json; charset=UTF-8',
-    },
-  };
-};
-
-const POST = () => {
-  return {
-    name: "Get posts",
-    url: "https://jsonplaceholder.typicode.com/posts",
-    json: {
-      title: 'foo',
-      body: 'bar',
-      userId: 1,
-    },
-  };
-};
-`;
-
 export default function Home() {
   const { theme } = useTheme();
   const { selectedFile, updateFile } = useFileTreeStore();
   const { scripting, selectedEnvironment, selectedWorkspace } = useWorkspace();
 
-  const [code, setCode] = useState(template);
+  const [code, setCode] = useState("");
   const [isPending, setIsPending] = useState(false);
   const [isResultPanelVisible, setIsResultPanelVisible] = useState(true);
   const [data, setData] = useState<ResponseData | null>(null);
