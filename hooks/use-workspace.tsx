@@ -30,6 +30,8 @@ interface WorkspaceState {
   selectedWorkspace: Workspace | null;
   setSelectedWorkspace: (ws: Workspace) => void;
   setWorkspaces: (ws: Workspace[]) => void;
+  isResultPanelVisible: boolean;
+  setIsResultPanelVisible: (state: boolean) => void;
 
   // Environments
   environments: Environment[];
@@ -48,13 +50,15 @@ export const useWorkspace = create<WorkspaceState>((set, get) => ({
   selectedWorkspace: null,
   selectedEnvironment: null,
   expandedFolders: new Set(),
+  isResultPanelVisible: false,
   scripting: "run-once", // Default value
 
   setSelectedWorkspace: (ws) => set({ selectedWorkspace: ws }),
   setWorkspaces: (ws) => set({ workspaces: ws }),
   setSelectedEnvironment: (env) => set({ selectedEnvironment: env }),
   setEnvironments: (env) => set({ environments: env }),
-  
+
   // Toggle between the two scripting modes
   setScripting: (mode) => set({ scripting: mode }),
+  setIsResultPanelVisible: (state) => set({ isResultPanelVisible: state }),
 }));
