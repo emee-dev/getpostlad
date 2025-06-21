@@ -351,14 +351,13 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
             <div className="flex-1 min-h-0">
               {selectedFile ? (
-                <div className="h-full">
+                <div className="overflow-auto scrollbar-hide">
                   <CodeEditor
                     value={selectedFile.content}
                     language="javascript"
                     readOnly
                     lineWrap
                     theme={(theme as any) || "system"}
-                    className="h-full"
                     disableHttpDecorators={true}
                   />
                 </div>
