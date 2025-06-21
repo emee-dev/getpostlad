@@ -59,7 +59,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
           <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
       </CollapsibleTrigger>
-      <CollapsibleContent className=" pb-6 font-geist">
+      <CollapsibleContent className="py-2 pb-6 font-geist">
         <p className="text-muted-foreground">{answer}</p>
       </CollapsibleContent>
     </Collapsible>
