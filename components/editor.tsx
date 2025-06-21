@@ -30,6 +30,7 @@ import {
   lineNumbers,
   rectangularSelection,
   EditorView,
+  placeholder,
 } from "@codemirror/view";
 import type * as CSS from "csstype";
 import { useEffect, useRef } from "react";
@@ -46,6 +47,7 @@ interface CodeEditorProps {
   language?: "json" | "javascript";
   onDecoratorClick?: DecoratorFn;
   disableHttpDecorators?: boolean;
+  placeholder?: string;
 }
 
 type ThemeSpec = { [selector: string]: CSS.Properties };
@@ -73,6 +75,10 @@ const editorTheme = EditorView.theme({
   "&.cm-editor.cm-focused": { outline: "none" },
   "&.cm-focused .cm-selectionBackground, ::selection": {
     backgroundColor: "var(--editor-selection-color)",
+  },
+  ".cm-placeholder": {
+    color: "var(--muted-foreground)",
+    fontStyle: "italic",
   },
 } satisfies ThemeSpec);
 
@@ -132,6 +138,7 @@ export function CodeEditor({
   value,
   theme,
   disableHttpDecorators = false,
+  placeholder: placeholderText = "No file is selected...",
 }: CodeEditorProps) {
   const selectedEnvironment = useWorkspace((s) => s.selectedEnvironment);
 
@@ -139,6 +146,7 @@ export function CodeEditor({
   const viewRef = useRef<EditorView | null>(null);
   const varCompartment = useRef(new Compartment());
   const themeCompartment = useRef(new Compartment());
+  const placeholderCompartment = useRef(new Compartment());
 
   const latestEnvRef = useRef<Environment | null>(selectedEnvironment);
   const decoVersionRef = useRef(0);
@@ -159,6 +167,7 @@ export function CodeEditor({
       varCompartment.current.of(
         variables(() => latestEnvRef.current, decoVersionRef.current)
       ),
+      placeholderCompartment.current.of(placeholder(placeholderText)),
       EditorView.updateListener.of((update) => {
         if (update.docChanged) onChange?.(update.state.doc.toString());
       }),
@@ -180,7 +189,7 @@ export function CodeEditor({
     });
 
     return () => viewRef.current?.destroy();
-  }, [language, disableHttpDecorators, onDecoratorClick]);
+  }, [language, disableHttpDecorators, onDecoratorClick, placeholderText]);
 
   useEffect(() => {
     latestEnvRef.current = selectedEnvironment;
@@ -212,6 +221,17 @@ export function CodeEditor({
       ],
     });
   }, [selectedEnvironment]);
+
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view) return;
+
+    view.dispatch({
+      effects: [
+        placeholderCompartment.current.reconfigure(placeholder(placeholderText)),
+      ],
+    });
+  }, [placeholderText]);
 
   useEffect(() => {
     const view = viewRef.current;
