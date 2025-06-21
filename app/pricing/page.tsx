@@ -4,7 +4,7 @@ import { useFreemiusCheckout } from "@/hooks/useFreemiusCheckout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Zap, Users, Shield, Headphones, Infinity, CreditCard, Calendar } from "lucide-react";
+import { Check, Zap, Users, Shield, Headphones, InfinityIcon, CreditCard, Calendar } from "lucide-react";
 import Link from "next/link";
 
 const features = {
@@ -147,7 +147,7 @@ export default function PricingPage() {
                 </div>
               </div>
               <div className="flex items-center justify-center gap-2 mt-2">
-                <Infinity className="w-4 h-4 text-muted-foreground" />
+                <InfinityIcon className="w-4 h-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">Unlimited users</span>
               </div>
               <div className="flex items-center justify-center gap-2 mt-1">
