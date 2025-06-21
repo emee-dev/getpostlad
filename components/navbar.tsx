@@ -15,7 +15,7 @@ import {
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Upload, Plus, Loader2, Download, Search, CreditCard } from "lucide-react";
+import { ChevronDown, Upload, Plus, Loader2, Download, Search, CreditCard, BookOpen, FileText, Variable, Code, Book } from "lucide-react";
 import { useState } from "react";
 import { useFileTreeStore } from "@/hooks/use-file-store";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -23,11 +23,18 @@ import { exportAndDownloadZip } from "@/lib/exporter";
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
+import { 
+  basicTemplate, 
+  requestBodyTemplate, 
+  variablesTemplate, 
+  scriptingTemplate, 
+  fullDocsTemplate 
+} from "@/templates";
 
 export const Navbar = (props: { className?: string }) => {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
-  const { files } = useFileTreeStore();
+  const { files, addFile, setSelectedFile } = useFileTreeStore();
   const { selectedWorkspace } = useWorkspace();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
@@ -48,6 +55,22 @@ export const Navbar = (props: { className?: string }) => {
 
   const handleUpgradeClick = () => {
     router.push("/pricing");
+  };
+
+  const handleTemplateSelect = (templateName: string, content: string, fileName: string) => {
+    // Create the file node
+    const fileNode = {
+      name: fileName,
+      type: "file" as const,
+      content: content,
+      path: fileName,
+    };
+
+    // Add to file tree
+    addFile("", fileName, content);
+    
+    // Set as selected file
+    setSelectedFile(fileNode);
   };
 
   return (
@@ -119,6 +142,32 @@ export const Navbar = (props: { className?: string }) => {
               >
                 <Download className="mr-2 h-4 w-4" />
                 Export Collection
+              </DropdownMenuItem>
+              
+              <div className="flex items-center px-2 gap-x-1 font-geist text-xs py-2">
+                <span className="text-muted-foreground/80">Templates</span>
+                <Separator orientation="horizontal" className="ml-1 w-[65%]" />
+              </div>
+              
+              <DropdownMenuItem onClick={() => handleTemplateSelect("Basic", basicTemplate, "basic.js")}>
+                <FileText className="mr-2 h-4 w-4" />
+                Basic
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleTemplateSelect("Request Body", requestBodyTemplate, "request-body.js")}>
+                <BookOpen className="mr-2 h-4 w-4" />
+                Request Body
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleTemplateSelect("Variables", variablesTemplate, "variables.js")}>
+                <Variable className="mr-2 h-4 w-4" />
+                Variables
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleTemplateSelect("Scripting", scriptingTemplate, "scripting.js")}>
+                <Code className="mr-2 h-4 w-4" />
+                Scripting
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleTemplateSelect("Full Docs", fullDocsTemplate, "full-docs.js")}>
+                <Book className="mr-2 h-4 w-4" />
+                Full Docs
               </DropdownMenuItem>
               
               <div className="flex items-center px-2 gap-x-1 font-geist text-xs py-2">
