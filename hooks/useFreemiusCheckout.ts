@@ -13,7 +13,7 @@ type PlanConfig = {
 };
 
 export const useFreemiusCheckout = (config: PlanConfig) => {
-  const checkoutRef = useRef<any>(null);
+  const checkoutRef = useRef<Checkout | null>(null);
   const storePurchase = useMutation(api.subscriptions.storePurchase);
 
   useEffect(() => {
