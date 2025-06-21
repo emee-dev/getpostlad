@@ -26,9 +26,6 @@ export const useFreemiusCheckout = (config: PlanConfig) => {
       });
     }
 
-    return () => {
-      checkoutRef.current?.destroy();
-    };
   }, [config]);
 
   const openCheckout = () => {
