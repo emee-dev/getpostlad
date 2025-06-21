@@ -46,11 +46,10 @@ export type ResponseData = {
 export default function Home() {
   const { theme } = useTheme();
   const { selectedFile, updateFile } = useFileTreeStore();
-  const { scripting, selectedEnvironment, selectedWorkspace } = useWorkspace();
+ const { selectedEnvironment, isResultPanelVisible, selectedWorkspace } = useWorkspace();
 
   const [code, setCode] = useState("");
   const [isPending, setIsPending] = useState(false);
-  const [isResultPanelVisible, setIsResultPanelVisible] = useState(true);
   const [data, setData] = useState<ResponseData | null>(null);
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const editor = useRef<EditorView | null>(null);
