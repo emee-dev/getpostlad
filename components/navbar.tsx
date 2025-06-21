@@ -15,13 +15,14 @@ import {
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Upload, Plus, Loader2, Download, Search } from "lucide-react";
+import { ChevronDown, Upload, Plus, Loader2, Download, Search, CreditCard } from "lucide-react";
 import { useState } from "react";
 import { useFileTreeStore } from "@/hooks/use-file-store";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { exportAndDownloadZip } from "@/lib/exporter";
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
 
 export const Navbar = (props: { className?: string }) => {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
@@ -29,6 +30,7 @@ export const Navbar = (props: { className?: string }) => {
   const { files } = useFileTreeStore();
   const { selectedWorkspace } = useWorkspace();
   const { theme, setTheme } = useTheme();
+  const router = useRouter();
 
   const handleExportCollection = async () => {
     try {
@@ -42,6 +44,10 @@ export const Navbar = (props: { className?: string }) => {
       console.error("Failed to export collection:", error);
       // You could add a toast notification here for better UX
     }
+  };
+
+  const handleUpgradeClick = () => {
+    router.push("/pricing");
   };
 
   return (
@@ -113,6 +119,16 @@ export const Navbar = (props: { className?: string }) => {
               >
                 <Download className="mr-2 h-4 w-4" />
                 Export Collection
+              </DropdownMenuItem>
+              
+              <div className="flex items-center px-2 gap-x-1 font-geist text-xs py-2">
+                <span className="text-muted-foreground/80">Billing</span>
+                <Separator orientation="horizontal" className="ml-1 w-[65%]" />
+              </div>
+              
+              <DropdownMenuItem onClick={handleUpgradeClick}>
+                <CreditCard className="mr-2 h-4 w-4" />
+                Upgrade
               </DropdownMenuItem>
               
               <div className="flex items-center px-2 gap-x-1 font-geist text-xs py-2">
