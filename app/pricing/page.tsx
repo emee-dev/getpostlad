@@ -4,9 +4,11 @@ import { useFreemiusCheckout } from "@/hooks/useFreemiusCheckout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Zap, Users, Shield, Headphones, InfinityIcon, CreditCard, Calendar } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Check, Zap, Users, Shield, Headphones, InfinityIcon, CreditCard, Calendar, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 
 const features = {
   basic: [
@@ -30,6 +32,39 @@ const features = {
     "Dedicated account manager"
   ]
 };
+
+const faqItems = [
+  {
+    question: "Is there a free trial?",
+    answer: "The Basic plan doesn't require a credit card and gives you access to all core features. You can start using Panda immediately."
+  },
+  {
+    question: "The payment modal isn't loading. What should I do?",
+    answer: "Please try a hard reload of your browser (e.g., Shift + Reload). This usually resolves any issues related to cached scripts."
+  },
+  {
+    question: "What payment methods do you accept?",
+    answer: "We accept all major credit cards, PayPal, and bank transfers for enterprise customers."
+  }
+];
+
+function FAQItem({ question, answer }: { question: string; answer: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <CollapsibleTrigger asChild>
+        <button className="flex w-full items-center justify-between rounded-lg border p-6 text-left hover:bg-muted/50 transition-colors">
+          <h3 className="font-semibold">{question}</h3>
+          <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+      </CollapsibleTrigger>
+      <CollapsibleContent className="px-6 pb-6">
+        <p className="text-muted-foreground">{answer}</p>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
 
 export default function PricingPage() {
   const basicCheckout = useFreemiusCheckout({
@@ -216,31 +251,27 @@ export default function PricingPage() {
         {/* FAQ Section */}
         <div className="mt-20 max-w-3xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
-          <div className="space-y-6">
-            <div className="border rounded-lg p-6">
-              <h3 className="font-semibold mb-2">Can I switch plans later?</h3>
-              <p className="text-muted-foreground">
-                Yes, you can upgrade or downgrade your plan at any time. Changes will be prorated and reflected in your next billing cycle.
-              </p>
-            </div>
-            <div className="border rounded-lg p-6">
-              <h3 className="font-semibold mb-2">Is there a free trial?</h3>
-              <p className="text-muted-foreground">
-                The Basic plan doesn't require a credit card and gives you access to all core features. You can start using Panda immediately.
-              </p>
-            </div>
-            <div className="border rounded-lg p-6">
-              <h3 className="font-semibold mb-2">What payment methods do you accept?</h3>
-              <p className="text-muted-foreground">
-                We accept all major credit cards, PayPal, and bank transfers for enterprise customers.
-              </p>
-            </div>
+          <div className="space-y-4">
+            {faqItems.map((item, index) => (
+              <FAQItem key={index} question={item.question} answer={item.answer} />
+            ))}
           </div>
         </div>
 
         {/* Footer */}
         <div className="mt-20 text-center text-muted-foreground">
-          <p>Questions? Contact us at <a href="mailto:support@panda.dev" className="text-primary hover:underline">support@panda.dev</a></p>
+          <p>
+            Join our community on{" "}
+            <a 
+              href="https://discord.gg/BmvSwRXX" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              Discord
+            </a>{" "}
+            for help, updates, and discussions.
+          </p>
         </div>
       </div>
     </div>
