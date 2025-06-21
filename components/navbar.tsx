@@ -7,12 +7,12 @@ import { cn } from "@/lib/utils";
 import { AuthDialog } from "@/components/auth/auth-dialog";
 import { ImportCollectionDialog } from "@/components/import-collection-dialog";
 import { SearchDialog } from "@/components/search-dialog";
-import { ModeToggle } from "@/components/theme-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Upload, Plus, Loader2, Download, Search } from "lucide-react";
@@ -21,12 +21,14 @@ import { useFileTreeStore } from "@/hooks/use-file-store";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { exportAndDownloadZip } from "@/lib/exporter";
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
+import { useTheme } from "next-themes";
 
 export const Navbar = (props: { className?: string }) => {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
   const { files } = useFileTreeStore();
   const { selectedWorkspace } = useWorkspace();
+  const { theme, setTheme } = useTheme();
 
   const handleExportCollection = async () => {
     try {
@@ -112,9 +114,26 @@ export const Navbar = (props: { className?: string }) => {
                 <Download className="mr-2 h-4 w-4" />
                 Export Collection
               </DropdownMenuItem>
+              
+              <div className="flex items-center px-2 gap-x-1 font-geist text-xs py-2">
+                <span className="text-muted-foreground/80">Mode</span>
+                <Separator orientation="horizontal" className="ml-1 w-[65%]" />
+              </div>
+              
+              <DropdownMenuCheckboxItem 
+                checked={theme === "light"}
+                onCheckedChange={() => setTheme("light")}
+              >
+                Light
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem 
+                checked={theme === "dark"}
+                onCheckedChange={() => setTheme("dark")}
+              >
+                Dark
+              </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <ModeToggle />
           <AuthDialog />
         </div>
       </div>
