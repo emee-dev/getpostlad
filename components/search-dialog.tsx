@@ -70,12 +70,12 @@ function highlightMatches(
 
   // Find matches for this specific text
   const textMatches = matches.filter(
-    (match) => match.value === text || text.includes(match.value || "")
+    (match) => match.value === text
   );
 
   if (!textMatches.length) return text;
 
-  // Create highlighted version
+  // Collect all highlight ranges
   const highlights: Array<{ start: number; end: number }> = [];
 
   textMatches.forEach((match) => {
@@ -89,11 +89,28 @@ function highlightMatches(
   // Sort highlights by start position
   highlights.sort((a, b) => a.start - b.start);
 
+  // Merge overlapping highlights
+  const mergedHighlights: Array<{ start: number; end: number }> = [];
+  for (const highlight of highlights) {
+    if (mergedHighlights.length === 0) {
+      mergedHighlights.push(highlight);
+    } else {
+      const last = mergedHighlights[mergedHighlights.length - 1];
+      if (highlight.start <= last.end) {
+        // Overlapping or adjacent - merge them
+        last.end = Math.max(last.end, highlight.end);
+      } else {
+        // Non-overlapping - add as new highlight
+        mergedHighlights.push(highlight);
+      }
+    }
+  }
+
   // Build highlighted JSX
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
 
-  highlights.forEach(({ start, end }, index) => {
+  mergedHighlights.forEach(({ start, end }, index) => {
     // Add text before highlight
     if (start > lastIndex) {
       parts.push(text.slice(lastIndex, start));
