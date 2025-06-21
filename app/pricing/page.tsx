@@ -54,7 +54,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleTrigger asChild>
-        <button className="flex w-full items-center justify-between rounded-lg border p-3 text-left hover:bg-muted/50 transition-colors">
+        <button className="flex w-full font-geist items-center justify-between rounded-lg border p-3 text-left hover:bg-muted/50 transition-colors">
           <h3 className="font-semibold">{question}</h3>
           <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
