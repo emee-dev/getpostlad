@@ -164,7 +164,7 @@ export const Navbar = (props: { className?: string }) => {
                   <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" side="left">
+              <DropdownMenuContent align="start" side="left"className="font-geist">
                 <DropdownMenuItem onClick={() => setIsImportDialogOpen(true)}>
                   <Upload className="mr-2 h-4 w-4" />
                   Import Collection
