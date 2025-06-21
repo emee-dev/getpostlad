@@ -431,15 +431,13 @@ const HTTP_Layout = ({
         })}
         onClick={() => editor.current?.focus()}
       >
-        <Suspense fallback={<div>Loading...</div>}>
-          <CodeEditor
+        <CodeEditor
             language="javascript"
             value={code}
             onDecoratorClick={(src) => onSend(src)}
             onChange={(val) => setCode(val)}
             theme={(theme as any) || "system"}
           />
-        </Suspense>
       </div>
 
       <div
