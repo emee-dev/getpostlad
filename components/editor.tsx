@@ -79,6 +79,7 @@ const editorTheme = EditorView.theme({
   ".cm-placeholder": {
     color: "var(--text-muted-foreground)",
     fontStyle: "italic",
+    fontFamily: "var(--font-mono)", fontSize: "13px"
   },
 } satisfies ThemeSpec);
 
