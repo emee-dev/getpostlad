@@ -15,7 +15,7 @@ import {
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Upload, Plus, Loader2, Download, Search, CreditCard, BookOpen, FileText, Variable, Code, Book } from "lucide-react";
+import { ChevronDown, Upload, Plus, Loader2, Download, Search, CreditCard, BookOpen, FileText, Variable, Code, Book, Maximize, Minimize } from "lucide-react";
 import { useState } from "react";
 import { useFileTreeStore } from "@/hooks/use-file-store";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -35,7 +35,7 @@ export const Navbar = (props: { className?: string }) => {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
   const { files, addFile, setSelectedFile } = useFileTreeStore();
-  const { selectedWorkspace } = useWorkspace();
+  const { selectedWorkspace, isResultPanelVisible, setIsResultPanelVisible } = useWorkspace();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
 
@@ -71,6 +71,10 @@ export const Navbar = (props: { className?: string }) => {
     
     // Set as selected file
     setSelectedFile(fileNode);
+  };
+
+  const handleFullscreenToggle = () => {
+    setIsResultPanelVisible(!isResultPanelVisible);
   };
 
   return (
@@ -116,6 +120,23 @@ export const Navbar = (props: { className?: string }) => {
           >
             <Search className="h-4 w-4" />
             <span className="sr-only">Search files</span>
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-7 hover:bg-muted-foreground/20 hover:dark:bg-muted-foreground/15 mr-1"
+            onClick={handleFullscreenToggle}
+            title={isResultPanelVisible ? "Hide Result Panel" : "Show Result Panel"}
+          >
+            {isResultPanelVisible ? (
+              <Minimize className="h-4 w-4" />
+            ) : (
+              <Maximize className="h-4 w-4" />
+            )}
+            <span className="sr-only">
+              {isResultPanelVisible ? "Hide Result Panel" : "Show Result Panel"}
+            </span>
           </Button>
           
            <DropdownMenu>
