@@ -77,7 +77,6 @@ const editorTheme = EditorView.theme({
     backgroundColor: "var(--editor-selection-color)",
   },
   ".cm-placeholder": {
-    color: "var(--text-muted-foreground)",
     fontStyle: "italic",
     fontFamily: "var(--font-mono)", fontSize: "13px"
   },
