@@ -79,15 +79,7 @@ const editorTheme = EditorView.theme({
   ".cm-placeholder": {
     color: "var(--text-muted-foreground)",
     fontStyle: "italic",
-    fontFamily: "var(--font-mono)", 
-    fontSize: "13px"
-  },
-  // Hide cursor when editor is empty
-  "&.cm-editor.cm-empty .cm-cursor": {
-    display: "none !important",
-  },
-  "&.cm-editor.cm-empty .cm-cursorLayer": {
-    display: "none !important",
+    fontFamily: "var(--font-mono)", fontSize: "13px"
   },
 } satisfies ThemeSpec);
 
@@ -178,20 +170,7 @@ export function CodeEditor({
       ),
       placeholderCompartment.current.of(placeholder(placeholderText)),
       EditorView.updateListener.of((update) => {
-        if (update.docChanged) {
-          const newValue = update.state.doc.toString();
-          onChange?.(newValue);
-          
-          // Add/remove empty class based on content
-          const isEmpty = newValue.trim() === "";
-          const editorElement = update.view.dom;
-          
-          if (isEmpty) {
-            editorElement.classList.add("cm-empty");
-          } else {
-            editorElement.classList.remove("cm-empty");
-          }
-        }
+        if (update.docChanged) onChange?.(update.state.doc.toString());
       }),
     ];
 
@@ -209,12 +188,6 @@ export function CodeEditor({
       state,
       parent: editorContainerRef.current,
     });
-
-    // Set initial empty state
-    const isEmpty = value.trim() === "";
-    if (isEmpty) {
-      viewRef.current.dom.classList.add("cm-empty");
-    }
 
     return () => viewRef.current?.destroy();
   }, [language, disableHttpDecorators, onDecoratorClick, placeholderText]);
@@ -267,14 +240,6 @@ export function CodeEditor({
       view.dispatch({
         changes: { from: 0, to: view.state.doc.length, insert: value },
       });
-      
-      // Update empty state when value changes externally
-      const isEmpty = value.trim() === "";
-      if (isEmpty) {
-        view.dom.classList.add("cm-empty");
-      } else {
-        view.dom.classList.remove("cm-empty");
-      }
     }
   }, [value]);
 
