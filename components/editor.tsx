@@ -189,7 +189,7 @@ export function CodeEditor({
     });
 
     return () => viewRef.current?.destroy();
-  }, [language, disableHttpDecorators, onDecoratorClick, placeholderText]);
+  }, [language]);
 
   useEffect(() => {
     latestEnvRef.current = selectedEnvironment;
