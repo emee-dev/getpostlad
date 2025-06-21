@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Check, Zap, Users, Shield, Headphones, InfinityIcon, CreditCard, Calendar } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 const features = {
   basic: [
@@ -51,9 +52,12 @@ export default function PricingPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-12">
           <Link href="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Zap className="w-5 h-5 text-primary-foreground" />
-            </div>
+            <Image
+              alt="app logo"
+              width="40"
+              height="40"
+              src="https://basic-nightingale-232.convex.cloud/api/storage/516f470d-fbef-41e8-bd7b-0cd804b7e2c5"
+            />
             <span className="text-xl font-bold">Panda</span>
           </Link>
           <Link href="/">
