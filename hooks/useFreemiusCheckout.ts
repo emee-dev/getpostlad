@@ -22,6 +22,10 @@ export const useFreemiusCheckout = (config: PlanConfig) => {
         image: config.image,
       });
     }
+
+    return () => {
+      checkoutRef.current?.destroy();
+    };
   }, [config]);
 
   const openCheckout = () => {
