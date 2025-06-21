@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useFileTreeStore } from "@/hooks/use-file-store";
 import { cn } from "@/lib/utils";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { FileExplorer } from "@/components/file-explorer";
 import {
   ContextMenu,
@@ -28,7 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { FilePlus, FolderPlus, Trash2 } from "lucide-react";
+import { FilePlus, FolderPlus, Trash2, AlertCircle } from "lucide-react";
 
 export type FileNode = {
   name: string;
@@ -43,6 +43,7 @@ interface RootFileOperationDialogProps {
   title: string;
   placeholder: string;
   onConfirm: (value: string) => void;
+  type: "newFile" | "newFolder";
 }
 
 const RootFileOperationDialog = ({
@@ -51,11 +52,22 @@ const RootFileOperationDialog = ({
   title,
   placeholder,
   onConfirm,
+  type,
 }: RootFileOperationDialogProps) => {
   const [value, setValue] = useState("");
+  const { files } = useFileTreeStore();
+
+  // Check if file/folder already exists at root level
+  const fileExists = useMemo(() => {
+    if (!value.trim()) return false;
+    
+    return files.some(node => 
+      node.name.toLowerCase() === value.trim().toLowerCase()
+    );
+  }, [value, files]);
 
   const handleConfirm = () => {
-    if (value.trim()) {
+    if (value.trim() && !fileExists) {
       onConfirm(value.trim());
       setValue("");
       onOpenChange(false);
@@ -75,6 +87,8 @@ const RootFileOperationDialog = ({
     onOpenChange(newOpen);
   };
 
+  const entityType = type === "newFile" ? "file" : "folder";
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -91,13 +105,23 @@ const RootFileOperationDialog = ({
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={handleKeyDown}
               autoFocus
+              className={fileExists ? "border-destructive focus-visible:ring-destructive" : ""}
             />
+            {fileExists && (
+              <div className="flex items-center gap-2 text-sm text-destructive">
+                <AlertCircle className="h-4 w-4" />
+                <span>A {entityType} with this name already exists.</span>
+              </div>
+            )}
           </div>
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => handleOpenChange(false)}>
               Cancel
             </Button>
-            <Button onClick={handleConfirm} disabled={!value.trim()}>
+            <Button 
+              onClick={handleConfirm} 
+              disabled={!value.trim() || fileExists}
+            >
               Create
             </Button>
           </div>
@@ -206,6 +230,7 @@ const SidebarWithRootContextMenu = ({ children }: { children: React.ReactNode })
         title={dialogState.title}
         placeholder={dialogState.placeholder}
         onConfirm={handleDialogConfirm}
+        type={dialogState.type}
       />
     </>
   );

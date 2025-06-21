@@ -12,6 +12,7 @@ import {
   FolderPlus,
   Edit,
   Trash2,
+  AlertCircle,
 } from "lucide-react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useRef, useMemo, useCallback, memo, useState, useEffect } from "react";
@@ -143,6 +144,8 @@ interface FileOperationDialogProps {
   placeholder: string;
   defaultValue?: string;
   onConfirm: (value: string) => void;
+  targetNode: FlattenedNode | null;
+  type: "newFile" | "newFolder" | "rename";
 }
 
 const FileOperationDialog = ({
@@ -152,16 +155,72 @@ const FileOperationDialog = ({
   placeholder,
   defaultValue = "",
   onConfirm,
+  targetNode,
+  type,
 }: FileOperationDialogProps) => {
   const [value, setValue] = useState(defaultValue);
+  const { files } = useFileTreeStore();
 
   // Update value when defaultValue changes (for rename dialog)
   useEffect(() => {
     setValue(defaultValue);
   }, [defaultValue]);
 
+  // Helper function to find node by path
+  const findNodeByPath = useCallback((nodes: FileNode[], path: string): FileNode | null => {
+    const pathParts = path.split("/").filter(Boolean);
+    let current = nodes;
+    let node: FileNode | null = null;
+
+    for (const part of pathParts) {
+      node = current.find((n) => n.name === part) || null;
+      if (!node) return null;
+      if (node.children) {
+        current = node.children;
+      }
+    }
+
+    return node;
+  }, []);
+
+  // Check if file/folder already exists
+  const fileExists = useMemo(() => {
+    if (!value.trim() || !targetNode) return false;
+
+    // For rename operations, allow the current name
+    if (type === "rename" && value.trim().toLowerCase() === targetNode.name.toLowerCase()) {
+      return false;
+    }
+
+    let targetChildren: FileNode[] = [];
+
+    if (type === "rename") {
+      // For rename, check siblings in the parent directory
+      const pathParts = (targetNode.path || "").split("/").filter(Boolean);
+      if (pathParts.length <= 1) {
+        // Root level
+        targetChildren = files;
+      } else {
+        // Find parent directory
+        const parentPath = pathParts.slice(0, -1).join("/");
+        const parentNode = findNodeByPath(files, parentPath);
+        targetChildren = parentNode?.children || [];
+      }
+    } else {
+      // For new file/folder, check children of target directory
+      if (targetNode.type === "directory") {
+        const targetDirNode = findNodeByPath(files, targetNode.path || "");
+        targetChildren = targetDirNode?.children || [];
+      }
+    }
+
+    return targetChildren.some(node => 
+      node.name.toLowerCase() === value.trim().toLowerCase()
+    );
+  }, [value, targetNode, type, files, findNodeByPath]);
+
   const handleConfirm = () => {
-    if (value.trim()) {
+    if (value.trim() && !fileExists) {
       onConfirm(value.trim());
       setValue("");
       onOpenChange(false);
@@ -181,6 +240,15 @@ const FileOperationDialog = ({
     onOpenChange(newOpen);
   };
 
+  const getEntityType = () => {
+    if (type === "rename") {
+      return targetNode?.type === "directory" ? "folder" : "file";
+    }
+    return type === "newFile" ? "file" : "folder";
+  };
+
+  const entityType = getEntityType();
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -197,14 +265,24 @@ const FileOperationDialog = ({
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={handleKeyDown}
               autoFocus
+              className={fileExists ? "border-destructive focus-visible:ring-destructive" : ""}
             />
+            {fileExists && (
+              <div className="flex items-center gap-2 text-sm text-destructive">
+                <AlertCircle className="h-4 w-4" />
+                <span>A {entityType} with this name already exists.</span>
+              </div>
+            )}
           </div>
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => handleOpenChange(false)}>
               Cancel
             </Button>
-            <Button onClick={handleConfirm} disabled={!value.trim()}>
-              Confirm
+            <Button 
+              onClick={handleConfirm} 
+              disabled={!value.trim() || fileExists}
+            >
+              {type === "rename" ? "Rename" : "Create"}
             </Button>
           </div>
         </div>
@@ -418,6 +496,8 @@ export const FileExplorer = () => {
         placeholder={dialogState.placeholder}
         defaultValue={dialogState.defaultValue}
         onConfirm={handleDialogConfirm}
+        targetNode={dialogState.targetNode}
+        type={dialogState.type}
       />
     </>
   );
