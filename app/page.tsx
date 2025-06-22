@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
   Code2, 
@@ -13,14 +13,12 @@ import {
   Settings, 
   ChevronDown,
   ArrowRight,
-  Zap,
   GitBranch,
   Play,
   CheckCircle,
   ExternalLink
 } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { useState } from "react";
 
 const faqItems = [
@@ -57,6 +55,65 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
         <p className="text-muted-foreground">{answer}</p>
       </CollapsibleContent>
     </Collapsible>
+  );
+}
+
+function CodeBlock({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="bg-muted/50 rounded-md p-4 font-mono text-sm space-y-2">
+      {children}
+    </div>
+  );
+}
+
+function MockAppInterface() {
+  return (
+    <div className="relative rounded-lg border bg-muted/50 p-1 shadow-2xl">
+      <div className="rounded-md bg-background border overflow-hidden">
+        {/* Mock browser header */}
+        <div className="flex items-center space-x-2 px-4 py-3 bg-muted/30 border-b">
+          <div className="flex space-x-1">
+            <div className="w-3 h-3 rounded-full bg-red-500" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500" />
+            <div className="w-3 h-3 rounded-full bg-green-500" />
+          </div>
+          <div className="flex-1 text-center text-sm text-muted-foreground">
+            Panda HTTP - API Testing
+          </div>
+        </div>
+        
+        {/* Mock app interface */}
+        <div className="p-6 space-y-4">
+          <div className="flex items-center space-x-2 text-sm">
+            <FileCode className="w-4 h-4 text-primary" />
+            <span className="font-mono">user-api.js</span>
+          </div>
+          
+          <CodeBlock>
+            <div className="text-blue-600 dark:text-blue-400">const GET = () =&gt; &#123;</div>
+            <div className="pl-4 space-y-1">
+              <div><span className="text-green-600 dark:text-green-400">name:</span> <span className="text-orange-600 dark:text-orange-400">&quot;Get User Profile&quot;</span>,</div>
+              <div><span className="text-green-600 dark:text-green-400">url:</span> <span className="text-orange-600 dark:text-orange-400">&quot;&#123;&#123;BASE_URL&#125;&#125;/users/&#123;&#123;USER_ID&#125;&#125;&quot;</span>,</div>
+              <div><span className="text-green-600 dark:text-green-400">headers:</span> &#123;</div>
+              <div className="pl-4"><span className="text-orange-600 dark:text-orange-400">&apos;Authorization&apos;</span>: <span className="text-orange-600 dark:text-orange-400">&apos;Bearer &#123;&#123;TOKEN&#125;&#125;&apos;</span></div>
+              <div>&#125;</div>
+            </div>
+            <div className="text-blue-600 dark:text-blue-400">&#125;;</div>
+          </CodeBlock>
+          
+          <div className="flex items-center justify-between">
+            <Button size="sm" className="bg-primary">
+              <Play className="w-3 h-3 mr-1" />
+              Send Request
+            </Button>
+            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+              <div className="w-2 h-2 bg-green-500 rounded-full" />
+              <span>200 OK • 245ms</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -141,52 +198,7 @@ export default function LandingPage() {
 
             {/* Right Content - App Screenshot */}
             <div className="relative">
-              <div className="relative rounded-lg border bg-muted/50 p-1 shadow-2xl">
-                <div className="rounded-md bg-background border overflow-hidden">
-                  {/* Mock browser header */}
-                  <div className="flex items-center space-x-2 px-4 py-3 bg-muted/30 border-b">
-                    <div className="flex space-x-1">
-                      <div className="w-3 h-3 rounded-full bg-red-500" />
-                      <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                      <div className="w-3 h-3 rounded-full bg-green-500" />
-                    </div>
-                    <div className="flex-1 text-center text-sm text-muted-foreground">
-                      Panda HTTP - API Testing
-                    </div>
-                  </div>
-                  
-                  {/* Mock app interface */}
-                  <div className="p-6 space-y-4">
-                    <div className="flex items-center space-x-2 text-sm">
-                      <FileCode className="w-4 h-4 text-primary" />
-                      <span className="font-mono">user-api.js</span>
-                    </div>
-                    
-                    <div className="bg-muted/50 rounded-md p-4 font-mono text-sm space-y-2">
-                      <div className="text-blue-600 dark:text-blue-400">const GET = () => {`{`}</div>
-                      <div className="pl-4 space-y-1">
-                        <div><span className="text-green-600 dark:text-green-400">name:</span> <span className="text-orange-600 dark:text-orange-400">"Get User Profile"</span>,</div>
-                        <div><span className="text-green-600 dark:text-green-400">url:</span> <span className="text-orange-600 dark:text-orange-400">"{{`{BASE_URL}`}}/users/{{`{USER_ID}`}}"</span>,</div>
-                        <div><span className="text-green-600 dark:text-green-400">headers:</span> {`{`}</div>
-                        <div className="pl-4"><span className="text-orange-600 dark:text-orange-400">'Authorization'</span>: <span className="text-orange-600 dark:text-orange-400">'Bearer {{`{TOKEN}`}}'</span></div>
-                        <div>{`}`}</div>
-                      </div>
-                      <div className="text-blue-600 dark:text-blue-400">{`}`};</div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <Button size="sm" className="bg-primary">
-                        <Play className="w-3 h-3 mr-1" />
-                        Send Request
-                      </Button>
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <div className="w-2 h-2 bg-green-500 rounded-full" />
-                        <span>200 OK • 245ms</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <MockAppInterface />
             </div>
           </div>
         </div>
@@ -229,20 +241,20 @@ export default function LandingPage() {
               
               <Card className="bg-background border-2">
                 <CardContent className="p-6">
-                  <div className="bg-muted/50 rounded-md p-4 font-mono text-sm space-y-2">
+                  <CodeBlock>
                     <div className="text-purple-600 dark:text-purple-400">// users.js</div>
-                    <div className="text-blue-600 dark:text-blue-400">const POST = () => {`{`}</div>
+                    <div className="text-blue-600 dark:text-blue-400">const POST = () =&gt; &#123;</div>
                     <div className="pl-4 space-y-1">
-                      <div><span className="text-green-600 dark:text-green-400">url:</span> <span className="text-orange-600 dark:text-orange-400">"/api/users"</span>,</div>
-                      <div><span className="text-green-600 dark:text-green-400">json:</span> {`{`}</div>
+                      <div><span className="text-green-600 dark:text-green-400">url:</span> <span className="text-orange-600 dark:text-orange-400">&quot;/api/users&quot;</span>,</div>
+                      <div><span className="text-green-600 dark:text-green-400">json:</span> &#123;</div>
                       <div className="pl-4 space-y-1">
-                        <div><span className="text-green-600 dark:text-green-400">name:</span> <span className="text-orange-600 dark:text-orange-400">"John Doe"</span>,</div>
-                        <div><span className="text-green-600 dark:text-green-400">email:</span> <span className="text-orange-600 dark:text-orange-400">"john@example.com"</span></div>
+                        <div><span className="text-green-600 dark:text-green-400">name:</span> <span className="text-orange-600 dark:text-orange-400">&quot;John Doe&quot;</span>,</div>
+                        <div><span className="text-green-600 dark:text-green-400">email:</span> <span className="text-orange-600 dark:text-orange-400">&quot;john@example.com&quot;</span></div>
                       </div>
-                      <div>{`}`}</div>
+                      <div>&#125;</div>
                     </div>
-                    <div className="text-blue-600 dark:text-blue-400">{`}`};</div>
-                  </div>
+                    <div className="text-blue-600 dark:text-blue-400">&#125;;</div>
+                  </CodeBlock>
                 </CardContent>
               </Card>
             </div>
@@ -251,20 +263,20 @@ export default function LandingPage() {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <Card className="bg-background border-2 lg:order-1">
                 <CardContent className="p-6">
-                  <div className="bg-muted/50 rounded-md p-4 font-mono text-sm space-y-2">
-                    <div className="text-blue-600 dark:text-blue-400">post_response: () => {`{`}</div>
+                  <CodeBlock>
+                    <div className="text-blue-600 dark:text-blue-400">post_response: () =&gt; &#123;</div>
                     <div className="pl-4 space-y-1">
-                      <div className="text-purple-600 dark:text-purple-400">describe('User API', () => {`{`}</div>
+                      <div className="text-purple-600 dark:text-purple-400">describe(&apos;User API&apos;, () =&gt; &#123;</div>
                       <div className="pl-4 space-y-1">
-                        <div className="text-blue-600 dark:text-blue-400">it('should return 201', () => {`{`}</div>
+                        <div className="text-blue-600 dark:text-blue-400">it(&apos;should return 201&apos;, () =&gt; &#123;</div>
                         <div className="pl-4"><span className="text-green-600 dark:text-green-400">expect</span>(res.getStatus())</div>
                         <div className="pl-8">.to.equal(<span className="text-orange-600 dark:text-orange-400">201</span>);</div>
-                        <div className="text-blue-600 dark:text-blue-400">{`}`});</div>
+                        <div className="text-blue-600 dark:text-blue-400">&#125;);</div>
                       </div>
-                      <div className="text-purple-600 dark:text-purple-400">{`}`});</div>
+                      <div className="text-purple-600 dark:text-purple-400">&#125;);</div>
                     </div>
-                    <div className="text-blue-600 dark:text-blue-400">{`}`}</div>
-                  </div>
+                    <div className="text-blue-600 dark:text-blue-400">&#125;</div>
+                  </CodeBlock>
                 </CardContent>
               </Card>
               
@@ -372,7 +384,7 @@ export default function LandingPage() {
                     Realtime with Convex
                   </h3>
                   <p className="text-lg text-muted-foreground">
-                    Collaborate in real-time using Convex's serverless backend. 
+                    Collaborate in real-time using Convex&apos;s serverless backend. 
                     Share collections, environments, and results instantly.
                   </p>
                 </div>
@@ -395,13 +407,13 @@ export default function LandingPage() {
                     Environment Variables
                   </h3>
                   <p className="text-lg text-muted-foreground">
-                    Just use <code className="bg-muted px-1 rounded">{{`{variableName}`}}</code>. 
+                    Just use <code className="bg-muted px-1 rounded">&#123;&#123;variableName&#125;&#125;</code>. 
                     Built-in environment variable support, just like Postman.
                   </p>
                 </div>
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                   <ArrowRight className="w-4 h-4" />
-                  <span>Familiar {{`{variable}`}} syntax</span>
+                  <span>Familiar &#123;&#123;variable&#125;&#125; syntax</span>
                 </div>
               </div>
               
