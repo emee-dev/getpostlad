@@ -29,6 +29,8 @@ import { useWorkspace } from "@/hooks/use-workspace";
 import { RequestScript, ResponseScript } from "@/lib/scripting";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useMobileDetection } from "@/hooks/use-mobile-detection";
+import { MobileWarningDialog } from "@/components/mobile-warning-dialog";
 
 export type Header = {
   key: string;
@@ -54,6 +56,12 @@ export default function Home() {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const editor = useRef<EditorView | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  
+  // Mobile detection and warning dialog
+  const isMobile = useMobileDetection();
+  const [showMobileWarning, setShowMobileWarning] = useState(false);
+  const [mobileWarningDismissed, setMobileWarningDismissed] = useState(false);
+
   const findHistory = useQuery(
     api.request_history.findResponse,
     selectedWorkspace && selectedFile
@@ -63,6 +71,31 @@ export default function Home() {
         }
       : "skip"
   );
+
+  // Handle mobile detection
+  useEffect(() => {
+    if (isMobile === true && !mobileWarningDismissed) {
+      setShowMobileWarning(true);
+    }
+  }, [isMobile, mobileWarningDismissed]);
+
+  const handleMobileContinue = () => {
+    setShowMobileWarning(false);
+    setMobileWarningDismissed(true);
+  };
+
+  const handleMobileQuit = () => {
+    // Try to close the tab/window
+    if (typeof window !== 'undefined') {
+      // First try to close the window (works if opened by script)
+      try {
+        window.close();
+      } catch (error) {
+        // If that fails, redirect to a friendly exit page or blank page
+        window.location.href = 'about:blank';
+      }
+    }
+  };
 
   const onSend = async (src: string) => {
     console.log("Sending request:", src);
@@ -342,6 +375,13 @@ export default function Home() {
 
   return (
     <>
+      {/* Mobile Warning Dialog */}
+      <MobileWarningDialog
+        open={showMobileWarning}
+        onContinue={handleMobileContinue}
+        onQuit={handleMobileQuit}
+      />
+
       <SidebarProvider defaultOpen={false} className="">
         <AppSidebar />
 
