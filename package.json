@@ -38,6 +38,7 @@
     "@types/node": "20.6.2",
     "@types/react": "18.2.22",
     "@types/react-dom": "18.2.7",
+    "@uiw/codemirror-extensions-hyper-link": "^4.23.13",
     "@uiw/codemirror-extensions-langs": "^4.21.21",
     "@uiw/codemirror-themes": "^4.21.21",
     "@uiw/codemirror-themes-all": "^4.23.12",
