@@ -19,6 +19,7 @@ import {
   ExternalLink
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 
 const faqItems = [
@@ -124,10 +125,13 @@ export default function LandingPage() {
       <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto flex h-14 items-center justify-between px-4">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">🐼</span>
-            </div>
-            <span className="font-bold text-xl">Panda HTTP</span>
+            <Image
+              alt="app logo"
+              width="40"
+              height="40"
+              src="https://basic-nightingale-232.convex.cloud/api/storage/516f470d-fbef-41e8-bd7b-0cd804b7e2c5"
+            />
+            <span className="text-xl font-bold">Panda</span>
           </div>
           
           <div className="flex items-center space-x-6">
