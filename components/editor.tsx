@@ -36,6 +36,7 @@ import type * as CSS from "csstype";
 import { useEffect, useRef } from "react";
 import { DecoratorFn, liftCursor, variables } from "./extension";
 import { ChevronDown, ChevronRight } from "./icons";
+import { hyperLink } from '@uiw/codemirror-extensions-hyper-link';
 
 interface CodeEditorProps {
   value: string;
@@ -109,6 +110,7 @@ const baseExtensions: Extension[] = [
   CustomGutter(),
   highlightSpecialChars(),
   history(),
+  hyperLink,
   dropCursor(),
   EditorState.allowMultipleSelections.of(true),
   indentOnInput(),
