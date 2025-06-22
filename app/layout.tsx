@@ -32,8 +32,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    site: "@panda_dev", // Add your Twitter handle if you have one
-    creator: "@panda_dev", // Add your Twitter handle if you have one
+    site: "@___emee_", // Add your Twitter handle if you have one
+    creator: "@___emee_", // Add your Twitter handle if you have one
     title: "Panda - Postman/Bruno alternative",
     description: "Panda offers a clean, intuitive interface for developers who want API collections to live alongside their code. no vendor lock-in, seamless, developer-first DX.",
     images: [
