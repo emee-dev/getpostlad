@@ -2,13 +2,14 @@
 
 **A modern, git-friendly alternative to Postman for API testing**
 
-![Panda App Screenshot](https://via.placeholder.com/800x400/1a1a1a/ffffff?text=Panda+App+Screenshot)
+![Panda App Screenshot](https://ri3guaa55l.ufs.sh/f/8gXsFydJfZdnahvBxJK5FJ8IseWikZRX0gmq1Y3dBDE2M9Np)
 
-Panda is a powerful REST API testing tool that stores collections as JavaScript files, making them version-control friendly and easily shareable. Built with modern web technologies, Panda offers a clean, intuitive interface for developers who want their API collections to live alongside their code.
+Panda is a powerful REST API testing tool that stores collections as JavaScript files, making them version-control friendly and easily shareable. Built with modern web technologies, Panda offers a clean, intuitive interface for developers who want their API collections to live alongside their code. Offering offline support, less GUI based workflows and a lot more to come.
 
 ## ✨ Features
 
 ### 🚀 **Core Functionality**
+
 - **JavaScript-based Collections** - Define HTTP requests using clean JavaScript syntax
 - **Git-Friendly** - Store collections as `.js` files that work perfectly with version control
 - **Environment Variables** - Manage different environments (dev, staging, prod) with ease
@@ -17,13 +18,15 @@ Panda is a powerful REST API testing tool that stores collections as JavaScript 
 - **Import/Export** - Seamless migration from Postman collections (v2.1+)
 
 ### 🎨 **Modern Interface**
+
 - **Dark/Light Theme** - Beautiful themes that adapt to your preference
 - **Split-Pane Layout** - Code editor on the left, response viewer on the right
 - **Syntax Highlighting** - Full JavaScript syntax highlighting with CodeMirror
-- **File Explorer** - Organize requests in folders with drag-and-drop support
+- **File Explorer** - Organize requests in folders with context menu actions.
 - **Search & Navigation** - Quickly find and navigate between requests
 
 ### 🔧 **Developer Experience**
+
 - **Pre/Post Request Scripts** - Execute custom JavaScript before and after requests
 - **Environment Interpolation** - Use `{{variables}}` in URLs, headers, and bodies
 - **Response Validation** - Write tests to validate API responses automatically
@@ -40,7 +43,7 @@ const GET = () => {
     name: "Get User Profile",
     url: "https://jsonplaceholder.typicode.com/users/1",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
   };
 };
@@ -56,7 +59,7 @@ const GET = () => {
     name: "Protected Endpoint",
     url: "{{BASE_URL}}/api/users/{{USER_ID}}",
     headers: {
-      'Authorization': 'Bearer {{API_TOKEN}}',
+      Authorization: "Bearer {{API_TOKEN}}",
     },
   };
 };
@@ -70,7 +73,7 @@ const POST = () => {
     name: "Create User",
     url: "{{BASE_URL}}/api/users",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     json: {
       name: "John Doe",
@@ -92,23 +95,23 @@ const POST = () => {
       name: "John Doe",
       email: "john@example.com",
     },
-    
+
     post_response: () => {
-      describe('User Creation', () => {
-        it('should return 201 status', () => {
+      describe("User Creation", () => {
+        it("should return 201 status", () => {
           expect(res.getStatus()).to.equal(201);
         });
-        
-        it('should return user with ID', () => {
+
+        it("should return user with ID", () => {
           const user = res.getJson();
-          expect(user).to.have.property('id');
-          expect(user.name).to.equal('John Doe');
+          expect(user).to.have.property("id");
+          expect(user.name).to.equal("John Doe");
         });
       });
-      
+
       // Save user ID for future requests
       const user = res.getJson();
-      res.setVar('CREATED_USER_ID', user.id.toString());
+      res.setVar("CREATED_USER_ID", user.id.toString());
     },
   };
 };
@@ -117,14 +120,25 @@ const POST = () => {
 ## 📚 Documentation
 
 ### **HTTP Methods**
+
 Panda supports all standard HTTP methods. Use uppercase function names:
 
 ```javascript
-const GET = () => { /* ... */ };
-const POST = () => { /* ... */ };
-const PUT = () => { /* ... */ };
-const DELETE = () => { /* ... */ };
-const PATCH = () => { /* ... */ };
+const GET = () => {
+  /* ... */
+};
+const POST = () => {
+  /* ... */
+};
+const PUT = () => {
+  /* ... */
+};
+const DELETE = () => {
+  /* ... */
+};
+const PATCH = () => {
+  /* ... */
+};
 ```
 
 ### **Request Structure**
@@ -132,37 +146,37 @@ const PATCH = () => { /* ... */ };
 ```javascript
 const METHOD = () => {
   return {
-    name: "Request Name",           // Optional: Display name
+    name: "Request Name", // Optional: Display name
     url: "https://api.example.com", // Required: Request URL
-    
+
     // Body type (optional)
-    body: "json",                   // "json" | "text" | "xml"
-    
+    body: "json", // "json" | "text" | "xml"
+
     // Request body (choose one)
-    json: { key: "value" },         // JSON payload
-    text: "Plain text content",     // Text payload
+    json: { key: "value" }, // JSON payload
+    text: "Plain text content", // Text payload
     xml: "<root>XML content</root>", // XML payload
-    
+
     // Headers (optional)
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer token',
-      '~X-Debug': 'disabled',       // Prefix with ~ to disable
+      "Content-Type": "application/json",
+      Authorization: "Bearer token",
+      "~X-Debug": "disabled", // Prefix with ~ to disable
     },
-    
+
     // Query parameters (optional)
     query: {
       page: 1,
       limit: 10,
-      '~debug': 'disabled',         // Prefix with ~ to disable
+      "~debug": "disabled", // Prefix with ~ to disable
     },
-    
+
     // Scripts (optional)
     pre_request: () => {
       // Runs before sending request
-      req.setHeader('X-Timestamp', new Date().toISOString());
+      req.setHeader("X-Timestamp", new Date().toISOString());
     },
-    
+
     post_response: () => {
       // Runs after receiving response
       expect(res.getStatus()).to.equal(200);
@@ -180,7 +194,7 @@ const GET = () => {
   return {
     url: "{{BASE_URL}}/users/{{USER_ID}}",
     headers: {
-      'Authorization': 'Bearer {{API_TOKEN}}',
+      Authorization: "Bearer {{API_TOKEN}}",
     },
   };
 };
@@ -189,54 +203,56 @@ const GET = () => {
 ### **Scripting API**
 
 #### **Request Object (`req`)**
+
 ```javascript
 // URL and method
-req.getUrl()                    // Get current URL
-req.getMethod()                 // Get HTTP method
+req.getUrl(); // Get current URL
+req.getMethod(); // Get HTTP method
 
 // Headers
-req.setHeader(key, value)       // Set single header
-req.setHeaders(object)          // Set multiple headers
-req.getHeaders()                // Get all headers
+req.setHeader(key, value); // Set single header
+req.setHeaders(object); // Set multiple headers
+req.getHeaders(); // Get all headers
 
 // Query parameters
-req.setQuery(object)            // Set query parameters
-req.getQuery()                  // Get query parameters
+req.setQuery(object); // Set query parameters
+req.getQuery(); // Get query parameters
 
 // Body
-req.setJson(data)               // Set JSON body
-req.setText(data)               // Set text body
-req.setXml(data)                // Set XML body
-req.getJson()                   // Get JSON body
-req.getText()                   // Get text body
-req.getXml()                    // Get XML body
-req.getBody()                   // Get body type
-req.getBodyData()               // Get raw body data
+req.setJson(data); // Set JSON body
+req.setText(data); // Set text body
+req.setXml(data); // Set XML body
+req.getJson(); // Get JSON body
+req.getText(); // Get text body
+req.getXml(); // Get XML body
+req.getBody(); // Get body type
+req.getBodyData(); // Get raw body data
 
 // Environment variables
-req.setVar(key, value)          // Set environment variable
-req.getVar(key)                 // Get environment variable
+req.setVar(key, value); // Set environment variable
+req.getVar(key); // Get environment variable
 ```
 
 #### **Response Object (`res`)**
+
 ```javascript
 // Status and metrics
-res.getStatus()                 // HTTP status code
-res.getElapsedTime()            // Request duration (seconds)
-res.getContentSize()            // Response size (bytes)
+res.getStatus(); // HTTP status code
+res.getElapsedTime(); // Request duration (seconds)
+res.getContentSize(); // Response size (bytes)
 
 // Headers
-res.getHeader(key)              // Get single header
-res.getHeaders()                // Get all headers
+res.getHeader(key); // Get single header
+res.getHeaders(); // Get all headers
 
 // Body
-res.getJson()                   // Parse response as JSON
-res.getText()                   // Get response as text
-res.getXml()                    // Get response as XML
+res.getJson(); // Parse response as JSON
+res.getText(); // Get response as text
+res.getXml(); // Get response as XML
 
 // Environment variables
-res.setVar(key, value)          // Set environment variable
-res.getVar(key)                 // Get environment variable
+res.setVar(key, value); // Set environment variable
+res.getVar(key); // Get environment variable
 ```
 
 ### **Testing with Chai**
@@ -245,22 +261,22 @@ Panda includes Chai for assertions:
 
 ```javascript
 post_response: () => {
-  describe('API Tests', () => {
-    it('should return success status', () => {
+  describe("API Tests", () => {
+    it("should return success status", () => {
       expect(res.getStatus()).to.equal(200);
     });
-    
-    it('should return valid JSON', () => {
+
+    it("should return valid JSON", () => {
       const data = res.getJson();
-      expect(data).to.be.an('object');
-      expect(data).to.have.property('id');
+      expect(data).to.be.an("object");
+      expect(data).to.have.property("id");
     });
-    
-    it('should respond quickly', () => {
+
+    it("should respond quickly", () => {
       expect(res.getElapsedTime()).to.be.below(1);
     });
   });
-}
+};
 ```
 
 ## 📦 Import from Postman
@@ -290,7 +306,7 @@ Panda is built with modern web technologies:
 - **Real-time Sync**: Collections sync across devices via Convex
 - **Environment Management**: Separate environments for different stages
 - **Response Caching**: Automatic history tracking for debugging
-- **Workspace Organization**: Group related requests in workspaces
+- **Workspace Organization**: Group related requests environments, response histories in workspaces.
 
 ## 🤝 Contributing
 
@@ -307,8 +323,8 @@ We welcome contributions! Here's how to get started:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/panda.git
-cd panda
+git clone https://github.com/emee-dev/getpostlad.git
+cd getpostlad
 
 # Install dependencies
 npm install
@@ -326,10 +342,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🆘 Support
 
-- **Documentation**: [docs.panda.dev](https://docs.panda.dev)
 - **Discord Community**: [Join our Discord](https://discord.gg/BmvSwRXX)
-- **Issues**: [GitHub Issues](https://github.com/your-username/panda/issues)
-- **Email**: support@panda.dev
+- **Issues**: [GitHub Issues](https://github.com/emee-dev/getpostlad/issues)
 
 ## 🎯 Roadmap
 
@@ -343,6 +357,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Made with ❤️ by the Panda team**
-
-*Panda - Because API testing should be as simple as writing JavaScript.*
+**Made with ❤️ by Emmanuel Ajike**
