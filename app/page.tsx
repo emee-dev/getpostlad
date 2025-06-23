@@ -59,13 +59,13 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleTrigger asChild>
-        <button className="flex w-full items-center justify-between rounded-lg border p-4 text-left transition-colors font-geist">
+        <button className="flex w-full items-center justify-between rounded-lg p-4 text-left transition-colors font-geist">
           <h3 className="font-semibold text-foreground">{question}</h3>
           <ChevronDown className={`h-4 w-4 transition-transform flex-shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`} />
         </button>
       </CollapsibleTrigger>
-      <Separator />
-      <CollapsibleContent className="px-4 pb-4 pt-2">
+      <Separator className="my-2" />
+      <CollapsibleContent className="px-4 pb-4">
         <p className="text-muted-foreground font-geist">{answer}</p>
       </CollapsibleContent>
     </Collapsible>
@@ -75,7 +75,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 function MockAppInterface({ src }: { src: string }) {
   return (
     <div className="relative rounded-lg border bg-muted/50 p-1 shadow-2xl max-w-full overflow-hidden">
-      <div className="rounded-md bg-background border overflow-hidden">
+      <div className="rounded-md bg-background border overflow-hidden h-[300px] md:h-[400px]">
         <Image
           src={src}
           alt="Panda HTTP App Interface"
@@ -83,6 +83,7 @@ function MockAppInterface({ src }: { src: string }) {
           height={600}
           className="w-full h-full object-contain"
           priority
+          unoptimized
         />
       </div>
     </div>
@@ -93,13 +94,16 @@ function ProductImage({ src, alt }: { src: string; alt: string }) {
   return (
     <Card className="bg-background border-2">
       <CardContent className="p-0">
-        <Image
-          src={src}
-          alt={alt}
-          width={600}
-          height={400}
-          className="w-full h-full object-contain rounded-md"
-        />
+        <div className="h-[150px] md:h-[250px] overflow-hidden rounded-md">
+          <Image
+            src={src}
+            alt={alt}
+            width={600}
+            height={400}
+            className="w-full h-full object-contain"
+            unoptimized
+          />
+        </div>
       </CardContent>
     </Card>
   );
@@ -118,6 +122,7 @@ export default function LandingPage() {
               height="32"
               src="https://basic-nightingale-232.convex.cloud/api/storage/516f470d-fbef-41e8-bd7b-0cd804b7e2c5"
               className="sm:w-10 sm:h-10"
+              unoptimized
             />
             <span className="text-lg sm:text-xl font-bold font-poppins">Panda</span>
           </div>
@@ -242,7 +247,6 @@ export default function LandingPage() {
               <ProductImage 
                 src={images.testsImage} 
                 alt="Testing with ChaiJS - Assertion syntax"
-                className="lg:order-1"
               />
               
               <div className="space-y-4 sm:space-y-6 lg:order-2">
