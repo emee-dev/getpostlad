@@ -1,4 +1,4 @@
-import { ResponseData } from "@/app/page";
+import { ResponseData } from "@/app/http/page";
 import { CodeEditor } from "@/components/editor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronRight, Loader2 } from "lucide-react";
