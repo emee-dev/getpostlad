@@ -1,27 +1,29 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
-import { 
-  Code2, 
-  FileCode, 
-  TestTube, 
-  Download, 
-  Users, 
-  Settings, 
-  ChevronDown,
+import {
   ArrowRight,
-  GitBranch,
-  Play,
   CheckCircle,
-  ExternalLink
+  ChevronDown,
+  Download,
+  ExternalLink,
+  FileCode,
+  Settings,
+  TestTube,
+  Users,
+  X,
 } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import Link from "next/link";
+import { ReactNode, useState } from "react";
 
 const images = {
   heroImage:
@@ -37,34 +39,67 @@ const images = {
 const faqItems = [
   {
     question: "How is Panda different from Bruno or Postman?",
-    answer: "Panda uses plain JavaScript for request collections, integrates assertions with Chai, and is version-control friendly. No proprietary formats - just code that developers already understand."
+    answer:
+      "Panda uses plain JavaScript to define request collections, making it instantly familiar to developers. There are no proprietary formats, just code that works with your existing version control system. Since it's JavaScript, you can leverage its vast ecosystem (e.g., minification tools). Instead of sharing large OpenAPI specs, you can simply distribute compressed `.zip` files with no duplicate requests or responses.",
   },
   {
     question: "Can I import my Postman collections?",
-    answer: "Yes! Panda supports importing .json and .zip files from Postman v2+. Your existing collections will be automatically converted to JavaScript format."
+    answer:
+      "Yes! Panda supports importing Postman collections in JSON v2+ format. Your requests will be automatically converted to Panda-compatible JavaScript. Currently, we support request bodies in JSON, text, and XML formats. Header support is experimental.",
   },
   {
-    question: "What does the scripting experience look like?",
-    answer: "You get a mini-IDE with syntax highlighting, pre/post hooks, and dynamic testing using ChaiJS. Write tests like you would in any JavaScript project."
+    question: "Is it secure?",
+    answer:
+      "Security is a top priority. While this MVP uses `new Function` for script evaluation (necessary for hackathon speed), we are aware of the risks and will take steps to sandbox and secure script execution in future releases.",
   },
   {
-    question: "Payment modal not working?",
-    answer: "Try a hard reload (Ctrl + Shift + R) to clear cache and reload scripts. This usually resolves any issues with cached payment scripts."
-  }
+    question: "Does it support SSO or RBAC?",
+    answer: (
+      <>
+        No. The current desktop app is built with Rust and is offline-first. It
+        doesn't require login or accounts. After the hackathon, all development
+        will move to our open-source repo at{" "}
+        <Link
+          href="https://github.com/emee-dev/pinpanda"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-4"
+        >
+          https://github.com/emee-dev/pinpanda
+        </Link>
+        , excluding any account-based features.
+      </>
+    ),
+  },
+  {
+    question: "Why isn't the payment modal working?",
+    answer:
+      "Due to limitations in the Bolt hackathon environment, the payment modal may fail to load. If that happens, open the app in a new tab and do a hard reload (Ctrl + Shift + R) to clear cached scripts. This usually fixes the issue.",
+  },
 ];
 
-function FAQItem({ question, answer }: { question: string; answer: string }) {
+function FAQItem({
+  question,
+  answer,
+}: {
+  question: string;
+  answer: string | ReactNode;
+}) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleTrigger asChild>
-        <button className="flex w-full items-center justify-between rounded-lg p-4 text-left transition-colors font-geist">
-          <h3 className="font-semibold text-foreground">{question}</h3>
-          <ChevronDown className={`h-4 w-4 transition-transform flex-shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`} />
+        <button className="flex w-full items-center justify-between rounded-lg p-4 text-left">
+          <h3 className="font-semibold text-foreground font-geist">
+            {question}
+          </h3>
+          <ChevronDown
+            className={`h-4 w-4 transition-transform flex-shrink-0 ml-2 ${isOpen ? "rotate-180" : ""}`}
+          />
         </button>
       </CollapsibleTrigger>
-      <Separator className="my-2" />
+      <Separator className="mb-2" />
       <CollapsibleContent className="px-4 pb-4">
         <p className="text-muted-foreground font-geist">{answer}</p>
       </CollapsibleContent>
@@ -75,15 +110,14 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 function MockAppInterface({ src }: { src: string }) {
   return (
     <div className="relative rounded-lg border bg-muted/50 p-1 shadow-2xl max-w-full overflow-hidden">
-      <div className="rounded-md bg-background border overflow-hidden h-full w-full">
+      <div className="rounded-md bg-background border overflow-hidden h-[300px] md:h-[400px]">
         <Image
-          src={src}
           alt="Panda HTTP App Interface"
+          className="object-fill h-auto w-full rounded-md"
           width={800}
           height={600}
-          className="w-full h-full object-cover"
+          src={src}
           priority
-          unoptimized
         />
       </div>
     </div>
@@ -92,20 +126,17 @@ function MockAppInterface({ src }: { src: string }) {
 
 function ProductImage({ src, alt }: { src: string; alt: string }) {
   return (
-    <Card className="bg-background border-2">
-      <CardContent className="p-0">
-        <div className="h-full w-full overflow-hidden rounded-md">
-          <Image
-            src={src}
-            alt={alt}
-            width={600}
-            height={400}
-            className="w-full h-full object-cover"
-            unoptimized
-          />
-        </div>
-      </CardContent>
-    </Card>
+    <div className="relative rounded-lg bg-background border-2 p-0.5 shadow-2xl max-w-full overflow-hidden">
+      <div className="rounded-md bg-background border overflow-hidden h-[150px] md:h-[250px] sm:p-0">
+        <Image
+          src={src}
+          alt={alt}
+          width={600}
+          height={400}
+          className="object-fill h-auto w-full rounded-sm"
+        />
+      </div>
+    </div>
   );
 }
 
@@ -122,20 +153,29 @@ export default function LandingPage() {
               height="32"
               src="https://basic-nightingale-232.convex.cloud/api/storage/516f470d-fbef-41e8-bd7b-0cd804b7e2c5"
               className="sm:w-10 sm:h-10"
-              unoptimized
             />
-            <span className="text-lg sm:text-xl font-bold font-poppins">Panda</span>
+            <span className="text-lg sm:text-xl font-bold font-poppins">
+              Panda
+            </span>
           </div>
-          
+
           <div className="flex items-center space-x-4 sm:space-x-6">
-            <Link href="/pricing" className="text-sm font-medium hover:text-primary transition-colors font-geist">
+            <Link
+              href="/pricing"
+              className="text-sm font-medium hover:text-primary transition-colors font-geist"
+            >
               Pricing
             </Link>
-            <Link href="/inspiration" className="text-sm font-medium hover:text-primary transition-colors font-geist hidden sm:inline">
+            <Link
+              href="/inspiration"
+              className="text-sm font-medium hover:text-primary transition-colors font-geist hidden sm:inline"
+            >
               Inspiration
             </Link>
             <Link href="/http">
-              <Button size="sm" className="font-geist">Launch App</Button>
+              <Button size="sm" className="font-geist">
+                Launch App
+              </Button>
             </Link>
           </div>
         </div>
@@ -149,46 +189,45 @@ export default function LandingPage() {
             {/* Left Content */}
             <div className="space-y-6 sm:space-y-8">
               <div className="space-y-4">
-                <Badge variant="outline" className="w-fit font-geist">
-                  <Code2 className="w-3 h-3 mr-1" />
-                  JavaScript-First API Testing
-                </Badge>
                 <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold tracking-tight font-poppins">
-                  Test HTTP APIs the{" "}
+                  Re-Inventing the{" "}
                   <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                    JavaScript Way
+                    REST API client
                   </span>
                 </h1>
                 <p className="text-lg sm:text-xl text-muted-foreground max-w-lg font-geist">
-                  No .bru files. Just JavaScript. Assertions with Chai. Collections that live in code.
+                  No .bru files. Just JavaScript. Assertions, intuitive GUI,
+                  fully Open Source and collections that live in code.
                 </p>
               </div>
-              
+
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/http" className="w-full sm:w-auto">
                   <Button size="lg" className="w-full sm:w-auto font-geist">
-                    <Play className="w-4 h-4 mr-2" />
-                    Launch App
+                    Get started
                   </Button>
                 </Link>
-                <Button variant="outline" size="lg" className="w-full sm:w-auto font-geist">
-                  <GitBranch className="w-4 h-4 mr-2" />
-                  View on GitHub
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  className="w-full sm:w-auto font-geist border"
+                >
+                  GitHub
                 </Button>
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-6 space-y-2 sm:space-y-0 text-sm text-muted-foreground font-geist">
                 <div className="flex items-center space-x-1">
                   <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <span>No vendor lock-in</span>
+                  <span>No VC funding</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <span>Git-friendly</span>
+                  <span>Git-friendly / Off-line</span>
                 </div>
                 <div className="flex items-center space-x-1">
                   <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <span>Developer-first DX</span>
+                  <span>No feature bloat</span>
                 </div>
               </div>
             </div>
@@ -206,10 +245,11 @@ export default function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 font-poppins">
-              Built for JavaScript Developers
+              Built for Productive Developers
             </h2>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto font-geist">
-              Everything you need to test APIs, the way you already think about code.
+              Everything you need to test APIs, the way you already think about
+              code.
             </p>
           </div>
 
@@ -226,8 +266,9 @@ export default function LandingPage() {
                     Write Collections in JavaScript
                   </h3>
                   <p className="text-base sm:text-lg text-muted-foreground font-geist">
-                    Collections are just JavaScript files — versionable, inspectable, and scriptable. 
-                    No proprietary formats, no vendor lock-in. Just code that lives with your project.
+                    Collections are just JavaScript files — versionable,
+                    extensible, and easy to read. No proprietary formats, no
+                    vendor lock-in. Just code that lives with your project.
                   </p>
                 </div>
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground font-geist">
@@ -235,32 +276,39 @@ export default function LandingPage() {
                   <span>Git-friendly by design</span>
                 </div>
               </div>
-              
-              <ProductImage 
-                src={images.collectionAsCodeImage} 
+
+              <ProductImage
+                src={images.collectionAsCodeImage}
                 alt="Collections as Code - JavaScript syntax highlighting"
               />
             </div>
 
             {/* Feature 2 - Test with ChaiJS */}
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-              <ProductImage 
-                src={images.testsImage} 
+              <ProductImage
+                src={images.testsImage}
                 alt="Testing with ChaiJS - Assertion syntax"
               />
-              
+
               <div className="space-y-4 sm:space-y-6 lg:order-2">
-                <div className="space-y-4">
-                  <Badge variant="outline" className="w-fit font-geist">
+                <div className="space-y-1 md:space-x-4">
+                  <Badge
+                    variant="outline"
+                    className="w-fit font-geist hidden md:block"
+                  >
                     <TestTube className="w-3 h-3 mr-1" />
-                    Tests
+                    Testing Built-in
                   </Badge>
                   <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold font-poppins">
-                    Test with ChaiJS
+                    Tests
                   </h3>
                   <p className="text-base sm:text-lg text-muted-foreground font-geist">
-                    Use familiar assertions to validate responses, status codes, and headers. 
-                    Write tests the same way you do in your JavaScript projects.
+                    Use familiar{" "}
+                    <span className="px-1 py-0.5 rounded bg-muted text-foreground font-mono text-xs">
+                      expect()
+                    </span>{" "}
+                    to validate responses, status codes, and headers. Write
+                    tests the same way you do in your normal projects.
                   </p>
                 </div>
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground font-geist">
@@ -274,7 +322,10 @@ export default function LandingPage() {
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
               <div className="space-y-4 sm:space-y-6">
                 <div className="space-y-4">
-                  <Badge variant="outline" className="w-fit font-geist">
+                  <Badge
+                    variant="outline"
+                    className="w-fit font-geist hidden md:block"
+                  >
                     <TestTube className="w-3 h-3 mr-1" />
                     Testing
                   </Badge>
@@ -282,8 +333,8 @@ export default function LandingPage() {
                     Test Results
                   </h3>
                   <p className="text-base sm:text-lg text-muted-foreground font-geist">
-                    All assertions are evaluated and displayed in a meaningful manner. 
-                    This allows you to easily validate REST API logic.
+                    All assertions are evaluated and displayed in a meaningful
+                    manner. This allows you to easily validate REST api logic.
                   </p>
                 </div>
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground font-geist">
@@ -291,21 +342,51 @@ export default function LandingPage() {
                   <span>Clear test feedback</span>
                 </div>
               </div>
-              
-              <ProductImage 
-                src={images.testsResults} 
+
+              <ProductImage
+                src={images.testsResults}
                 alt="Test Results - Assertion results display"
               />
             </div>
 
             {/* Feature 4 - Postman Compatibility */}
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-              <Card className="bg-background border-2 lg:order-1">
+              <div className="space-y-4 sm:space-y-6">
+                <div className="space-x-0 md:space-y-4">
+                  <Badge
+                    variant="outline"
+                    className="w-fit font-geist hidden md:block"
+                  >
+                    <Download className="w-3 h-3 mr-1" />
+                    Import & Export
+                  </Badge>
+                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold font-poppins">
+                    Postman Support
+                  </h3>
+                  <p className="text-base sm:text-lg text-muted-foreground font-geist">
+                    Import Postman collections and export them as .zip files.
+                    Seamless migration from your existing workflow.
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2 text-sm text-muted-foreground font-geist">
+                  <ArrowRight className="w-4 h-4 flex-shrink-0" />
+                  <span>Supports Postman v2+ collections</span>
+                </div>
+              </div>
+
+              <Card className="bg-background border-2">
                 <CardContent className="p-4 sm:p-6">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium font-geist">Import Collection</span>
-                      <Button size="sm" variant="outline" className="font-geist">
+                      <span className="text-sm font-medium font-geist">
+                        Import Collection
+                      </span>
+                      <Button
+                        size="sm"
+                        disabled
+                        variant="outline"
+                        className="font-geist"
+                      >
                         <Download className="w-3 h-3 mr-1" />
                         Browse
                       </Button>
@@ -324,26 +405,6 @@ export default function LandingPage() {
                   </div>
                 </CardContent>
               </Card>
-              
-              <div className="space-y-4 sm:space-y-6 lg:order-2">
-                <div className="space-y-4">
-                  <Badge variant="outline" className="w-fit font-geist">
-                    <Download className="w-3 h-3 mr-1" />
-                    Import & Export
-                  </Badge>
-                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold font-poppins">
-                    Postman Compatibility
-                  </h3>
-                  <p className="text-base sm:text-lg text-muted-foreground font-geist">
-                    Import Postman collections and export them as .zip files. 
-                    Seamless migration from your existing workflow.
-                  </p>
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground font-geist">
-                  <ArrowRight className="w-4 h-4 flex-shrink-0" />
-                  <span>Supports Postman v2+ collections</span>
-                </div>
-              </div>
             </div>
 
             {/* Feature 5 - Realtime with Convex */}
@@ -353,27 +414,47 @@ export default function LandingPage() {
                   <div className="space-y-4">
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0" />
-                      <span className="text-sm font-medium font-geist">Live Collaboration</span>
+                      <span className="text-sm font-medium font-geist">
+                        Live updates
+                      </span>
                     </div>
                     <div className="space-y-2">
                       <div className="flex items-center space-x-2 text-sm">
-                        <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-xs text-white flex-shrink-0">J</div>
-                        <span className="font-geist truncate">John updated user-api.js</span>
-                        <span className="text-muted-foreground font-geist flex-shrink-0">2s ago</span>
+                        <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-xs text-white flex-shrink-0">
+                          J
+                        </div>
+                        <span className="font-geist truncate flex items-center">
+                          <span className="text-green-400">200</span>{" "}
+                          <ArrowRight className="size-4 mx-2" /> 50B
+                        </span>
+                        <span className="text-muted-foreground font-geist flex-shrink-0">
+                          2s ago
+                        </span>
                       </div>
                       <div className="flex items-center space-x-2 text-sm">
-                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-xs text-white flex-shrink-0">S</div>
-                        <span className="font-geist truncate">Sarah added new environment</span>
-                        <span className="text-muted-foreground font-geist flex-shrink-0">1m ago</span>
+                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-xs text-white flex-shrink-0">
+                          S
+                        </div>
+                        <span className="font-geist truncate">
+                          Created{" "}
+                          <span className="text-muted-foreground mx-1">{`"development"`}</span>{" "}
+                          environment
+                        </span>
+                        <span className="text-muted-foreground font-geist flex-shrink-0">
+                          1m ago
+                        </span>
                       </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-              
+
               <div className="space-y-4 sm:space-y-6 lg:order-2">
-                <div className="space-y-4">
-                  <Badge variant="outline" className="w-fit font-geist">
+                <div className="space-x-0 md:space-y-4">
+                  <Badge
+                    variant="outline"
+                    className="w-fit font-geist hidden md:block"
+                  >
                     <Users className="w-3 h-3 mr-1" />
                     Real-time Sync
                   </Badge>
@@ -381,8 +462,8 @@ export default function LandingPage() {
                     Realtime with Convex
                   </h3>
                   <p className="text-base sm:text-lg text-muted-foreground font-geist">
-                    Collaborate in real-time using Convex&apos;s serverless backend. 
-                    Share collections, environments, and results instantly.
+                    Using convex to store workspaces, environments and response
+                    history. Changes to data reflect instantly.
                   </p>
                 </div>
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground font-geist">
@@ -395,17 +476,23 @@ export default function LandingPage() {
             {/* Feature 6 - Environment Variables */}
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
               <div className="space-y-4 sm:space-y-6">
-                <div className="space-y-4">
-                  <Badge variant="outline" className="w-fit font-geist">
-                    <Settings className="w-3 h-3 mr-1" />
-                    Environment Management
+                <div className="space-x-0 md:space-y-4">
+                  <Badge
+                    variant="outline"
+                    className="w-fit font-geist hidden md:block"
+                  >
+                    <Settings className="w-3 h-3 mr-1 " />
+                    Environment
                   </Badge>
                   <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold font-poppins">
-                    Environment Variables
+                    Variables
                   </h3>
                   <p className="text-base sm:text-lg text-muted-foreground font-geist">
-                    Just use <code className="bg-muted px-1 rounded font-mono text-sm">&#123;&#123;variableName&#125;&#125;</code>. 
-                    Built-in environment variable support, just like Postman.
+                    Just use variables such as{" "}
+                    <code className="bg-muteds pl-2.5 pr-1.5 text-white py-0.5 rounded font-mono text-sm bg-primary">
+                      baseURL
+                    </code>{" "}
+                    as you normally would in Postman.
                   </p>
                 </div>
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground font-geist">
@@ -413,26 +500,38 @@ export default function LandingPage() {
                   <span>Familiar &#123;&#123;variable&#125;&#125; syntax</span>
                 </div>
               </div>
-              
+
               <Card className="bg-background border-2">
                 <CardContent className="p-4 sm:p-6">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium font-geist">Development Environment</span>
-                      <Badge variant="secondary" className="font-geist">Active</Badge>
+                      <span className="text-sm font-medium font-geist">
+                        Development
+                      </span>
+                      <Badge variant="secondary" className="font-geist">
+                        Active
+                      </Badge>
                     </div>
                     <div className="space-y-2 font-mono text-xs sm:text-sm overflow-x-auto">
                       <div className="flex justify-between min-w-0">
-                        <span className="text-muted-foreground flex-shrink-0">BASE_URL</span>
-                        <span className="truncate ml-2">https://api.dev.example.com</span>
+                        <span className="text-muted-foreground flex-shrink-0">
+                          baseURL
+                        </span>
+                        <span className="truncate ml-2">
+                          https://hackathon.dev
+                        </span>
                       </div>
                       <div className="flex justify-between min-w-0">
-                        <span className="text-muted-foreground flex-shrink-0">API_TOKEN</span>
+                        <span className="text-muted-foreground flex-shrink-0">
+                          API_TOKEN
+                        </span>
                         <span className="truncate ml-2">dev_token_123...</span>
                       </div>
                       <div className="flex justify-between min-w-0">
-                        <span className="text-muted-foreground flex-shrink-0">USER_ID</span>
-                        <span className="truncate ml-2">12345</span>
+                        <span className="text-muted-foreground flex-shrink-0">
+                          s3_Bucket
+                        </span>
+                        <span className="truncate ml-2">t3_bucket_id</span>
                       </div>
                     </div>
                   </div>
@@ -457,7 +556,11 @@ export default function LandingPage() {
 
           <div className="max-w-3xl mx-auto space-y-4">
             {faqItems.map((item, index) => (
-              <FAQItem key={index} question={item.question} answer={item.answer} />
+              <FAQItem
+                key={index}
+                question={item.question}
+                answer={item.answer}
+              />
             ))}
           </div>
         </div>
@@ -468,20 +571,24 @@ export default function LandingPage() {
         <div className="container mx-auto px-4 text-center">
           <div className="max-w-2xl mx-auto space-y-6 sm:space-y-8">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-poppins">
-              Ready to test APIs the JavaScript way?
+              Ready to test APIs the productive way?
             </h2>
             <p className="text-lg sm:text-xl text-muted-foreground font-geist">
-              Join developers who are already using Panda HTTP for their API testing needs.
+              Join developers who are already using Panda HTTP as their daily
+              driver.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/http" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full sm:w-auto font-geist">
-                  <Play className="w-4 h-4 mr-2" />
                   Launch App
                 </Button>
               </Link>
               <Link href="/pricing" className="w-full sm:w-auto">
-                <Button variant="outline" size="lg" className="w-full sm:w-auto font-geist">
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  className="w-full sm:w-auto font-geist border"
+                >
                   View Pricing
                 </Button>
               </Link>
@@ -495,16 +602,37 @@ export default function LandingPage() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">🐼</span>
+              <Image
+                alt="app logo"
+                width="32"
+                height="32"
+                src="https://basic-nightingale-232.convex.cloud/api/storage/516f470d-fbef-41e8-bd7b-0cd804b7e2c5"
+                className="sm:w-10 sm:h-10"
+              />
+
+              <div>
+                <X className="size-5 text-muted-foreground hover:animate-spin" />
               </div>
-              <span className="font-bold text-lg sm:text-xl font-poppins">Panda HTTP</span>
+
+              <div className="relative w-24 h-full flex justify-center">
+                <Link
+                  href="https://bolt.new/"
+                  className="absolute -top-5 bg-black dark:bg-transparent p-2 rounded"
+                >
+                  <Image
+                    src="https://basic-nightingale-232.convex.cloud/api/storage/5d042f0c-9b4f-4646-ba36-920ffd90d37e"
+                    alt="bolt logo"
+                    width={75}
+                    height={75}
+                  />
+                </Link>
+              </div>
             </div>
-            
+
             <div className="flex items-center space-x-4">
-              <Link 
-                href="https://discord.gg/BmvSwRXX" 
-                target="_blank" 
+              <Link
+                href="https://discord.gg/BmvSwRXX"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center space-x-2 text-sm text-muted-foreground hover:text-primary transition-colors font-geist"
               >
@@ -513,9 +641,18 @@ export default function LandingPage() {
               </Link>
             </div>
           </div>
-          
+
           <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t text-center text-xs sm:text-sm text-muted-foreground font-geist">
-            <p>&copy; 2025 Panda HTTP. Built for JavaScript developers, by JavaScript developers.</p>
+            <p>
+              &copy; 2025 Panda HTTP. Built for all developers, by{" "}
+              <Link
+                href="https://x.com/___emee_"
+                className="text-yellow-400 underline underline-offset-4"
+              >
+                Emmanuel
+              </Link>
+              .
+            </p>
           </div>
         </div>
       </footer>
