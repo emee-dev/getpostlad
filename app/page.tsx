@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Separator } from "@/components/ui/separator";
 import { 
   Code2, 
   FileCode, 
@@ -21,6 +22,17 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+
+const images = {
+  heroImage:
+    "https://ri3guaa55l.ufs.sh/f/8gXsFydJfZdnGhNvhX0NQurmFy43DtCG0nvRe8WEjVJwSak2",
+  collectionAsCodeImage:
+    "https://ri3guaa55l.ufs.sh/f/8gXsFydJfZdnGhNvhX0NQurmFy43DtCG0nvRe8WEjVJwSak2",
+  testsImage:
+    "https://ri3guaa55l.ufs.sh/f/8gXsFydJfZdnfqy295BTxlMvbE97KuPfSqLpZaA4o0Us6nrh",
+  testsResults:
+    "https://ri3guaa55l.ufs.sh/f/8gXsFydJfZdnFzwX0HJs24j3hfwEQx1WV9SlkmJ0DdbtqR8X",
+};
 
 const faqItems = [
   {
@@ -47,75 +59,49 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleTrigger asChild>
-        <button className="flex w-full items-center justify-between rounded-lg border p-4 text-left hover:bg-muted/50 transition-colors">
-          <h3 className="font-semibold text-foreground font-geist">{question}</h3>
+        <button className="flex w-full items-center justify-between rounded-lg border p-4 text-left transition-colors font-geist">
+          <h3 className="font-semibold text-foreground">{question}</h3>
           <ChevronDown className={`h-4 w-4 transition-transform flex-shrink-0 ml-2 ${isOpen ? 'rotate-180' : ''}`} />
         </button>
       </CollapsibleTrigger>
-      <CollapsibleContent className="px-4 pb-4">
+      <Separator />
+      <CollapsibleContent className="px-4 pb-4 pt-2">
         <p className="text-muted-foreground font-geist">{answer}</p>
       </CollapsibleContent>
     </Collapsible>
   );
 }
 
-function CodeBlock({ children }: { children: React.ReactNode }) {
+function MockAppInterface({ src }: { src: string }) {
   return (
-    <div className="bg-muted/50 rounded-md p-3 sm:p-4 font-mono text-xs sm:text-sm space-y-2 overflow-x-auto">
-      {children}
+    <div className="relative rounded-lg border bg-muted/50 p-1 shadow-2xl max-w-full overflow-hidden">
+      <div className="rounded-md bg-background border overflow-hidden">
+        <Image
+          src={src}
+          alt="Panda HTTP App Interface"
+          width={800}
+          height={600}
+          className="w-full h-full object-contain"
+          priority
+        />
+      </div>
     </div>
   );
 }
 
-function MockAppInterface() {
+function ProductImage({ src, alt }: { src: string; alt: string }) {
   return (
-    <div className="relative rounded-lg border bg-muted/50 p-1 shadow-2xl max-w-full overflow-hidden">
-      <div className="rounded-md bg-background border overflow-hidden">
-        {/* Mock browser header */}
-        <div className="flex items-center space-x-2 px-3 sm:px-4 py-2 sm:py-3 bg-muted/30 border-b">
-          <div className="flex space-x-1">
-            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-500" />
-            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-yellow-500" />
-            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-green-500" />
-          </div>
-          <div className="flex-1 text-center text-xs sm:text-sm text-muted-foreground font-geist">
-            Panda HTTP - API Testing
-          </div>
-        </div>
-        
-        {/* Mock app interface */}
-        <div className="p-3 sm:p-6 space-y-3 sm:space-y-4">
-          <div className="flex items-center space-x-2 text-xs sm:text-sm">
-            <FileCode className="w-3 h-3 sm:w-4 sm:h-4 text-primary flex-shrink-0" />
-            <span className="font-mono truncate">user-api.js</span>
-          </div>
-          
-          <CodeBlock>
-            <div className="text-blue-600 dark:text-blue-400">const GET = () => &#123;</div>
-            <div className="pl-2 sm:pl-4 space-y-1">
-              <div><span className="text-green-600 dark:text-green-400">name:</span> <span className="text-orange-600 dark:text-orange-400">"Get User Profile"</span>,</div>
-              <div><span className="text-green-600 dark:text-green-400">url:</span> <span className="text-orange-600 dark:text-orange-400">"&#123;&#123;BASE_URL&#125;&#125;/users/&#123;&#123;USER_ID&#125;&#125;"</span>,</div>
-              <div><span className="text-green-600 dark:text-green-400">headers:</span> &#123;</div>
-              <div className="pl-2 sm:pl-4"><span className="text-orange-600 dark:text-orange-400">&apos;Authorization&apos;</span>: <span className="text-orange-600 dark:text-orange-400">&apos;Bearer &#123;&#123;TOKEN&#125;&#125;&apos;</span></div>
-              <div>&#125;</div>
-            </div>
-            <div className="text-blue-600 dark:text-blue-400">&#125;;</div>
-          </CodeBlock>
-          
-          <div className="flex items-center justify-between">
-            <Button size="sm" className="bg-primary text-xs sm:text-sm">
-              <Play className="w-3 h-3 mr-1" />
-              Send Request
-            </Button>
-            <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-              <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0" />
-              <span className="hidden sm:inline">200 OK • 245ms</span>
-              <span className="sm:hidden">200 OK</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <Card className="bg-background border-2">
+      <CardContent className="p-0">
+        <Image
+          src={src}
+          alt={alt}
+          width={600}
+          height={400}
+          className="w-full h-full object-contain rounded-md"
+        />
+      </CardContent>
+    </Card>
   );
 }
 
@@ -204,7 +190,7 @@ export default function LandingPage() {
 
             {/* Right Content - App Screenshot */}
             <div className="relative mt-8 lg:mt-0">
-              <MockAppInterface />
+              <MockAppInterface src={images.heroImage} />
             </div>
           </div>
         </div>
@@ -245,52 +231,25 @@ export default function LandingPage() {
                 </div>
               </div>
               
-              <Card className="bg-background border-2">
-                <CardContent className="p-4 sm:p-6">
-                  <CodeBlock>
-                    <div className="text-purple-600 dark:text-purple-400">// users.js</div>
-                    <div className="text-blue-600 dark:text-blue-400">const POST = () => &#123;</div>
-                    <div className="pl-2 sm:pl-4 space-y-1">
-                      <div><span className="text-green-600 dark:text-green-400">url:</span> <span className="text-orange-600 dark:text-orange-400">"/api/users"</span>,</div>
-                      <div><span className="text-green-600 dark:text-green-400">json:</span> &#123;</div>
-                      <div className="pl-2 sm:pl-4 space-y-1">
-                        <div><span className="text-green-600 dark:text-green-400">name:</span> <span className="text-orange-600 dark:text-orange-400">"John Doe"</span>,</div>
-                        <div><span className="text-green-600 dark:text-green-400">email:</span> <span className="text-orange-600 dark:text-orange-400">"john@example.com"</span></div>
-                      </div>
-                      <div>&#125;</div>
-                    </div>
-                    <div className="text-blue-600 dark:text-blue-400">&#125;;</div>
-                  </CodeBlock>
-                </CardContent>
-              </Card>
+              <ProductImage 
+                src={images.collectionAsCodeImage} 
+                alt="Collections as Code - JavaScript syntax highlighting"
+              />
             </div>
 
             {/* Feature 2 - Test with ChaiJS */}
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-              <Card className="bg-background border-2 lg:order-1">
-                <CardContent className="p-4 sm:p-6">
-                  <CodeBlock>
-                    <div className="text-blue-600 dark:text-blue-400">post_response: () => &#123;</div>
-                    <div className="pl-2 sm:pl-4 space-y-1">
-                      <div className="text-purple-600 dark:text-purple-400">describe(&apos;User API&apos;, () => &#123;</div>
-                      <div className="pl-2 sm:pl-4 space-y-1">
-                        <div className="text-blue-600 dark:text-blue-400">it(&apos;should return 201&apos;, () => &#123;</div>
-                        <div className="pl-2 sm:pl-4"><span className="text-green-600 dark:text-green-400">expect</span>(res.getStatus())</div>
-                        <div className="pl-4 sm:pl-8">.to.equal(<span className="text-orange-600 dark:text-orange-400">201</span>);</div>
-                        <div className="text-blue-600 dark:text-blue-400">&#125;);</div>
-                      </div>
-                      <div className="text-purple-600 dark:text-purple-400">&#125;);</div>
-                    </div>
-                    <div className="text-blue-600 dark:text-blue-400">&#125;</div>
-                  </CodeBlock>
-                </CardContent>
-              </Card>
+              <ProductImage 
+                src={images.testsImage} 
+                alt="Testing with ChaiJS - Assertion syntax"
+                className="lg:order-1"
+              />
               
               <div className="space-y-4 sm:space-y-6 lg:order-2">
                 <div className="space-y-4">
                   <Badge variant="outline" className="w-fit font-geist">
                     <TestTube className="w-3 h-3 mr-1" />
-                    Testing Built-in
+                    Tests
                   </Badge>
                   <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold font-poppins">
                     Test with ChaiJS
@@ -307,29 +266,37 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Feature 3 - Postman Compatibility */}
+            {/* Feature 3 - Test Results */}
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
               <div className="space-y-4 sm:space-y-6">
                 <div className="space-y-4">
                   <Badge variant="outline" className="w-fit font-geist">
-                    <Download className="w-3 h-3 mr-1" />
-                    Import & Export
+                    <TestTube className="w-3 h-3 mr-1" />
+                    Testing
                   </Badge>
                   <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold font-poppins">
-                    Postman Compatibility
+                    Test Results
                   </h3>
                   <p className="text-base sm:text-lg text-muted-foreground font-geist">
-                    Import Postman collections and export them as .zip files. 
-                    Seamless migration from your existing workflow.
+                    All assertions are evaluated and displayed in a meaningful manner. 
+                    This allows you to easily validate REST API logic.
                   </p>
                 </div>
                 <div className="flex items-center space-x-2 text-sm text-muted-foreground font-geist">
                   <ArrowRight className="w-4 h-4 flex-shrink-0" />
-                  <span>Supports Postman v2+ collections</span>
+                  <span>Clear test feedback</span>
                 </div>
               </div>
               
-              <Card className="bg-background border-2">
+              <ProductImage 
+                src={images.testsResults} 
+                alt="Test Results - Assertion results display"
+              />
+            </div>
+
+            {/* Feature 4 - Postman Compatibility */}
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+              <Card className="bg-background border-2 lg:order-1">
                 <CardContent className="p-4 sm:p-6">
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
@@ -353,9 +320,29 @@ export default function LandingPage() {
                   </div>
                 </CardContent>
               </Card>
+              
+              <div className="space-y-4 sm:space-y-6 lg:order-2">
+                <div className="space-y-4">
+                  <Badge variant="outline" className="w-fit font-geist">
+                    <Download className="w-3 h-3 mr-1" />
+                    Import & Export
+                  </Badge>
+                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold font-poppins">
+                    Postman Compatibility
+                  </h3>
+                  <p className="text-base sm:text-lg text-muted-foreground font-geist">
+                    Import Postman collections and export them as .zip files. 
+                    Seamless migration from your existing workflow.
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2 text-sm text-muted-foreground font-geist">
+                  <ArrowRight className="w-4 h-4 flex-shrink-0" />
+                  <span>Supports Postman v2+ collections</span>
+                </div>
+              </div>
             </div>
 
-            {/* Feature 4 - Realtime with Convex */}
+            {/* Feature 5 - Realtime with Convex */}
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
               <Card className="bg-background border-2 lg:order-1">
                 <CardContent className="p-4 sm:p-6">
@@ -401,7 +388,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Feature 5 - Environment Variables */}
+            {/* Feature 6 - Environment Variables */}
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
               <div className="space-y-4 sm:space-y-6">
                 <div className="space-y-4">
