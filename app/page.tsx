@@ -75,13 +75,13 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 function MockAppInterface({ src }: { src: string }) {
   return (
     <div className="relative rounded-lg border bg-muted/50 p-1 shadow-2xl max-w-full overflow-hidden">
-      <div className="rounded-md bg-background border overflow-hidden h-[300px] md:h-[400px]">
+      <div className="rounded-md bg-background border overflow-hidden h-full w-full">
         <Image
           src={src}
           alt="Panda HTTP App Interface"
           width={800}
           height={600}
-          className="w-full h-full object-contain"
+          className="w-full h-full object-cover"
           priority
           unoptimized
         />
@@ -94,13 +94,13 @@ function ProductImage({ src, alt }: { src: string; alt: string }) {
   return (
     <Card className="bg-background border-2">
       <CardContent className="p-0">
-        <div className="h-[150px] md:h-[250px] overflow-hidden rounded-md">
+        <div className="h-full w-full overflow-hidden rounded-md">
           <Image
             src={src}
             alt={alt}
             width={600}
             height={400}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover"
             unoptimized
           />
         </div>
