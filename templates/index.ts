@@ -8,6 +8,9 @@ export const basicTemplate = `// 🐼 Basic Panda Request Template
 // 2. Keep functions pure and flat – avoid nesting.
 // 3. Move all query parameters into the \`query\` object. Don't use \`?\` in the URL.
 
+// 📦 Postman Collection Samples (v2.1):
+// https://drive.google.com/drive/folders/1GHvAWrivV7bHbUU-X_IEj4iGGyQNQM60
+
 const GET = () => {
   return {
     name: "Basic GET Request",
@@ -24,13 +27,6 @@ const GET = () => {
   };
 };
 
-// 📦 Postman Collection Samples (v2.1):
-// Download and save as .json, then import into Panda
-// 1. Tavus (Public API): https://ri3guaa55l.ufs.sh/f/8gXsFydJfZdnTUnXjnNeTLEBkat3lyxUd2GZSJifFWwoqYmX
-// 2. Stripe [2024-04-10]: https://ri3guaa55l.ufs.sh/f/8gXsFydJfZdnFBXulIJs24j3hfwEQx1WV9SlkmJ0DdbtqR8X
-// 3. Unkey [Keys]: https://ri3guaa55l.ufs.sh/f/8gXsFydJfZdn3jfSKjXZ2vO6rgQpPjVmzKeTUXAFNRWdwEfu
-// 4. Lemonsqueezy: https://ri3guaa55l.ufs.sh/f/8gXsFydJfZdnSYhbqIFVa9BAwoyCdsDhMUvGZ46EeHQFX5iK
-// 5. Sentry: https://ri3guaa55l.ufs.sh/f/8gXsFydJfZdnVThy4bQIWoBk65jnQO1hAmTtYLl0UibI3zJK
 `;
 
 export const requestBodyTemplate = `// 🔁 Supported \`body\` types: "json" (default), "text", "xml"
