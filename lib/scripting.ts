@@ -1,5 +1,5 @@
 import { DeserializedHTTP } from "./utils";
-import { Header, ResponseData } from "@/app/page";
+import { Header, ResponseData } from "@/app/http/page";
 
 /**
  * Extracts the function body from a function reference
