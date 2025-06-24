@@ -200,7 +200,7 @@ const SidebarWithRootContextMenu = ({ children }: { children: React.ReactNode })
     <>
       <ContextMenu>
         <ContextMenuTrigger asChild>
-          <div className="h-full w-full">
+          <div className="h-full w-full select-none">
             {children}
           </div>
         </ContextMenuTrigger>

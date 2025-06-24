@@ -113,7 +113,7 @@ function MockAppInterface({ src }: { src: string }) {
       <div className="rounded-md bg-background border overflow-hidden h-[300px] md:h-[400px]">
         <Image
           alt="Panda HTTP App Interface"
-          className="object-fill h-auto w-full rounded-md"
+          className="object-cover h-full w-full rounded-md"
           width={800}
           height={600}
           src={src}
@@ -133,7 +133,7 @@ function ProductImage({ src, alt }: { src: string; alt: string }) {
           alt={alt}
           width={600}
           height={400}
-          className="object-fill h-auto w-full rounded-sm"
+          className="object-cover h-full w-full rounded-sm"
         />
       </div>
     </div>
@@ -165,12 +165,6 @@ export default function LandingPage() {
               className="text-sm font-medium hover:text-primary transition-colors font-geist"
             >
               Pricing
-            </Link>
-            <Link
-              href="/inspiration"
-              className="text-sm font-medium hover:text-primary transition-colors font-geist hidden sm:inline"
-            >
-              Inspiration
             </Link>
             <Link href="/http">
               <Button size="sm" className="font-geist">
