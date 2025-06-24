@@ -100,7 +100,7 @@ function FAQItem({
           />
         </button>
       </CollapsibleTrigger>
-      <Separator className="mb-2" />
+      <Separator className="mb-2 my-2" />
       <CollapsibleContent className="px-4 pb-4">
         <p className="text-muted-foreground font-geist">{answer}</p>
       </CollapsibleContent>
@@ -132,7 +132,13 @@ function MockAppInterface({ src }: { src: string }) {
 
 function ProductImage({ src, alt }: { src: string; alt: string }) {
   return (
-    <div className="relative rounded-lg bg-background border-2 p-0.5 shadow-2xl max-w-full overflow-hidden">
+    <motion.div 
+      className="relative rounded-lg bg-background border-2 p-0.5 shadow-2xl max-w-full overflow-hidden"
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="rounded-md bg-background border overflow-hidden h-[150px] md:h-[250px] sm:p-0">
         <Image
           src={src}
@@ -142,9 +148,33 @@ function ProductImage({ src, alt }: { src: string; alt: string }) {
           className="object-cover h-full w-full rounded-sm"
         />
       </div>
-    </div>
+    </motion.div>
   );
 }
+
+// Animation variants for staggered animations
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: "easeOut",
+    },
+  },
+};
 
 export default function LandingPage() {
   return (
@@ -268,7 +298,13 @@ export default function LandingPage() {
       {/* Features Section */}
       <section className="py-12 sm:py-20 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12 sm:mb-16">
+          <motion.div 
+            className="text-center mb-12 sm:mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 font-poppins">
               Built for Productive Developers
             </h2>
@@ -276,11 +312,20 @@ export default function LandingPage() {
               Everything you need to test APIs, the way you already think about
               code.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="space-y-12 sm:space-y-20">
+          <motion.div 
+            className="space-y-12 sm:space-y-20"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+          >
             {/* Feature 1 - Write Collections in JS */}
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <motion.div 
+              className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center"
+              variants={itemVariants}
+            >
               <div className="space-y-4 sm:space-y-6">
                 <div className="space-y-4">
                   <Badge variant="outline" className="w-fit font-geist">
@@ -296,20 +341,29 @@ export default function LandingPage() {
                     vendor lock-in. Just code that lives with your project.
                   </p>
                 </div>
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground font-geist">
+                <motion.div 
+                  className="flex items-center space-x-2 text-sm text-muted-foreground font-geist"
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                >
                   <ArrowRight className="w-4 h-4 flex-shrink-0" />
                   <span>Git-friendly by design</span>
-                </div>
+                </motion.div>
               </div>
 
               <ProductImage
                 src={images.collectionAsCodeImage}
                 alt="Collections as Code - JavaScript syntax highlighting"
               />
-            </div>
+            </motion.div>
 
             {/* Feature 2 - Test with ChaiJS */}
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <motion.div 
+              className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center"
+              variants={itemVariants}
+            >
               <ProductImage
                 src={images.testsImage}
                 alt="Testing with ChaiJS - Assertion syntax"
@@ -336,15 +390,24 @@ export default function LandingPage() {
                     tests the same way you do in your normal projects.
                   </p>
                 </div>
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground font-geist">
+                <motion.div 
+                  className="flex items-center space-x-2 text-sm text-muted-foreground font-geist"
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                >
                   <ArrowRight className="w-4 h-4 flex-shrink-0" />
                   <span>Familiar testing syntax</span>
-                </div>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Feature 3 - Test Results */}
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <motion.div 
+              className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center"
+              variants={itemVariants}
+            >
               <div className="space-y-4 sm:space-y-6">
                 <div className="space-y-4">
                   <Badge
@@ -362,20 +425,29 @@ export default function LandingPage() {
                     manner. This allows you to easily validate REST api logic.
                   </p>
                 </div>
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground font-geist">
+                <motion.div 
+                  className="flex items-center space-x-2 text-sm text-muted-foreground font-geist"
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                >
                   <ArrowRight className="w-4 h-4 flex-shrink-0" />
                   <span>Clear test feedback</span>
-                </div>
+                </motion.div>
               </div>
 
               <ProductImage
                 src={images.testsResults}
                 alt="Test Results - Assertion results display"
               />
-            </div>
+            </motion.div>
 
             {/* Feature 4 - Postman Compatibility */}
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <motion.div 
+              className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center"
+              variants={itemVariants}
+            >
               <div className="space-y-4 sm:space-y-6">
                 <div className="space-x-0 md:space-y-4">
                   <Badge
@@ -393,86 +465,110 @@ export default function LandingPage() {
                     Seamless migration from your existing workflow.
                   </p>
                 </div>
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground font-geist">
+                <motion.div 
+                  className="flex items-center space-x-2 text-sm text-muted-foreground font-geist"
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                >
                   <ArrowRight className="w-4 h-4 flex-shrink-0" />
                   <span>Supports Postman v2+ collections</span>
-                </div>
+                </motion.div>
               </div>
 
-              <Card className="bg-background border-2">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium font-geist">
-                        Import Collection
-                      </span>
-                      <Button
-                        size="sm"
-                        disabled
-                        variant="outline"
-                        className="font-geist"
-                      >
-                        <Download className="w-3 h-3 mr-1" />
-                        Browse
-                      </Button>
-                    </div>
-                    <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 sm:p-6 text-center">
-                      <div className="space-y-2">
-                        <FileCode className="w-6 sm:w-8 h-6 sm:h-8 mx-auto text-muted-foreground" />
-                        <p className="text-xs sm:text-sm text-muted-foreground font-geist">
-                          Drop your .json or .zip file here
-                        </p>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+              >
+                <Card className="bg-background border-2">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium font-geist">
+                          Import Collection
+                        </span>
+                        <Button
+                          size="sm"
+                          disabled
+                          variant="outline"
+                          className="font-geist"
+                        >
+                          <Download className="w-3 h-3 mr-1" />
+                          Browse
+                        </Button>
+                      </div>
+                      <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-4 sm:p-6 text-center">
+                        <div className="space-y-2">
+                          <FileCode className="w-6 sm:w-8 h-6 sm:h-8 mx-auto text-muted-foreground" />
+                          <p className="text-xs sm:text-sm text-muted-foreground font-geist">
+                            Drop your .json or .zip file here
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-xs text-muted-foreground font-geist">
+                        Supports Postman v2.1+ collections
                       </div>
                     </div>
-                    <div className="text-xs text-muted-foreground font-geist">
-                      Supports Postman v2.1+ collections
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </motion.div>
 
             {/* Feature 5 - Realtime with Convex */}
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-              <Card className="bg-background border-2 lg:order-1">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0" />
-                      <span className="text-sm font-medium font-geist">
-                        Live updates
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2 text-sm">
-                        <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-xs text-white flex-shrink-0">
-                          J
-                        </div>
-                        <span className="font-geist truncate flex items-center">
-                          <span className="text-green-400">200</span>{" "}
-                          <ArrowRight className="size-4 mx-2" /> 50B
-                        </span>
-                        <span className="text-muted-foreground font-geist flex-shrink-0">
-                          2s ago
+            <motion.div 
+              className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center"
+              variants={itemVariants}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="lg:order-1"
+              >
+                <Card className="bg-background border-2">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0" />
+                        <span className="text-sm font-medium font-geist">
+                          Live updates
                         </span>
                       </div>
-                      <div className="flex items-center space-x-2 text-sm">
-                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-xs text-white flex-shrink-0">
-                          S
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2 text-sm">
+                          <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-xs text-white flex-shrink-0">
+                            J
+                          </div>
+                          <span className="font-geist truncate flex items-center">
+                            <span className="text-green-400">200</span>{" "}
+                            <ArrowRight className="size-4 mx-2" /> 50B
+                          </span>
+                          <span className="text-muted-foreground font-geist flex-shrink-0">
+                            2s ago
+                          </span>
                         </div>
-                        <span className="font-geist truncate">
-                          Created{" "}
-                          <span className="text-muted-foreground mx-1">{`"development"`}</span>{" "}
-                          environment
-                        </span>
-                        <span className="text-muted-foreground font-geist flex-shrink-0">
-                          1m ago
-                        </span>
+                        <div className="flex items-center space-x-2 text-sm">
+                          <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-xs text-white flex-shrink-0">
+                            S
+                          </div>
+                          <span className="font-geist truncate">
+                            Created{" "}
+                            <span className="text-muted-foreground mx-1">{`"development"`}</span>{" "}
+                            environment
+                          </span>
+                          <span className="text-muted-foreground font-geist flex-shrink-0">
+                            1m ago
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </motion.div>
 
               <div className="space-y-4 sm:space-y-6 lg:order-2">
                 <div className="space-x-0 md:space-y-4">
@@ -491,15 +587,24 @@ export default function LandingPage() {
                     history. Changes to data reflect instantly.
                   </p>
                 </div>
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground font-geist">
+                <motion.div 
+                  className="flex items-center space-x-2 text-sm text-muted-foreground font-geist"
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                >
                   <ArrowRight className="w-4 h-4 flex-shrink-0" />
                   <span>Instant synchronization</span>
-                </div>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Feature 6 - Environment Variables */}
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            <motion.div 
+              className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center"
+              variants={itemVariants}
+            >
               <div className="space-y-4 sm:space-y-6">
                 <div className="space-x-0 md:space-y-4">
                   <Badge
@@ -520,66 +625,91 @@ export default function LandingPage() {
                     as you normally would in Postman.
                   </p>
                 </div>
-                <div className="flex items-center space-x-2 text-sm text-muted-foreground font-geist">
+                <motion.div 
+                  className="flex items-center space-x-2 text-sm text-muted-foreground font-geist"
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: 0.2 }}
+                >
                   <ArrowRight className="w-4 h-4 flex-shrink-0" />
                   <span>Familiar &#123;&#123;variable&#125;&#125; syntax</span>
-                </div>
+                </motion.div>
               </div>
 
-              <Card className="bg-background border-2">
-                <CardContent className="p-4 sm:p-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium font-geist">
-                        Development
-                      </span>
-                      <Badge variant="secondary" className="font-geist">
-                        Active
-                      </Badge>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+              >
+                <Card className="bg-background border-2">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium font-geist">
+                          Development
+                        </span>
+                        <Badge variant="secondary" className="font-geist">
+                          Active
+                        </Badge>
+                      </div>
+                      <div className="space-y-2 font-mono text-xs sm:text-sm overflow-x-auto">
+                        <div className="flex justify-between min-w-0">
+                          <span className="text-muted-foreground flex-shrink-0">
+                            baseURL
+                          </span>
+                          <span className="truncate ml-2">
+                            https://hackathon.dev
+                          </span>
+                        </div>
+                        <div className="flex justify-between min-w-0">
+                          <span className="text-muted-foreground flex-shrink-0">
+                            API_TOKEN
+                          </span>
+                          <span className="truncate ml-2">dev_token_123...</span>
+                        </div>
+                        <div className="flex justify-between min-w-0">
+                          <span className="text-muted-foreground flex-shrink-0">
+                            s3_Bucket
+                          </span>
+                          <span className="truncate ml-2">t3_bucket_id</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-2 font-mono text-xs sm:text-sm overflow-x-auto">
-                      <div className="flex justify-between min-w-0">
-                        <span className="text-muted-foreground flex-shrink-0">
-                          baseURL
-                        </span>
-                        <span className="truncate ml-2">
-                          https://hackathon.dev
-                        </span>
-                      </div>
-                      <div className="flex justify-between min-w-0">
-                        <span className="text-muted-foreground flex-shrink-0">
-                          API_TOKEN
-                        </span>
-                        <span className="truncate ml-2">dev_token_123...</span>
-                      </div>
-                      <div className="flex justify-between min-w-0">
-                        <span className="text-muted-foreground flex-shrink-0">
-                          s3_Bucket
-                        </span>
-                        <span className="truncate ml-2">t3_bucket_id</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
       {/* FAQ Section */}
       <section className="py-12 sm:py-20">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12 sm:mb-16">
+          <motion.div 
+            className="text-center mb-12 sm:mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 font-poppins">
               Frequently Asked Questions
             </h2>
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto font-geist">
               Everything you need to know about Panda HTTP.
             </p>
-          </div>
+          </motion.div>
 
-          <div className="max-w-3xl mx-auto space-y-4">
+          <motion.div 
+            className="max-w-3xl mx-auto space-y-4"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
             {faqItems.map((item, index) => (
               <FAQItem
                 key={index}
@@ -587,14 +717,20 @@ export default function LandingPage() {
                 answer={item.answer}
               />
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* CTA Section */}
       <section className="py-12 sm:py-20 bg-muted/30">
         <div className="container mx-auto px-4 text-center">
-          <div className="max-w-2xl mx-auto space-y-6 sm:space-y-8">
+          <motion.div 
+            className="max-w-2xl mx-auto space-y-6 sm:space-y-8"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-poppins">
               Ready to test APIs the productive way?
             </h2>
@@ -602,7 +738,13 @@ export default function LandingPage() {
               Join developers who are already using Panda HTTP as their daily
               driver.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-4 justify-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
               <Link href="/http" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full sm:w-auto font-geist">
                   Launch App
@@ -617,8 +759,8 @@ export default function LandingPage() {
                   View Pricing
                 </Button>
               </Link>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
