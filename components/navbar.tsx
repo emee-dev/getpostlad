@@ -15,7 +15,22 @@ import {
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Upload, Plus, Loader2, Download, Search, CreditCard, BookOpen, FileText, Variable, Code, Book, Maximize, Minimize2 } from "lucide-react";
+import {
+  ChevronDown,
+  Upload,
+  Plus,
+  Loader2,
+  Download,
+  Search,
+  CreditCard,
+  BookOpen,
+  FileText,
+  Variable,
+  Code,
+  Book,
+  Maximize,
+  Minimize2,
+} from "lucide-react";
 import { useState } from "react";
 import { useFileTreeStore } from "@/hooks/use-file-store";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -23,12 +38,12 @@ import { exportAndDownloadZip } from "@/lib/exporter";
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
-import { 
-  basicTemplate, 
-  requestBodyTemplate, 
-  variablesTemplate, 
-  scriptingTemplate, 
-  fullDocsTemplate 
+import {
+  basicTemplate,
+  requestBodyTemplate,
+  variablesTemplate,
+  scriptingTemplate,
+  fullDocsTemplate,
 } from "@/templates";
 import {
   Tooltip,
@@ -41,7 +56,8 @@ export const Navbar = (props: { className?: string }) => {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
   const { files, addFile, setSelectedFile } = useFileTreeStore();
-  const { selectedWorkspace, isResultPanelVisible, setIsResultPanelVisible } = useWorkspace();
+  const { selectedWorkspace, isResultPanelVisible, setIsResultPanelVisible } =
+    useWorkspace();
   const { theme, setTheme } = useTheme();
   const router = useRouter();
 
@@ -50,7 +66,7 @@ export const Navbar = (props: { className?: string }) => {
       // Get workspace name and normalize it
       const workspaceName = selectedWorkspace?.name || "collection";
       const normalizedName = workspaceName.toLowerCase().replace(/\s+/g, "");
-      
+
       // Export and download the collection
       await exportAndDownloadZip(files, normalizedName);
     } catch (error) {
@@ -63,7 +79,11 @@ export const Navbar = (props: { className?: string }) => {
     router.push("/pricing");
   };
 
-  const handleTemplateSelect = (templateName: string, content: string, fileName: string) => {
+  const handleTemplateSelect = (
+    templateName: string,
+    content: string,
+    fileName: string
+  ) => {
     // Create the file node
     const fileNode = {
       name: fileName,
@@ -74,7 +94,7 @@ export const Navbar = (props: { className?: string }) => {
 
     // Add to file tree
     addFile("", fileName, content);
-    
+
     // Set as selected file
     setSelectedFile(fileNode);
   };
@@ -99,9 +119,9 @@ export const Navbar = (props: { className?: string }) => {
               className="h-4 bg-muted-foreground"
             />
           </div>
-          <div className="flex items-center pl-2 ml-1 gap-x-1"> 
+          <div className="flex items-center pl-2 ml-1 gap-x-1">
             <AuthLoading>
-               <div className="flex items-center font-geist gap-2 text-muted-foreground text-sm">
+              <div className="flex items-center font-geist gap-2 text-muted-foreground text-sm">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Authenticating...
               </div>
@@ -143,16 +163,22 @@ export const Navbar = (props: { className?: string }) => {
                     <Maximize className="h-4 w-4" />
                   )}
                   <span className="sr-only">
-                    {isResultPanelVisible ? "Hide Result Panel" : "Show Result Panel"}
+                    {isResultPanelVisible
+                      ? "Hide Result Panel"
+                      : "Show Result Panel"}
                   </span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{isResultPanelVisible ? "Hide Result Panel" : "Show Result Panel"}</p>
+                <p>
+                  {isResultPanelVisible
+                    ? "Hide Result Panel"
+                    : "Show Result Panel"}
+                </p>
               </TooltipContent>
             </Tooltip>
-            
-             <DropdownMenu>
+
+            <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
@@ -164,12 +190,16 @@ export const Navbar = (props: { className?: string }) => {
                   <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" side="left"className="font-geist">
+              <DropdownMenuContent
+                align="start"
+                side="left"
+                className="font-geist"
+              >
                 <DropdownMenuItem onClick={() => setIsImportDialogOpen(true)}>
                   <Upload className="mr-2 h-4 w-4" />
                   Import Collection
                 </DropdownMenuItem>
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={handleExportCollection}
                   disabled={files.length === 0}
                   aria-label="Export collection as ZIP file"
@@ -177,55 +207,102 @@ export const Navbar = (props: { className?: string }) => {
                   <Download className="mr-2 h-4 w-4" />
                   Export Collection
                 </DropdownMenuItem>
-                
+
                 <div className="flex items-center px-2 gap-x-1 font-geist text-xs py-2">
-                  <span className="text-muted-foreground/80">Templates</span>
-                  <Separator orientation="horizontal" className="ml-1 w-[65%]" />
+                  <span className="text-muted-foreground/80">
+                    Documentation
+                  </span>
+                  <Separator
+                    orientation="horizontal"
+                    className="ml-1 w-[65%]"
+                  />
                 </div>
-                
-                <DropdownMenuItem onClick={() => handleTemplateSelect("Basic", basicTemplate, "basic.js")}>
+
+                <DropdownMenuItem
+                  onClick={() =>
+                    handleTemplateSelect("Basic", basicTemplate, "basic.js")
+                  }
+                >
                   <FileText className="mr-2 h-4 w-4" />
                   Basic
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleTemplateSelect("Request Body", requestBodyTemplate, "request-body.js")}>
+                <DropdownMenuItem
+                  onClick={() =>
+                    handleTemplateSelect(
+                      "Request Body",
+                      requestBodyTemplate,
+                      "request-body.js"
+                    )
+                  }
+                >
                   <BookOpen className="mr-2 h-4 w-4" />
                   Request Body
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleTemplateSelect("Variables", variablesTemplate, "variables.js")}>
+                <DropdownMenuItem
+                  onClick={() =>
+                    handleTemplateSelect(
+                      "Variables",
+                      variablesTemplate,
+                      "variables.js"
+                    )
+                  }
+                >
                   <Variable className="mr-2 h-4 w-4" />
                   Variables
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleTemplateSelect("Scripting", scriptingTemplate, "scripting.js")}>
+                <DropdownMenuItem
+                  onClick={() =>
+                    handleTemplateSelect(
+                      "Scripting",
+                      scriptingTemplate,
+                      "scripting.js"
+                    )
+                  }
+                >
                   <Code className="mr-2 h-4 w-4" />
                   Scripting
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleTemplateSelect("Full Docs", fullDocsTemplate, "full-docs.js")}>
+                <DropdownMenuItem
+                  onClick={() =>
+                    handleTemplateSelect(
+                      "Full Docs",
+                      fullDocsTemplate,
+                      "full-docs.js"
+                    )
+                  }
+                >
                   <Book className="mr-2 h-4 w-4" />
                   Full Docs
                 </DropdownMenuItem>
-                
+
                 <div className="flex items-center px-2 gap-x-1 font-geist text-xs py-2">
                   <span className="text-muted-foreground/80">Billing</span>
-                  <Separator orientation="horizontal" className="ml-1 w-[65%]" />
+                  <Separator
+                    orientation="horizontal"
+                    className="ml-1 w-[65%]"
+                  />
                 </div>
-                
+
                 <DropdownMenuItem onClick={handleUpgradeClick}>
                   <CreditCard className="mr-2 h-4 w-4" />
                   Upgrade
                 </DropdownMenuItem>
-                
+
                 <div className="flex items-center px-2 gap-x-1 font-geist text-xs py-2">
                   <span className="text-muted-foreground/80">Mode</span>
-                  <Separator orientation="horizontal" className="ml-1 w-[65%]" />
+                  <Separator
+                    orientation="horizontal"
+                    className="ml-1 w-[65%]"
+                  />
                 </div>
-                
-                <DropdownMenuCheckboxItem 
+
+                <DropdownMenuCheckboxItem
                   checked={theme === "light"}
                   onCheckedChange={() => setTheme("light")}
                 >
                   Light
                 </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem 
+                <DropdownMenuCheckboxItem
                   checked={theme === "dark"}
                   onCheckedChange={() => setTheme("dark")}
                 >
@@ -238,15 +315,15 @@ export const Navbar = (props: { className?: string }) => {
         </div>
 
         {/* Search Dialog */}
-        <SearchDialog 
-          open={isSearchDialogOpen} 
-          onOpenChange={setIsSearchDialogOpen} 
+        <SearchDialog
+          open={isSearchDialogOpen}
+          onOpenChange={setIsSearchDialogOpen}
         />
 
         {/* Import Collection Dialog */}
-        <ImportCollectionDialog 
-          open={isImportDialogOpen} 
-          onOpenChange={setIsImportDialogOpen} 
+        <ImportCollectionDialog
+          open={isImportDialogOpen}
+          onOpenChange={setIsImportDialogOpen}
         />
       </header>
     </TooltipProvider>
