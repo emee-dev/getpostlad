@@ -117,3 +117,52 @@ export const getByPath = query({
     return workspace;
   },
 });
+
+export const deleteWorkspace = mutation({
+  args: {
+    id: v.id("workspaces"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("Not signed in");
+    }
+
+    // Get the workspace and verify ownership
+    const workspace = await ctx.db.get(args.id);
+    if (!workspace) {
+      throw new Error("Workspace not found");
+    }
+
+    if (workspace.userId !== userId) {
+      throw new Error("Not authorized to delete this workspace");
+    }
+
+    // Get all environments in this workspace
+    const environments = await ctx.db
+      .query("environments")
+      .withIndex("by_workspace", (q) => q.eq("workspaceId", args.id))
+      .collect();
+
+    // Delete all environments in this workspace
+    for (const environment of environments) {
+      await ctx.db.delete(environment._id);
+    }
+
+    // Get all request histories in this workspace
+    const requestHistories = await ctx.db
+      .query("request_history")
+      .withIndex("by_user_workspace", (q) => 
+        q.eq("userId", userId).eq("workspaceId", args.id)
+      )
+      .collect();
+
+    // Delete all request histories in this workspace
+    for (const history of requestHistories) {
+      await ctx.db.delete(history._id);
+    }
+
+    // Finally, delete the workspace itself
+    await ctx.db.delete(args.id);
+  },
+});
