@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { User, LogOut, Loader2 } from "lucide-react";
+import { User, LogOut, Loader2, Copy } from "lucide-react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { Authenticated, Unauthenticated, AuthLoading, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -66,6 +66,12 @@ function UnauthenticatedContent() {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState("signin");
+
+  const demoCredentials = {
+    email: "example@gmail.com",
+    password: "example@gmail.com"
+  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,6 +123,31 @@ function UnauthenticatedContent() {
     }
   };
 
+  const handleUseDemoCredentials = async () => {
+    setEmail(demoCredentials.email);
+    setPassword(demoCredentials.password);
+    setError("");
+
+    // Small delay to show the fields being filled
+    setTimeout(async () => {
+      setIsLoading(true);
+      
+      try {
+        await signIn("password", { 
+          email: demoCredentials.email, 
+          password: demoCredentials.password, 
+          flow: activeTab === "signin" ? "signIn" : "signUp"
+        });
+        setOpen(false);
+        resetForm();
+      } catch (error) {
+        setError(error instanceof Error ? error.message : `Demo ${activeTab === "signin" ? "sign in" : "sign up"} failed`);
+      } finally {
+        setIsLoading(false);
+      }
+    }, 300);
+  };
+
   const resetForm = () => {
     setEmail("");
     setPassword("");
@@ -146,12 +177,44 @@ function UnauthenticatedContent() {
         <DialogHeader>
           <DialogTitle>Authentication</DialogTitle>
         </DialogHeader>
-        <Tabs defaultValue="signin" className="w-full">
+        <Tabs defaultValue="signin" value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
           
+          {/* Demo Credentials Preview */}
+          <div className="mt-4 p-4 bg-muted/50 border border-dashed border-muted-foreground/30 rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-sm font-medium text-muted-foreground">Demo Credentials</h4>
+              <Copy className="h-3 w-3 text-muted-foreground" />
+            </div>
+            <div className="space-y-1 text-xs font-mono">
+              <div className="text-muted-foreground">
+                <span className="text-foreground">Email:</span> {demoCredentials.email}
+              </div>
+              <div className="text-muted-foreground">
+                <span className="text-foreground">Password:</span> {demoCredentials.password}
+              </div>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full mt-3 h-8 text-xs"
+              onClick={handleUseDemoCredentials}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <div className="mr-2 h-3 w-3 animate-spin rounded-full border border-background border-t-transparent" />
+                  Processing...
+                </>
+              ) : (
+                "Use Demo Credentials"
+              )}
+            </Button>
+          </div>
+
           {error && (
             <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
               <p className="text-sm text-destructive">{error}</p>
