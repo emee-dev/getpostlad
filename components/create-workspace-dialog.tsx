@@ -271,6 +271,7 @@ export function CreateWorkspaceDialog() {
               </div>
             </DialogContent>
           </Dialog>
+          // delete workspace dialog here
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -318,6 +319,7 @@ export function CreateWorkspaceDialog() {
               setIsEnvOpen={setIsEnvOpen}
             />
           )}
+          // Delete environment here
         </DropdownMenuContent>
       </DropdownMenu>
     </>
