@@ -36,7 +36,7 @@ interface WorkspaceState {
   // Environments
   environments: Environment[];
   selectedEnvironment: Environment | null;
-  setSelectedEnvironment: (ws: Environment) => void;
+  setSelectedEnvironment: (ws: Environment | null) => void;
   setEnvironments: (ws: Environment[]) => void;
 
   // Scripting mode
