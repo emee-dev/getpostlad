@@ -1,3 +1,20 @@
+import { FileExplorer } from "@/components/file-explorer";
+import { Button } from "@/components/ui/button";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Sidebar,
   SidebarContent,
@@ -10,25 +27,8 @@ import {
 } from "@/components/ui/sidebar";
 import { useFileTreeStore } from "@/hooks/use-file-store";
 import { cn } from "@/lib/utils";
-import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { FileExplorer } from "@/components/file-explorer";
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-  ContextMenuSeparator,
-} from "@/components/ui/context-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { FilePlus, FolderPlus, Trash2, AlertCircle } from "lucide-react";
+import { AlertCircle, FilePlus, FolderPlus, Trash2 } from "lucide-react";
+import React, { useCallback, useMemo, useState } from "react";
 
 export type FileNode = {
   name: string;
@@ -60,9 +60,9 @@ const RootFileOperationDialog = ({
   // Check if file/folder already exists at root level
   const fileExists = useMemo(() => {
     if (!value.trim()) return false;
-    
-    return files.some(node => 
-      node.name.toLowerCase() === value.trim().toLowerCase()
+
+    return files.some(
+      (node) => node.name.toLowerCase() === value.trim().toLowerCase()
     );
   }, [value, files]);
 
@@ -105,7 +105,11 @@ const RootFileOperationDialog = ({
               onChange={(e) => setValue(e.target.value)}
               onKeyDown={handleKeyDown}
               autoFocus
-              className={fileExists ? "border-destructive focus-visible:ring-destructive" : ""}
+              className={
+                fileExists
+                  ? "border-destructive focus-visible:ring-destructive"
+                  : ""
+              }
             />
             {fileExists && (
               <div className="flex items-center gap-2 text-sm text-destructive">
@@ -118,8 +122,8 @@ const RootFileOperationDialog = ({
             <Button variant="outline" onClick={() => handleOpenChange(false)}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleConfirm} 
+            <Button
+              onClick={handleConfirm}
               disabled={!value.trim() || fileExists}
             >
               Create
@@ -142,9 +146,13 @@ const EmptyStateMessage = () => (
   </div>
 );
 
-const SidebarWithRootContextMenu = ({ children }: { children: React.ReactNode }) => {
+const SidebarWithRootContextMenu = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const { addFile, addDirectory, setFiles } = useFileTreeStore();
-  
+
   // Dialog state for root-level operations
   const [dialogState, setDialogState] = useState<{
     open: boolean;
@@ -158,51 +166,55 @@ const SidebarWithRootContextMenu = ({ children }: { children: React.ReactNode })
     placeholder: "",
   });
 
-  const handleContextMenu = useCallback((action: "newFile" | "newFolder" | "clearRequests") => {
-    switch (action) {
-      case "newFile":
-        setDialogState({
-          open: true,
-          type: "newFile",
-          title: "Create New File",
-          placeholder: "Enter file name (e.g., script.js)",
-        });
-        break;
-      case "newFolder":
-        setDialogState({
-          open: true,
-          type: "newFolder",
-          title: "Create New Folder",
-          placeholder: "Enter folder name",
-        });
-        break;
-      case "clearRequests":
-        // Clear all files by setting an empty array
-        setFiles([]);
-        break;
-    }
-  }, [addFile, addDirectory, setFiles]);
+  const handleContextMenu = useCallback(
+    (action: "newFile" | "newFolder" | "clearRequests") => {
+      switch (action) {
+        case "newFile":
+          setDialogState({
+            open: true,
+            type: "newFile",
+            title: "Create New File",
+            placeholder: "Enter file name (e.g., script.js)",
+          });
+          break;
+        case "newFolder":
+          setDialogState({
+            open: true,
+            type: "newFolder",
+            title: "Create New Folder",
+            placeholder: "Enter folder name",
+          });
+          break;
+        case "clearRequests":
+          // Clear all files by setting an empty array
+          setFiles([]);
+          break;
+      }
+    },
+    [addFile, addDirectory, setFiles]
+  );
 
-  const handleDialogConfirm = useCallback((value: string) => {
-    switch (dialogState.type) {
-      case "newFile":
-        // Add file to root level (empty path)
-        addFile("", value, "");
-        break;
-      case "newFolder":
-        // Add directory to root level (empty path)
-        addDirectory("", value);
-        break;
-    }
-  }, [dialogState.type, addFile, addDirectory]);
+  const handleDialogConfirm = useCallback(
+    (value: string) => {
+      switch (dialogState.type) {
+        case "newFile":
+          // Add file to root level (empty path)
+          addFile("", value, "");
+          break;
+        case "newFolder":
+          // Add directory to root level (empty path)
+          addDirectory("", value);
+          break;
+      }
+    },
+    [dialogState.type, addFile, addDirectory]
+  );
 
   return (
     <>
       <ContextMenu>
         <ContextMenuTrigger asChild>
-          <div className="h-full w-full select-none">
-            {children}
-          </div>
+          <div className="h-full w-full select-none">{children}</div>
         </ContextMenuTrigger>
         <ContextMenuContent>
           <ContextMenuItem onClick={() => handleContextMenu("newFile")}>
@@ -214,7 +226,7 @@ const SidebarWithRootContextMenu = ({ children }: { children: React.ReactNode })
             New Folder
           </ContextMenuItem>
           <ContextMenuSeparator />
-          <ContextMenuItem 
+          <ContextMenuItem
             onClick={() => handleContextMenu("clearRequests")}
             className="text-destructive focus:text-destructive"
           >
@@ -226,7 +238,7 @@ const SidebarWithRootContextMenu = ({ children }: { children: React.ReactNode })
 
       <RootFileOperationDialog
         open={dialogState.open}
-        onOpenChange={(open) => setDialogState(prev => ({ ...prev, open }))}
+        onOpenChange={(open) => setDialogState((prev) => ({ ...prev, open }))}
         title={dialogState.title}
         placeholder={dialogState.placeholder}
         onConfirm={handleDialogConfirm}
@@ -258,11 +270,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent>
             <SidebarWithRootContextMenu>
               <SidebarMenu className="h-[600px] scrollbar-hide">
-                {isEmptyFileTree ? (
-                  <EmptyStateMessage />
-                ) : (
-                  <FileExplorer />
-                )}
+                {isEmptyFileTree ? <EmptyStateMessage /> : <FileExplorer />}
               </SidebarMenu>
             </SidebarWithRootContextMenu>
           </SidebarGroupContent>
@@ -272,7 +280,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         className={cn({
           hidden: open,
           block: !open,
-        })}>
+        })}
+      >
         <SidebarGroup>
           <SidebarGroupLabel className="flex items-center">
             <span className="font-geist">Collection</span>
@@ -281,11 +290,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent>
             <SidebarWithRootContextMenu>
               <SidebarMenu className="h-[600px] scrollbar-hide">
-                {isEmptyFileTree ? (
-                  <EmptyStateMessage />
-                ) : (
-                  <FileExplorer />
-                )}
+                {isEmptyFileTree ? <EmptyStateMessage /> : <FileExplorer />}
               </SidebarMenu>
             </SidebarWithRootContextMenu>
           </SidebarGroupContent>

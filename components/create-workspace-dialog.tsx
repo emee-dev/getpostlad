@@ -1,5 +1,6 @@
 "use client";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,18 +13,17 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/convex/_generated/api";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useMutation, useQuery } from "convex/react";
-import { Check, AlertCircle, Trash2 } from "lucide-react";
+import { AlertCircle, Check, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ManageEnvironmentDialog } from "./manage-environment-dialog";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Helper function to generate path from name (same as backend)
 function generatePath(name: string): string {

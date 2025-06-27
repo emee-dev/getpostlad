@@ -1,7 +1,7 @@
 "use client";
 
 import { CodeEditor } from "@/components/editor";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { FileNode, useFileTreeStore } from "@/hooks/use-file-store";
 import { cn } from "@/lib/utils";

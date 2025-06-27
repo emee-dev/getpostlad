@@ -14,10 +14,10 @@ import { json } from "@codemirror/lang-json";
 import {
   bracketMatching,
   defaultHighlightStyle,
+  foldGutter,
   foldKeymap,
   indentOnInput,
   syntaxHighlighting,
-  foldGutter,
 } from "@codemirror/language";
 import { lintKeymap } from "@codemirror/lint";
 import { searchKeymap } from "@codemirror/search";
@@ -25,18 +25,18 @@ import { Compartment, EditorState, Extension } from "@codemirror/state";
 import {
   crosshairCursor,
   dropCursor,
+  EditorView,
   highlightSpecialChars,
   keymap,
   lineNumbers,
-  rectangularSelection,
-  EditorView,
   placeholder,
+  rectangularSelection,
 } from "@codemirror/view";
+import { hyperLink } from "@uiw/codemirror-extensions-hyper-link";
 import type * as CSS from "csstype";
 import { useEffect, useRef } from "react";
 import { DecoratorFn, liftCursor, variables } from "./extension";
 import { ChevronDown, ChevronRight } from "./icons";
-import { hyperLink } from '@uiw/codemirror-extensions-hyper-link';
 
 interface CodeEditorProps {
   value: string;
@@ -79,7 +79,8 @@ const editorTheme = EditorView.theme({
   },
   ".cm-placeholder": {
     fontStyle: "italic",
-    fontFamily: "var(--font-mono)", fontSize: "13px"
+    fontFamily: "var(--font-mono)",
+    fontSize: "13px",
   },
 } satisfies ThemeSpec);
 
@@ -230,7 +231,9 @@ export function CodeEditor({
 
     view.dispatch({
       effects: [
-        placeholderCompartment.current.reconfigure(placeholder(placeholderText)),
+        placeholderCompartment.current.reconfigure(
+          placeholder(placeholderText)
+        ),
       ],
     });
   }, [placeholderText]);

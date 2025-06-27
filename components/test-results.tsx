@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Check, ChevronDown, ChevronRight, X } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "./ui/button";
 import { TestResult } from "@/lib/runtime";
+import { cn } from "@/lib/utils";
+import { Check, ChevronDown, ChevronRight, X } from "lucide-react";
+import { useState } from "react";
+import { Button } from "./ui/button";
 
 interface TestResultsProps {
   results: TestResult[];

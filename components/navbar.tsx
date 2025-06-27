@@ -1,56 +1,56 @@
 "use client";
 
-import { CreateWorkspaceDialog } from "@/components/create-workspace-dialog";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { cn } from "@/lib/utils";
 import { AuthDialog } from "@/components/auth/auth-dialog";
+import { CreateWorkspaceDialog } from "@/components/create-workspace-dialog";
 import { ImportCollectionDialog } from "@/components/import-collection-dialog";
 import { SearchDialog } from "@/components/search-dialog";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import {
-  ChevronDown,
-  Upload,
-  Plus,
-  Loader2,
-  Download,
-  Search,
-  CreditCard,
-  BookOpen,
-  FileText,
-  Variable,
-  Code,
-  Book,
-  Maximize,
-  Minimize2,
-} from "lucide-react";
-import { useState } from "react";
-import { useFileTreeStore } from "@/hooks/use-file-store";
-import { useWorkspace } from "@/hooks/use-workspace";
-import { exportAndDownloadZip } from "@/lib/exporter";
-import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
-import { useTheme } from "next-themes";
-import { useRouter } from "next/navigation";
-import {
-  basicTemplate,
-  requestBodyTemplate,
-  variablesTemplate,
-  scriptingTemplate,
-  fullDocsTemplate,
-} from "@/templates";
+import { Separator } from "@/components/ui/separator";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useFileTreeStore } from "@/hooks/use-file-store";
+import { useWorkspace } from "@/hooks/use-workspace";
+import { exportAndDownloadZip } from "@/lib/exporter";
+import { cn } from "@/lib/utils";
+import {
+  basicTemplate,
+  fullDocsTemplate,
+  requestBodyTemplate,
+  scriptingTemplate,
+  variablesTemplate,
+} from "@/templates";
+import { Authenticated, AuthLoading, Unauthenticated } from "convex/react";
+import {
+  Book,
+  BookOpen,
+  ChevronDown,
+  Code,
+  CreditCard,
+  Download,
+  FileText,
+  Loader2,
+  Maximize,
+  Minimize2,
+  Plus,
+  Search,
+  Upload,
+  Variable,
+} from "lucide-react";
+import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export const Navbar = (props: { className?: string }) => {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);

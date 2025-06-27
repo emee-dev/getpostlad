@@ -1,22 +1,6 @@
 "use client";
 
-import { FileNode, useFileTreeStore } from "@/hooks/use-file-store";
-import { cn } from "@/lib/utils";
-import {
-  ChevronDown,
-  ChevronRight,
-  File,
-  Folder,
-  FolderOpen,
-  FilePlus,
-  FolderPlus,
-  Edit,
-  Trash2,
-  AlertCircle,
-} from "lucide-react";
-import { useVirtualizer } from "@tanstack/react-virtual";
-import { useRef, useMemo, useCallback, memo, useState, useEffect } from "react";
-import { flattenVisibleTree, FlattenedNode, TreeFlattener } from "@/lib/file-tree-utils";
+import { Button } from "@/components/ui/button";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -30,8 +14,24 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { FileNode, useFileTreeStore } from "@/hooks/use-file-store";
+import { FlattenedNode, TreeFlattener } from "@/lib/file-tree-utils";
+import { cn } from "@/lib/utils";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import {
+  AlertCircle,
+  ChevronDown,
+  ChevronRight,
+  Edit,
+  File,
+  FilePlus,
+  Folder,
+  FolderOpen,
+  FolderPlus,
+  Trash2,
+} from "lucide-react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // Create a singleton tree flattener for caching
 const treeFlattener = new TreeFlattener();

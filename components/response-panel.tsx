@@ -1,19 +1,30 @@
 import { ResponseData } from "@/app/http/page";
 import { CodeEditor } from "@/components/editor";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChevronRight, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { CheckCheck, Dot, Lightbulb, Menu } from "lucide-react";
-import { Suspense, useEffect } from "react";
 import { TestResults } from "@/components/test-results";
-import { TestResult } from "@/lib/runtime";
-import { useWorkspace } from "@/hooks/use-workspace";
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
-import { useMutation, useQuery } from "convex/react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/convex/_generated/api";
 import { useFileTreeStore } from "@/hooks/use-file-store";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useWorkspace } from "@/hooks/use-workspace";
+import { TestResult } from "@/lib/runtime";
+import { useMutation, useQuery } from "convex/react";
+import {
+  CheckCheck,
+  ChevronRight,
+  Dot,
+  Lightbulb,
+  Loader2,
+  Menu,
+} from "lucide-react";
+import { Suspense } from "react";
 
 interface ResponsePanelProps {
   data: ResponseData | null;
@@ -32,17 +43,18 @@ export function ResponsePanel({
   testResults,
   onLoadHistoryResponse,
 }: ResponsePanelProps) {
-  
   const { scripting, setScripting, selectedWorkspace } = useWorkspace();
   const { selectedFile } = useFileTreeStore();
-  
+
   // Convex mutations and queries
   const deleteHistory = useMutation(api.request_history.deleteHistory);
   const deleteAllHistories = useMutation(
     api.request_history.deleteHistoriesByPath
   );
-  const createResponseHistory = useMutation(api.request_history.createResponseHistory);
-  
+  const createResponseHistory = useMutation(
+    api.request_history.createResponseHistory
+  );
+
   // Get response histories for current request path
   const histories = useQuery(
     api.request_history.getHistories,
@@ -109,10 +121,10 @@ export function ResponsePanel({
     try {
       // Format the response data for clipboard
       const clipboardContent = formatResponseForClipboard(data);
-      
+
       // Copy to clipboard using the Clipboard API
       await navigator.clipboard.writeText(clipboardContent);
-      
+
       console.log("Response copied to clipboard");
       // You could add a toast notification here for better UX
     } catch (error) {
@@ -135,27 +147,27 @@ export function ResponsePanel({
   // Helper function to format response data for clipboard
   const formatResponseForClipboard = (responseData: ResponseData): string => {
     const lines: string[] = [];
-    
+
     // Add status line
     lines.push(`HTTP/2.0 ${responseData.status}`);
     lines.push("");
-    
+
     // Add headers section
     if (responseData.headers && responseData.headers.length > 0) {
       lines.push("/** Response headers below */");
-      responseData.headers.forEach(header => {
+      responseData.headers.forEach((header) => {
         lines.push(`${header.key}: ${header.value}`);
       });
       lines.push("");
     }
-    
+
     // Add body section
     lines.push("/** Response body below */");
     lines.push(responseData.text_response || "");
-    
+
     return lines.join("\n");
   };
-  
+
   const onToggleScripting = (mode: "run-once" | "auto-run") => {
     setScripting(mode);
   };
@@ -172,7 +184,7 @@ export function ResponsePanel({
       onLoadHistoryResponse(historyResponseData);
     }
   };
-  
+
   if (isPending) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -220,17 +232,21 @@ export function ResponsePanel({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon"
-            className="ml-auto hover:bg-muted-foreground/20 size-7 hover:dark:bg-muted-foreground/15" disabled={!selectedWorkspace}>
-            <Menu className="h-4" />
-            <span className="sr-only">More actions</span>
-          </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-auto hover:bg-muted-foreground/20 size-7 hover:dark:bg-muted-foreground/15"
+              disabled={!selectedWorkspace}
+            >
+              <Menu className="h-4" />
+              <span className="sr-only">More actions</span>
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="font-geist" align="start" side="left">
             <DropdownMenuItem onClick={onSave} disabled={!data}>
               Save
             </DropdownMenuItem>
-            <DropdownMenuItem 
+            <DropdownMenuItem
               onClick={onDeleteHistory}
               disabled={!currentHistoryEntry}
             >
@@ -239,37 +255,37 @@ export function ResponsePanel({
             <DropdownMenuItem onClick={onCopyToClipboard} disabled={!data}>
               Copy
             </DropdownMenuItem>
-            
+
             <div className="flex items-center px-2 gap-x-1 font-geist text-xs py-2">
               <span className="text-muted-foreground/80">Scripts</span>
               <Separator orientation="horizontal" className="ml-1 w-[65%]" />
             </div>
-            
-            <DropdownMenuCheckboxItem 
+
+            <DropdownMenuCheckboxItem
               checked={scripting === "run-once"}
               onCheckedChange={() => onToggleScripting("run-once")}
             >
               Run once
             </DropdownMenuCheckboxItem>
-            <DropdownMenuCheckboxItem 
+            <DropdownMenuCheckboxItem
               checked={scripting === "auto-run"}
               onCheckedChange={() => onToggleScripting("auto-run")}
             >
               Auto-run on Edit
             </DropdownMenuCheckboxItem>
-            
+
             <div className="flex items-center px-2 gap-x-1 font-geist text-xs py-2">
               <span className="text-muted-foreground/80">History</span>
               <Separator orientation="horizontal" className="ml-1 w-[65%]" />
             </div>
-            
-            <DropdownMenuItem 
+
+            <DropdownMenuItem
               onClick={onDeleteAllHistories}
               disabled={!histories || histories.length === 0}
             >
               Delete all responses
             </DropdownMenuItem>
-            
+
             {histories && histories.length > 0 && (
               <>
                 <Separator orientation="horizontal" className="my-0.5" />

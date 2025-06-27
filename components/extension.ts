@@ -3,7 +3,9 @@ import {
   Decoration,
   DecorationSet,
   EditorView,
-  KeyBinding, keymap, MatchDecorator,
+  KeyBinding,
+  keymap,
+  MatchDecorator,
   ViewPlugin,
   ViewUpdate,
   WidgetType,
@@ -117,7 +119,7 @@ class VariableWidget extends WidgetType {
           tooltip.remove();
         }
       }
-    }
+    };
   }
 
   eq(other: WidgetType): boolean {

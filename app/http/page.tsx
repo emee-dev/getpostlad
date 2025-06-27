@@ -1,36 +1,36 @@
 "use client";
 
 import { CodeEditor } from "@/components/editor";
+import { MobileWarningDialog } from "@/components/mobile-warning-dialog";
 import { Navbar } from "@/components/navbar";
 import { ResponsePanel } from "@/components/response-panel";
 import { AppSidebar } from "@/components/Sidebar";
+import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { api } from "@/convex/_generated/api";
 import { useFileTreeStore } from "@/hooks/use-file-store";
-import { cn } from "@/lib/utils";
-import { EditorView } from "@codemirror/view";
-import { useTheme } from "next-themes";
-import Image from "next/image";
-import Link from "next/link";
-import { MutableRefObject, Suspense, useEffect, useRef, useState } from "react";
+import { useMobileDetection } from "@/hooks/use-mobile-detection";
+import { useWorkspace } from "@/hooks/use-workspace";
 import {
+  TestResult,
+  postResponseRuntime,
+  preRequestRuntime,
+} from "@/lib/runtime";
+import { RequestScript, ResponseScript } from "@/lib/scripting";
+import {
+  cn,
   deserializeHttpFn,
   interpolateVariables,
   type DeserializedHTTP,
 } from "@/lib/utils";
+import { EditorView } from "@codemirror/view";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-import {
-  TestResult,
-  preRequestRuntime,
-  postResponseRuntime,
-} from "@/lib/runtime";
-import { Button } from "@/components/ui/button";
+import { useQuery } from "convex/react";
 import { Coffee } from "lucide-react";
-import { useWorkspace } from "@/hooks/use-workspace";
-import { RequestScript, ResponseScript } from "@/lib/scripting";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useMobileDetection } from "@/hooks/use-mobile-detection";
-import { MobileWarningDialog } from "@/components/mobile-warning-dialog";
+import { useTheme } from "next-themes";
+import Image from "next/image";
+import Link from "next/link";
+import { MutableRefObject, useEffect, useRef, useState } from "react";
 
 export type Header = {
   key: string;
@@ -48,7 +48,8 @@ export type ResponseData = {
 export default function Home() {
   const { theme } = useTheme();
   const { selectedFile, updateFile } = useFileTreeStore();
- const { selectedEnvironment, isResultPanelVisible, selectedWorkspace } = useWorkspace();
+  const { selectedEnvironment, isResultPanelVisible, selectedWorkspace } =
+    useWorkspace();
 
   const [code, setCode] = useState("");
   const [isPending, setIsPending] = useState(false);
@@ -56,7 +57,7 @@ export default function Home() {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const editor = useRef<EditorView | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  
+
   // Mobile detection and warning dialog
   const isMobile = useMobileDetection();
   const [showMobileWarning, setShowMobileWarning] = useState(false);
@@ -86,13 +87,13 @@ export default function Home() {
 
   const handleMobileQuit = () => {
     // Try to close the tab/window
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       // First try to close the window (works if opened by script)
       try {
         window.close();
       } catch (error) {
         // If that fails, redirect to a friendly exit page or blank page
-        window.location.href = 'about:blank';
+        window.location.href = "about:blank";
       }
     }
   };
@@ -371,7 +372,6 @@ export default function Home() {
       });
     }
   }, [selectedFile, findHistory, selectedWorkspace]);
-  
 
   return (
     <>
@@ -448,7 +448,7 @@ const HTTP_Layout = ({
   isResultPanelVisible,
   onCancel,
   testResults,
-  onLoadHistoryResponse
+  onLoadHistoryResponse,
 }: {
   isResultPanelVisible: boolean;
   data: ResponseData | null;
@@ -472,12 +472,12 @@ const HTTP_Layout = ({
         onClick={() => editor.current?.focus()}
       >
         <CodeEditor
-            language="javascript"
-            value={code}
-            onDecoratorClick={(src) => onSend(src)}
-            onChange={(val) => setCode(val)}
-            theme={(theme as any) || "system"}
-          />
+          language="javascript"
+          value={code}
+          onDecoratorClick={(src) => onSend(src)}
+          onChange={(val) => setCode(val)}
+          theme={(theme as any) || "system"}
+        />
       </div>
 
       <div
@@ -489,11 +489,11 @@ const HTTP_Layout = ({
           }
         )}
       >
-        <ResponsePanel 
-          data={data} 
-          theme={theme} 
-          isPending={isPending} 
-          onCancel={onCancel} 
+        <ResponsePanel
+          data={data}
+          theme={theme}
+          isPending={isPending}
+          onCancel={onCancel}
           testResults={testResults}
           onLoadHistoryResponse={onLoadHistoryResponse}
         />
