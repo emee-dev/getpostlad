@@ -268,7 +268,7 @@ export function CreateWorkspaceDialog() {
           ))}
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="h-7">
+              <Button variant="outline" size="sm" className="h-7 w-full">
                 Create Workspace
               </Button>
             </DialogTrigger>
