@@ -55,11 +55,12 @@ export default function Home() {
   const [isPending, setIsPending] = useState(false);
   const [data, setData] = useState<ResponseData | null>(null);
   const [testResults, setTestResults] = useState<TestResult[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
   const editor = useRef<EditorView | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // Mobile detection and warning dialog
-  const isMobile = useMobileDetection();
+  const isMobileDetected = useMobileDetection();
   const [showMobileWarning, setShowMobileWarning] = useState(false);
   const [mobileWarningDismissed, setMobileWarningDismissed] = useState(false);
 
@@ -73,12 +74,30 @@ export default function Home() {
       : "skip"
   );
 
+  // Handle mobile detection and window size
+  useEffect(() => {
+    const checkMobile = () => {
+      if (typeof window !== 'undefined') {
+        setIsMobile(window.innerWidth < 1024);
+      }
+    };
+
+    // Initial check
+    checkMobile();
+
+    // Add resize listener
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', checkMobile);
+      return () => window.removeEventListener('resize', checkMobile);
+    }
+  }, []);
+
   // Handle mobile detection
   useEffect(() => {
-    if (isMobile === true && !mobileWarningDismissed) {
+    if (isMobileDetected === true && !mobileWarningDismissed) {
       setShowMobileWarning(true);
     }
-  }, [isMobile, mobileWarningDismissed]);
+  }, [isMobileDetected, mobileWarningDismissed]);
 
   const handleMobileContinue = () => {
     setShowMobileWarning(false);
@@ -334,7 +353,9 @@ export default function Home() {
   };
 
   const handleCoffeeClick = () => {
-    window.open("https://www.buymeacoffee.com/emee_dev", "_blank");
+    if (typeof window !== "undefined") {
+      window.open("https://www.buymeacoffee.com/emee_dev", "_blank");
+    }
   };
 
   const handleLoadHistoryResponse = (historyData: ResponseData) => {
@@ -401,6 +422,7 @@ export default function Home() {
               onCancel={onCancel}
               testResults={testResults}
               onLoadHistoryResponse={handleLoadHistoryResponse}
+              isMobile={isMobile}
             />
           </section>
 
@@ -449,6 +471,7 @@ const HTTP_Layout = ({
   onCancel,
   testResults,
   onLoadHistoryResponse,
+  isMobile,
 }: {
   isResultPanelVisible: boolean;
   data: ResponseData | null;
@@ -461,6 +484,7 @@ const HTTP_Layout = ({
   onCancel: () => void;
   testResults: TestResult[];
   onLoadHistoryResponse: (historyData: ResponseData) => void;
+  isMobile: boolean;
 }) => {
   return (
     <div className="flex flex-col lg:flex-row h-full">
@@ -475,8 +499,8 @@ const HTTP_Layout = ({
             
             // Mobile layout - stack vertically
             "flex-1 min-h-0": true,
-            "h-1/2": isResultPanelVisible && window?.innerWidth < 1024,
-            "h-full": !isResultPanelVisible || window?.innerWidth >= 1024,
+            "h-1/2": isResultPanelVisible && isMobile,
+            "h-full": !isResultPanelVisible || !isMobile,
           }
         )}
         onClick={() => editor.current?.focus()}
@@ -501,12 +525,12 @@ const HTTP_Layout = ({
             
             // Mobile layout - stack vertically or overlay
             "flex-1 min-h-0": isResultPanelVisible,
-            "h-1/2": isResultPanelVisible && window?.innerWidth < 1024,
+            "h-1/2": isResultPanelVisible && isMobile,
             "hidden": !isResultPanelVisible,
             
             // Mobile overlay option (uncomment to use overlay instead of stacking)
-            // "absolute inset-x-2 bottom-2 top-1/2 z-10 bg-background": isResultPanelVisible && window?.innerWidth < 1024,
-            // "shadow-lg border-2": isResultPanelVisible && window?.innerWidth < 1024,
+            // "absolute inset-x-2 bottom-2 top-1/2 z-10 bg-background": isResultPanelVisible && isMobile,
+            // "shadow-lg border-2": isResultPanelVisible && isMobile,
           }
         )}
       >
