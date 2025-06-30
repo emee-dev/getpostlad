@@ -463,12 +463,22 @@ const HTTP_Layout = ({
   onLoadHistoryResponse: (historyData: ResponseData) => void;
 }) => {
   return (
-    <div className="flex h-full">
+    <div className="flex flex-col lg:flex-row h-full">
+      {/* Code Editor Panel */}
       <div
-        className={cn(" scrollbar-hide overflow-auto px-1.5", {
-          "w-1/2 flex-1 ": isResultPanelVisible,
-          "flex-1 ": !isResultPanelVisible,
-        })}
+        className={cn(
+          "scrollbar-hide overflow-auto px-1.5 transition-all duration-300 ease-in-out",
+          {
+            // Desktop layout
+            "lg:w-1/2 lg:flex-1": isResultPanelVisible,
+            "lg:flex-1": !isResultPanelVisible,
+            
+            // Mobile layout - stack vertically
+            "flex-1 min-h-0": true,
+            "h-1/2": isResultPanelVisible && window?.innerWidth < 1024,
+            "h-full": !isResultPanelVisible || window?.innerWidth >= 1024,
+          }
+        )}
         onClick={() => editor.current?.focus()}
       >
         <CodeEditor
@@ -480,12 +490,23 @@ const HTTP_Layout = ({
         />
       </div>
 
+      {/* Response Panel */}
       <div
         className={cn(
-          " h-auto border  rounded-md px-1.5 border-black/10 dark:border-muted-foreground/20",
+          "border rounded-md px-1.5 border-black/10 dark:border-muted-foreground/20 transition-all duration-300 ease-in-out",
           {
-            "w-1/2 flex-1 ": isResultPanelVisible,
-            hidden: !isResultPanelVisible,
+            // Desktop layout
+            "lg:w-1/2 lg:flex-1 lg:h-auto": isResultPanelVisible,
+            "lg:hidden": !isResultPanelVisible,
+            
+            // Mobile layout - stack vertically or overlay
+            "flex-1 min-h-0": isResultPanelVisible,
+            "h-1/2": isResultPanelVisible && window?.innerWidth < 1024,
+            "hidden": !isResultPanelVisible,
+            
+            // Mobile overlay option (uncomment to use overlay instead of stacking)
+            // "absolute inset-x-2 bottom-2 top-1/2 z-10 bg-background": isResultPanelVisible && window?.innerWidth < 1024,
+            // "shadow-lg border-2": isResultPanelVisible && window?.innerWidth < 1024,
           }
         )}
       >
