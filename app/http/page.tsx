@@ -1,13 +1,5 @@
 "use client";
 
-import { CodeEditor } from "@/components/editor";
-import { MobileWarningDialog } from "@/components/mobile-warning-dialog";
-import { Navbar } from "@/components/navbar";
-import { ResponsePanel } from "@/components/response-panel";
-import { AppSidebar } from "@/components/Sidebar";
-import { Button } from "@/components/ui/button";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { api } from "@/convex/_generated/api";
 import { useFileTreeStore } from "@/hooks/use-file-store";
 import { useMobileDetection } from "@/hooks/use-mobile-detection";
 import { useWorkspace } from "@/hooks/use-workspace";
@@ -30,7 +22,107 @@ import { Coffee } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { MutableRefObject, useEffect, useRef, useState } from "react";
+import { api } from "@/convex/_generated/api";
+
+// Lazy load heavy components with loading fallbacks
+const CodeEditor = dynamic(() =>
+  import("@/components/editor").then((mod) => ({ default: mod.CodeEditor })),
+  { 
+    ssr: false, 
+    loading: () => (
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <span className="ml-2 text-sm text-muted-foreground">Loading editor...</span>
+      </div>
+    )
+  }
+);
+
+const MobileWarningDialog = dynamic(() =>
+  import("@/components/mobile-warning-dialog").then((mod) => ({ default: mod.MobileWarningDialog })),
+  { 
+    ssr: false, 
+    loading: () => <div>Loading...</div>
+  }
+);
+
+const Navbar = dynamic(() =>
+  import("@/components/navbar").then((mod) => ({ default: mod.Navbar })),
+  { 
+    ssr: false, 
+    loading: () => (
+      <div className="h-10 bg-background border-b animate-pulse">
+        <div className="h-full bg-muted/20 rounded"></div>
+      </div>
+    )
+  }
+);
+
+const ResponsePanel = dynamic(() =>
+  import("@/components/response-panel").then((mod) => ({ default: mod.ResponsePanel })),
+  { 
+    ssr: false, 
+    loading: () => (
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+        <span className="ml-2 text-sm text-muted-foreground">Loading response panel...</span>
+      </div>
+    )
+  }
+);
+
+const AppSidebar = dynamic(() =>
+  import("@/components/Sidebar").then((mod) => ({ default: mod.AppSidebar })),
+  { 
+    ssr: false, 
+    loading: () => (
+      <div className="w-64 bg-sidebar border-r animate-pulse">
+        <div className="p-4 space-y-2">
+          <div className="h-4 bg-muted/20 rounded"></div>
+          <div className="h-4 bg-muted/20 rounded w-3/4"></div>
+          <div className="h-4 bg-muted/20 rounded w-1/2"></div>
+        </div>
+      </div>
+    )
+  }
+);
+
+const Button = dynamic(() =>
+  import("@/components/ui/button").then((mod) => ({ default: mod.Button })),
+  { 
+    ssr: false, 
+    loading: () => (
+      <div className="h-9 w-20 bg-muted/20 rounded animate-pulse"></div>
+    )
+  }
+);
+
+const SidebarInset = dynamic(() =>
+  import("@/components/ui/sidebar").then((mod) => ({ default: mod.SidebarInset })),
+  { 
+    ssr: false, 
+    loading: () => (
+      <div className="flex-1 bg-background animate-pulse">
+        <div className="h-full bg-muted/10 rounded"></div>
+      </div>
+    )
+  }
+);
+
+const SidebarProvider = dynamic(() =>
+  import("@/components/ui/sidebar").then((mod) => ({ default: mod.SidebarProvider })),
+  { 
+    ssr: false, 
+    loading: () => (
+      <div className="flex h-screen w-screen bg-background animate-pulse">
+        <div className="w-64 bg-muted/20 border-r"></div>
+        <div className="flex-1 bg-muted/10"></div>
+      </div>
+    )
+  }
+);
 
 export type Header = {
   key: string;
